@@ -1,6 +1,6 @@
 const sharp = require('sharp');
 
-sharp('public/code.svg')
+sharp('public/new-code.svg')
   .resize(32, 32)
   .toFile('public/favicon.ico')
   .then(() => {
