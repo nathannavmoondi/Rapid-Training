@@ -79,7 +79,7 @@ export const Details = () => {
               Tech Stack
             </Typography>
             <Typography variant="body1" align="center" sx={{ color: 'white' }}>
-              This site was built using React, TypeScript, Material UI and used Vercel for hosting.
+              This site was built using React, TypeScript, Material UI, React Syntax and used Vercel for hosting.
             </Typography>
           </Box>
 
