@@ -36,8 +36,7 @@ export const AlgorithmList = () => {
   const filteredAlgorithms = algorithms.filter(algo => algo.language === currentTab);
 
   return (
-    <Container sx={{ py: 2 }}>
-      <Typography variant="h4" sx={{ mb: 0.5, color: 'primary.main', fontWeight: 'bold' }}>
+    <Container sx={{ py: 2 }}>      <Typography variant="h5" sx={{ mb: 0.5, color: 'primary.main', fontWeight: 'bold' }}>
         {currentTab === 'csharp' ? 'C# Algorithms' : 'JavaScript Algorithms'}
       </Typography>
       
@@ -48,7 +47,7 @@ export const AlgorithmList = () => {
           centered
           sx={{
             '& .MuiTab-root': {
-              fontSize: '1.25rem',
+              fontSize: '1rem',
               fontWeight: 500
             }
           }}
@@ -101,13 +100,12 @@ export const AlgorithmList = () => {
                   <Typography variant="h6" sx={{ color: 'white' }}>
                     {index + 1}
                   </Typography>
-                </Box>
-                <Typography variant="h6" sx={{ fontWeight: 500 }}>
+                </Box>                <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
                   {algorithm.title}
                 </Typography>
               </Box>
               
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontSize: '0.875rem' }}>
                 {algorithm.description.length > 100 
                   ? `${algorithm.description.substring(0, 100)}...`
                   : algorithm.description}
