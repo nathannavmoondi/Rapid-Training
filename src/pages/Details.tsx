@@ -99,8 +99,12 @@ export const Details = () => {
             width: '100%',
             justifyContent: 'center'
           }}>
-            <GitHubIcon sx={{ fontSize: 30, color: 'text.secondary' }} />
-            <LinkedInIcon sx={{ fontSize: 30, color: '#0077b5' }} />
+            <a href="https://github.com/nathannavmoondi" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
+              <GitHubIcon sx={{ fontSize: 30, color: 'text.secondary' }} />
+            </a>
+            <a href="https://www.linkedin.com/in/nathan-nav-moondi" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
+              <LinkedInIcon sx={{ fontSize: 30, color: '#0077b5' }} />
+            </a>
           </Box>
 
           <Typography variant="h6" sx={{ 
