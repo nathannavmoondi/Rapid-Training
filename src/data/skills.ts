@@ -139,6 +139,18 @@ export const skills: Skill[] = [
     category: 'non-technology',
     description: 'Car maintenance principles and practices',
     topics: ['Oil Change', 'Tire Rotation', 'Brake Inspection', 'Fluid Checks', 'Battery Maintenance']
-  }
-
+  },
+  {
+    id: 'Workouts',
+    title: 'Workouts',    
+    category: 'non-technology',
+    description: 'Workout principles and practices',
+    topics: ['Strength Training', 'Cardio', 'Flexibility', 'Nutrition', 'Recovery Techniques']
+  },
+  {
+    id: 'Keto',
+    title: 'Keto',
+    category: 'non-technology',
+    description: 'Keto principles and practices',
+    topics: ['Ketogenic Diet', 'Meal Planning', 'Nutritional Ketosis', 'Keto Recipes', 'Health Benefits']}
 ];
