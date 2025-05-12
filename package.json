@@ -49,6 +49,7 @@
     ]
   },
   "devDependencies": {
+    "@types/prismjs": "^1.26.5",
     "sharp": "^0.34.1"
   }
 }
