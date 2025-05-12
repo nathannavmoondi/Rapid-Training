@@ -53,15 +53,34 @@ export const SkillsRefresherDetail = () => {
 
   // Find skill immediately without state updates
   useEffect(() => {
-    if (!skillTitle) return;
+    if (!skillTitle) {
+      console.log('No skill title in URL');
+      return;
+    }
     
-    const customSkillsJson = localStorage.getItem('customSkills');
-    const customSkills = customSkillsJson ? JSON.parse(customSkillsJson) : [];
-    const allSkills = [...skills, ...customSkills];
-    const foundSkill = allSkills.find(s => s.title === skillTitle);
-    
-    if (foundSkill) {
-      setCurrentSkill(foundSkill);
+    try {
+      const customSkillsJson = localStorage.getItem('customSkills');
+      const customSkills = customSkillsJson ? JSON.parse(customSkillsJson) : [];
+      const allSkills = [...skills, ...customSkills];
+      
+      // Decode the URL-encoded skill title and handle special characters
+      const decodedTitle = decodeURIComponent(skillTitle);
+      
+      // Case-insensitive comparison and normalize whitespace
+      const normalizedTitle = decodedTitle.trim();
+      const foundSkill = allSkills.find(s => 
+        s.title.trim().toLowerCase() === normalizedTitle.toLowerCase()
+      );
+      
+      console.log('Looking for skill:', normalizedTitle);
+      console.log('Available skills:', allSkills.map(s => s.title));
+      console.log('Found skill:', foundSkill);
+      
+      if (foundSkill) {
+        setCurrentSkill(foundSkill);
+      }
+    } catch (error) {
+      console.error('Error finding skill:', error);
     }
   }, [skillTitle]);
 

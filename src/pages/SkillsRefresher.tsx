@@ -12,7 +12,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { skills } from '../data/skills';
 
-type SkillCategory = 'frontend' | 'backend' | 'general';
+type SkillCategory = 'all' | 'frontend' | 'backend' | 'general';
+type CustomSkillCategory = Exclude<SkillCategory, 'all'>;
 interface CustomSkill {
   id: string;
   title: string;
@@ -21,10 +22,9 @@ interface CustomSkill {
   topics: string[];
 }
 
-export const SkillsRefresher = () => {
-  const navigate = useNavigate();
-  const [currentTab, setCurrentTab] = useState<SkillCategory>('frontend');
-  const [newSkillCategory, setNewSkillCategory] = useState<SkillCategory>('frontend');
+export const SkillsRefresher = () => {  const navigate = useNavigate();
+  const [currentTab, setCurrentTab] = useState<SkillCategory>('all');
+  const [newSkillCategory, setNewSkillCategory] = useState<SkillCategory>('general');
   const [newSkillTitle, setNewSkillTitle] = useState('');
   const [customSkills, setCustomSkills] = useState<CustomSkill[]>([]);
 
@@ -36,18 +36,30 @@ export const SkillsRefresher = () => {
     }
   }, []);
 
-  // Combine built-in skills with custom skills
+  // Combine built-in skills with custom skills and filter based on category
   const allSkills = [...skills, ...customSkills];
-  const filteredSkills = allSkills.filter(skill => skill.category === currentTab);
+  const filteredSkills = currentTab === 'all' ? allSkills : allSkills.filter(skill => skill.category === currentTab);
 
   const handleAddSkill = () => {
     if (!newSkillTitle.trim()) return;
+    
+    // Normalize the new skill title
+    const normalizedTitle = newSkillTitle.trim();
+    
+    // Check if skill already exists
+    const allSkills = [...skills, ...customSkills];
+    const existingSkill = allSkills.find(s => s.title.toLowerCase() === normalizedTitle.toLowerCase());
+    
+    if (existingSkill) {
+      alert('A skill with this name already exists');
+      return;
+    }
 
     const newSkill: CustomSkill = {
       id: `custom-${Date.now()}`,
-      title: newSkillTitle,
+      title: normalizedTitle,
       category: newSkillCategory,
-      description: `Custom ${newSkillTitle} skill`,
+      description: `Custom ${normalizedTitle} skill`,
       topics: ['Basic Concepts', 'Best Practices', 'Common Patterns', 'General Knowledge']
     };
 
@@ -67,9 +79,10 @@ export const SkillsRefresher = () => {
   const isCustomSkill = (skillId: string) => skillId.startsWith('custom-');
 
   return (
-    <Container sx={{ py: 2 }}>
-      <Typography variant="h5" sx={{ mb: 0.5, color: 'primary.main', fontWeight: 'bold' }}>
-        {currentTab === 'frontend' ? 'Frontend Development' :
+    <Container sx={{ py: 2 }}>      <Typography variant="h5" sx={{ mb: 0.5, color: 'primary.main', fontWeight: 'bold' }}>
+      Refresh Your Skills -&nbsp;
+        {currentTab === 'all' ? 'All Skills' :
+         currentTab === 'frontend' ? 'Frontend Development' :
          currentTab === 'backend' ? 'Backend Development' : 
          'General Concepts'}
       </Typography>
@@ -78,14 +91,14 @@ export const SkillsRefresher = () => {
         <Tabs 
           value={currentTab} 
           onChange={(_, newValue) => setCurrentTab(newValue as SkillCategory)}
-          centered
-          sx={{
+          centered          sx={{
             '& .MuiTab-root': {
               fontSize: '1rem',
               fontWeight: 500
             }
           }}
         >
+          <Tab label="All" value="all" />
           <Tab label="Frontend" value="frontend" />
           <Tab label="Backend" value="backend" />
           <Tab label="General" value="general" />
@@ -107,9 +120,8 @@ export const SkillsRefresher = () => {
                 transform: 'translateY(-4px)',
                 boxShadow: '0 4px 20px rgba(144, 202, 249, 0.2)',
                 bgcolor: 'rgba(45, 45, 45, 0.9)'
-              }
-            }}
-            onClick={() => navigate(`/skills/detail?skill=${skill.title}`)}
+              }            }}
+            onClick={() => navigate(`/skills/detail?skill=${encodeURIComponent(skill.title)}`)}
           >
             <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -167,9 +179,9 @@ export const SkillsRefresher = () => {
             onChange={(e) => setNewSkillCategory(e.target.value as SkillCategory)}
             sx={{ justifyContent: 'center' }}
           >
-            <FormControlLabel value="frontend" control={<Radio />} label="Frontend" />
-            <FormControlLabel value="backend" control={<Radio />} label="Backend" />
             <FormControlLabel value="general" control={<Radio />} label="General" />
+            <FormControlLabel value="frontend" control={<Radio />} label="Frontend" />
+            <FormControlLabel value="backend" control={<Radio />} label="Backend" />            
           </RadioGroup>
           
           <TextField

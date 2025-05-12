@@ -26,7 +26,7 @@ function App() {
           <Navbar />
           <Box sx={{ flex: 1 }}>
             <Routes>
-              <Route path="/" element={<Navigate to="/algorithms" replace />} />
+              <Route path="/" element={<Navigate to="/skills" replace />} />
               <Route path="/algorithms" element={<AlgorithmList />} />
               <Route path="/algorithm/:id" element={<AlgorithmDetail />} />
               <Route path="/details" element={<Details />} />

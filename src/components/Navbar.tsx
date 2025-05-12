@@ -35,25 +35,12 @@ export const Navbar = () => {
             transition: 'color 0.2s ease'
           }}
         >
-          Skill Refresher Demo - Nathan Nav Moondi
+          Skills Refresher Demo - Nathan Nav Moondi
         </Typography>        <Box sx={{ 
           display: 'flex', 
           gap: 2,
           marginLeft: 'auto'
         }}>          <Button 
-            size="small" 
-            color="inherit" 
-            onClick={() => navigate('/algorithms')}
-            sx={{
-              backgroundColor: isActive('/algorithms') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
-              '&:hover': {
-                backgroundColor: isActive('/algorithms') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
-              }
-            }}
-          >
-            Algorithms
-          </Button>
-          <Button 
             size="small" 
             color="inherit" 
             onClick={() => navigate('/skills')}
@@ -65,6 +52,19 @@ export const Navbar = () => {
             }}
           >
             Skills Refresher
+          </Button>
+          <Button 
+            size="small" 
+            color="inherit" 
+            onClick={() => navigate('/algorithms')}
+            sx={{
+              backgroundColor: isActive('/algorithms') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
+              '&:hover': {
+                backgroundColor: isActive('/algorithms') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
+              }
+            }}
+          >
+            Algorithms
           </Button>
           <Button 
             size="small" 

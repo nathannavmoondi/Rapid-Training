@@ -3,11 +3,6 @@ import { getSkillTopics } from './skillsService';
 export const requestRefresher = async (level: string, skillDescription: string): Promise<string> => {
   try {    // Try different environment variable formats since Vite and CRA handle them differently
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
-
-    
-    console.log('Level:', level);
-    console.log('Skill Description:', skillDescription);
-    console.log('API Key exists:', !!apiKey); // Log if API key exists without exposing the key
     
     // Get topics for the skill
     const { getSkillTopics } = require('./skillsService');
@@ -55,7 +50,6 @@ Important:
 4. If the question contains code, make sure you put it into a code block
 5. Make code examples practical and focused`;
 
-      console.log('Prompt:', prompt); // Log the prompt for debugging 
 
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",        
