@@ -152,5 +152,6 @@ export const skills: Skill[] = [
     title: 'Keto',
     category: 'non-technology',
     description: 'Keto principles and practices',
-    topics: ['Ketogenic Diet', 'Meal Planning', 'Nutritional Ketosis', 'Keto Recipes', 'Health Benefits']}
+    topics: ['Ketogenic Diet', 'Meal Planning', 'Nutritional Ketosis', 'Keto Recipes', 'Health Benefits']
+  }
 ];
