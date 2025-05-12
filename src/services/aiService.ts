@@ -13,15 +13,15 @@ export const requestRefresher = async (level: string, skillDescription: string):
         throw new Error('API key not found in environment variables!');
       }
 
-      var prompt = `Create a completely new ${level} difficulty ${skillDescription} question for timestamp ${new Date().toISOString()}. 
+      var prompt = `Create a completely new ${level} difficulty ${skillDescription} question for timestamp ${new Date().toISOString()}.
 
-do not include the word html and GRAVE ACCENT in the answer.
-Include a practical code example with syntax highlighting in the answer section. 
+Do not include the word html and GRAVE ACCENT in the answer.
+Include a practical code example with syntax highlighting in the answer section.
 Format the response in this exact HTML structure:
 
 <div class="question-container">
     <div class="question">
-        [Your question here]
+        [Your question text here. If the question includes a code snippet, format it like this: <pre><code class="language-javascript">const snippet = "example";</code></pre> within the question text.]
     </div>
     <div class="options">
         <div class="option">A) [Option A]</div>
@@ -44,13 +44,13 @@ Format the response in this exact HTML structure:
 </div>
 
 Important:
-1. For code examples, use <pre><code class="language-typescript"> tags
-2. Indent code properly inside the code block
-3. Put each explanation point on a new line using <p> tags
-4. If the question contains code, make sure you put it into a code block
-5. Make code examples practical and focused`;
+1. For code examples in the answer section, use <pre><code class="language-typescript"> (or other relevant language like language-javascript, language-python, etc.) tags.
+2. Indent code properly inside the code block.
+3. Put each explanation point on a new line using <p> tags.
+4. If the question itself contains a code snippet (e.g., asking "What does this code do?"), that snippet must also be wrapped in <pre><code class="language-xxx"> tags (e.g., language-javascript, language-python, etc., matching the snippet's language) directly within the <div class="question">.
+5. Make code examples practical and focused. Ensure all code, whether in question or answer, is correctly embedded within the specified <pre><code> structure.`;
 
-
+console.log("Prompt: ", prompt);
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",        
         headers: {
