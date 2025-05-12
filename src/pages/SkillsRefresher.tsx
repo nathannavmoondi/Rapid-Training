@@ -12,7 +12,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { skills } from '../data/skills';
 
-type SkillCategory = 'all' | 'frontend' | 'backend' | 'general';
+type SkillCategory = 'all' | 'frontend' | 'backend' | 'general' | 'non-technology';
 type CustomSkillCategory = Exclude<SkillCategory, 'all'>;
 interface CustomSkill {
   id: string;
@@ -83,7 +83,8 @@ export const SkillsRefresher = () => {  const navigate = useNavigate();
       Refresh Your Skills -&nbsp;
         {currentTab === 'all' ? 'All Skills' :
          currentTab === 'frontend' ? 'Frontend Development' :
-         currentTab === 'backend' ? 'Backend Development' : 
+         currentTab === 'backend' ? 'Backend Development' :
+         currentTab === 'non-technology' ? 'Non-Technology' :
          'General Concepts'}
       </Typography>
 
@@ -102,6 +103,7 @@ export const SkillsRefresher = () => {  const navigate = useNavigate();
           <Tab label="Frontend" value="frontend" />
           <Tab label="Backend" value="backend" />
           <Tab label="General" value="general" />
+          <Tab label="Non-Technology" value="non-technology" />
         </Tabs>
       </Box>
 
@@ -121,7 +123,7 @@ export const SkillsRefresher = () => {  const navigate = useNavigate();
                 boxShadow: '0 4px 20px rgba(144, 202, 249, 0.2)',
                 bgcolor: 'rgba(45, 45, 45, 0.9)'
               }            }}
-            onClick={() => navigate(`/skills/detail?skill=${encodeURIComponent(skill.title)}`)}
+            onClick={() => navigate(`/skills/detail?skill=${encodeURIComponent(skill.title)}&category=${skill.category}`)}
           >
             <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -182,6 +184,7 @@ export const SkillsRefresher = () => {  const navigate = useNavigate();
             <FormControlLabel value="general" control={<Radio />} label="General" />
             <FormControlLabel value="frontend" control={<Radio />} label="Frontend" />
             <FormControlLabel value="backend" control={<Radio />} label="Backend" />            
+            <FormControlLabel value="non-technology" control={<Radio />} label="Non-Technology" />            
           </RadioGroup>
           
           <TextField

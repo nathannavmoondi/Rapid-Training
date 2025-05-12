@@ -3,7 +3,7 @@ import { skills } from '../data/skills';
 export interface CustomSkill {
   id: string;
   title: string;
-  category: 'frontend' | 'backend' | 'general';
+  category: 'frontend' | 'backend' | 'general' | 'non-technology';
   description: string;
   topics: string[];
 }
@@ -35,7 +35,7 @@ export const getAllSkills = () => {
   return [...skills, ...customSkills];
 };
 
-export const addCustomSkill = (title: string, category: 'frontend' | 'backend' | 'general'): void => {
+export const addCustomSkill = (title: string, category: 'frontend' | 'backend' | 'general' | 'non-technology'): void => {
   const newSkill: CustomSkill = {
     id: `custom-${Date.now()}`,
     title,

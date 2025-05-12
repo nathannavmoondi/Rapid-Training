@@ -1,7 +1,7 @@
 export interface Skill {
   id: string;
   title: string;
-  category: 'frontend' | 'backend' | 'general';
+  category: 'frontend' | 'backend' | 'general'  | 'non-technology';
   description: string;
   topics: string[];
 }
@@ -90,5 +90,55 @@ export const skills: Skill[] = [
     category: 'general',
     description: 'Version control and collaborative development with Git',
     topics: ['Branching Strategies', 'Merge Conflicts', 'Git Flow', 'Advanced Commands', 'Best Practices']
+  },
+   {
+    id: 'real estate',
+    title: 'Real Estate',
+    category: 'non-technology',
+    description: 'Real estate principles and practices',
+    topics: ['Property Valuation', 'Market Analysis', 'Investment Strategies', 'Real Estate Law', 'Financing Options']
+  },
+   {
+    id: 'plumbing',
+    title: 'Plumbing',
+    category: 'non-technology',
+    description: 'Plumbing principles and practices',
+    topics: ['Pipe Fitting', 'Drainage Systems', 'Water Supply', 'Plumbing Codes', 'Fixture Installation']
+  },
+  {
+    id: 'electrician',
+    title: 'Electrician',
+    category: 'non-technology',
+    description: 'Electrical principles and practices',
+    topics: ['Circuit Design', 'Wiring', 'Electrical Codes', 'Troubleshooting', 'Safety Practices']
+  },
+  {
+    id: 'Filmmaking',
+    title: 'Filmmaking',  
+    category: 'non-technology',
+    description: 'Filmmaking principles and practices',
+    topics: ['Cinematography', 'Editing', 'Screenwriting', 'Directing', 'Production Design']
+  },
+  {
+    id: 'Acting',
+    title: 'Acting',
+    category: 'non-technology',
+    description: 'Acting principles and practices',
+    topics: ['Character Development', 'Improvisation', 'Voice Training', 'Stage Presence', 'Script Analysis']
+  },
+  {
+    id: 'Day-Trading',
+    title: 'Day Trading',
+    category: 'non-technology',
+    description: 'Day trading principles and practices',
+    topics: ['Technical Analysis', 'Risk Management', 'Trading Strategies', 'Market Trends', 'Psychology of Trading']
+  },
+  {
+    id: 'Car Maintenance',
+    title: 'Car Maintenance', 
+    category: 'non-technology',
+    description: 'Car maintenance principles and practices',
+    topics: ['Oil Change', 'Tire Rotation', 'Brake Inspection', 'Fluid Checks', 'Battery Maintenance']
   }
+
 ];

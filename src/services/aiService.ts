@@ -1,6 +1,6 @@
 import { getSkillTopics } from './skillsService';
 
-export const requestRefresher = async (level: string, skillDescription: string): Promise<string> => {
+export const requestRefresher = async (level: string, skillDescription: string, skillCategory: string): Promise<string> => {
   try {    // Try different environment variable formats since Vite and CRA handle them differently
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
     
@@ -64,6 +64,40 @@ Supported language classes for <code class="language-xxx"> are: language-typescr
 10. Put each explanation point in the answer section on a new line using <p> tags.
 11. Make code examples practical and focused.`;
 
+if (skillCategory === "non-technology"){
+  prompt = `Create a completely new ${level} difficulty for the topic of ${skillDescription} question for timestamp ${new Date().toISOString()}.
+
+Do not include the word html and GRAVE ACCENT in the answer.
+Format the response in this exact HTML structure:
+
+<div class="question-container">
+    <div class="question">
+        [Your question text here. If the question includes a code snippet, format it like this: <pre><code class="language-javascript">const snippet = "example";</code></pre> within the question text. Ensure the class attribute is one of the supported languages listed below.]
+    </div>
+    <div class="options">
+        <div class="option">A) [Option A]</div>
+        <div class="option">B) [Option B]</div>
+        <div class="option">C) [Option C]</div>
+        <div class="option">D) [Option D]</div>
+    </div>
+    <div class="answer-box">
+        <div class="correct-answer">
+            Correct Answer: [Letter]
+        </div>
+        <div class="explanation">
+            <p>[First line of explanation]</p>
+            <pre><code class="language-typescript">
+                [Your code example here with proper indentation]
+            </code></pre>
+            <p>[Rest of the explanation with each point on a new line]</p>
+        </div>
+    </div>
+</div>
+
+Important:
+1. Put each explanation point in the answer section on a new line using <p> tags.`;
+  }
+  console.log("Prompt: ", prompt);
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",        
         headers: {

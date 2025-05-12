@@ -96,6 +96,7 @@ export const SkillsRefresherDetail = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const skillTitle = searchParams.get('skill');
+  const SkillCategory = searchParams.get('category');
   const contentRef = useRef<HTMLDivElement>(null);
   
   const [isLoading, setIsLoading] = useState(false);
@@ -138,7 +139,7 @@ export const SkillsRefresherDetail = () => {
     setShowAnswer(false); // Reset answer visibility for new question
     setQuestion(''); // Clear previous question while loading new one
     try {
-      const response = await requestRefresher('intermediate', currentSkill.title);
+      const response = await requestRefresher('intermediate', currentSkill.title, currentSkill.category);
       setQuestion(response || 'Failed to load question. Please try again.');
     } catch (error) {
       console.error('Error fetching question:', error);
