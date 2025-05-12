@@ -41,6 +41,57 @@ const highlightCode = debounce(() => {
   });
 }, 100);
 
+// Helper function to process HTML for answer visibility
+const getProcessedQuestionHtml = (html: string, answerVisible: boolean): string => {
+  if (!html) return '';
+
+  // Regex to target the answer-box div.
+  // Captures:
+  // 1. tagStart: The part of the tag before style: (<div ... class="...answer-box...")
+  // 2. styleAttributeGroup (optional): The whole style attribute like ' style="color:red;"'
+  // 3. styleContent (optional, nested in group 2): The content of the style attribute like 'color:red;'
+  // 4. tagEndAfterStyle: The part of the tag after style (or after class if no style) up to and including >
+  const answerBoxRegex = /(<div\s+[^>]*class="[^"]*\banswer-box\b[^"]*")(\s+style="([^"]*)")?([^>]*>)/gi;
+
+  return html.replace(answerBoxRegex, (match, tagStart, styleAttributeGroup, styleContent, tagEndAfterStyle) => {
+    if (answerVisible) {
+      // SHOWING: Remove 'display:none' or any 'display:*' from the style attribute
+      if (styleAttributeGroup && typeof styleContent === 'string') {
+        const cleanedStyles = styleContent
+          .split(';')
+          .map((s: string) => s.trim())
+          .filter((s: string) => s && !s.toLowerCase().startsWith('display:'))
+          .join('; ')
+          .trim();
+        if (cleanedStyles) {
+          return `${tagStart} style="${cleanedStyles}"${tagEndAfterStyle}`;
+        } else {
+          // Style attribute becomes completely empty, remove it.
+          return `${tagStart}${tagEndAfterStyle}`;
+        }
+      }
+      // No style attribute to modify, or styleContent is not a string.
+      // If answerVisible is true, the element should be visible. If it had no style or no display:none, it's already fine.
+      return match; 
+    } else {
+      // HIDING: Add or ensure 'display:none'
+      let currentStylesArray: string[];
+      if (styleAttributeGroup && typeof styleContent === 'string') { // Existing style attribute was matched
+        currentStylesArray = styleContent.split(';')
+          .map((s: string) => s.trim())
+          .filter((s: string) => s && !s.toLowerCase().startsWith('display:'));
+      } else { // No existing style attribute or styleContent was not a string
+        currentStylesArray = [];
+      }
+      // Add display:none if not already present (though filter should handle it, this is an explicit check)
+      if (!currentStylesArray.some(style => style.toLowerCase().startsWith('display:'))) {
+        currentStylesArray.push('display:none');
+      }
+      return `${tagStart} style="${currentStylesArray.join('; ').trim()}"${tagEndAfterStyle}`;
+    }
+  });
+};
+
 export const SkillsRefresherDetail = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -50,8 +101,9 @@ export const SkillsRefresherDetail = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [question, setQuestion] = useState('');
   const [currentSkill, setCurrentSkill] = useState<Skill | undefined>();
+  const [showAnswer, setShowAnswer] = useState(false); // Added state for answer visibility
 
-  // Find skill immediately without state updates
+  // Find skill immediately
   useEffect(() => {
     if (!skillTitle) {
       console.log('No skill title in URL');
@@ -60,24 +112,19 @@ export const SkillsRefresherDetail = () => {
     
     try {
       const customSkillsJson = localStorage.getItem('customSkills');
-      const customSkills = customSkillsJson ? JSON.parse(customSkillsJson) : [];
-      const allSkills = [...skills, ...customSkills];
+      const customSkillsData = customSkillsJson ? JSON.parse(customSkillsJson) : []; // Renamed to avoid conflict
+      const allSkills = [...skills, ...customSkillsData]; // Use renamed variable
       
-      // Decode the URL-encoded skill title and handle special characters
       const decodedTitle = decodeURIComponent(skillTitle);
-      
-      // Case-insensitive comparison and normalize whitespace
       const normalizedTitle = decodedTitle.trim();
       const foundSkill = allSkills.find(s => 
         s.title.trim().toLowerCase() === normalizedTitle.toLowerCase()
       );
       
-      console.log('Looking for skill:', normalizedTitle);
-      console.log('Available skills:', allSkills.map(s => s.title));
-      console.log('Found skill:', foundSkill);
-      
       if (foundSkill) {
         setCurrentSkill(foundSkill);
+      } else {
+        console.log('Skill not found:', normalizedTitle);
       }
     } catch (error) {
       console.error('Error finding skill:', error);
@@ -88,6 +135,8 @@ export const SkillsRefresherDetail = () => {
     if (!currentSkill?.title) return;
     
     setIsLoading(true);
+    setShowAnswer(false); // Reset answer visibility for new question
+    setQuestion(''); // Clear previous question while loading new one
     try {
       const response = await requestRefresher('intermediate', currentSkill.title);
       setQuestion(response || 'Failed to load question. Please try again.');
@@ -96,31 +145,36 @@ export const SkillsRefresherDetail = () => {
       setQuestion('Failed to load question. Please try again.');
     }
     setIsLoading(false);
-  }, [currentSkill?.title]);
+  }, [currentSkill?.title]); 
 
-  // Fetch initial question only when currentSkill changes
+  // Fetch initial question only when currentSkill changes and has a title
   useEffect(() => {
     if (currentSkill?.title) {
       handleAskQuestion();
     }
-  }, [currentSkill?.title, handleAskQuestion]);
+  }, [currentSkill?.title, handleAskQuestion]); 
 
   // Syntax highlighting effect
   useEffect(() => {
     if (!isLoading && question) {
-      highlightCode();
+      Promise.resolve().then(() => { // Microtask delay
+        highlightCode();
+      });
     }
-  }, [question, isLoading]);
+  }, [question, isLoading, showAnswer]); 
 
   if (!currentSkill) {
     return (
       <Container sx={{ py: 4 }}>
         <Typography variant="h5" color="error">
-          Skill not found
+          Skill not found. Please check the URL or go back to skills list.
         </Typography>
+        <Button onClick={() => navigate('/skills')} sx={{ mt: 2 }}>Back to Skills</Button>
       </Container>
     );
   }
+
+  const htmlToRender = getProcessedQuestionHtml(question, showAnswer);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -137,11 +191,11 @@ export const SkillsRefresherDetail = () => {
         elevation={3} 
         sx={{ 
           p: 4,
-          backgroundColor: 'rgba(45, 45, 45, 0.7)',
-          borderRadius: 2
+          backgroundColor: 'rgba(45, 45, 45, 0.7)', 
+          borderRadius: 2 
         }}
       >
-        {isLoading ? (
+        {isLoading && !question ? ( 
           <Typography>Loading question...</Typography>
         ) : (
           <>
@@ -150,31 +204,31 @@ export const SkillsRefresherDetail = () => {
             </Typography>
             <Box
               ref={contentRef}
-              className="question-content"
+              className="question-content" 
               sx={{ 
                 my: 3,
                 p: 3, 
                 borderRadius: 1,
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                backgroundColor: 'rgba(255, 255, 255, 0.05)', 
                 '& .question-container': {
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 3
+                  gap: 3 
                 },
-                '& .question': {
+                '& .question': { 
                   fontSize: '1.1rem',
-                  color: '#fff',
+                  color: '#fff', 
                   fontWeight: 500,
-                  marginBottom: 2,
-                  p: 2,
-                  backgroundColor: '#121212',
+                  marginBottom: 2, 
+                  p:2, 
+                  backgroundColor: '#121212', 
                   borderRadius: 1,
-                  border: '1px solid #333',
+                  border: '1px solid #333', 
                 },
                 '& pre': {
                   margin: '16px 0',
                   p: 2,
-                  backgroundColor: '#000',
+                  backgroundColor: '#000', 
                   borderRadius: 1,
                   overflow: 'auto',
                   border: '1px solid #333'
@@ -182,22 +236,41 @@ export const SkillsRefresherDetail = () => {
                 '& code': {
                   fontFamily: '"Fira Code", "Consolas", monospace',
                   fontSize: '0.95rem',
-                  color: '#fff'
+                  color: '#fff' 
                 },
                 '& .token': {
-                  '&.comment': { color: '#6a9955' },
-                  '&.string': { color: '#ce9178' },
-                  '&.number': { color: '#b5cea8' },
-                  '&.keyword': { color: '#569cd6' },
-                  '&.function': { color: '#dcdcaa' },
-                  '&.class-name': { color: '#4ec9b0' },
-                  '&.operator': { color: '#d4d4d4' },
-                  '&.punctuation': { color: '#d4d4d4' }
+                  '&.comment': { color: '#6a9955' }, 
+                  '&.string': { color: '#ce9178' }, 
+                  '&.number': { color: '#b5cea8' }, 
+                  '&.keyword': { color: '#569cd6' }, 
+                  '&.function': { color: '#dcdcaa' }, 
+                  '&.class-name': { color: '#4ec9b0' }, 
+                  '&.operator': { color: '#d4d4d4' }, 
+                  '&.punctuation': { color: '#d4d4d4' } 
                 }
               }}
-              dangerouslySetInnerHTML={{ __html: question }}
-            />            <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>
-          
+              dangerouslySetInnerHTML={{ __html: htmlToRender }}
+            />
+            <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>
+              <Button
+                variant="contained"
+                // color="secondary" // Replaced by sx prop for custom styling
+                onClick={() => setShowAnswer(true)}
+                disabled={isLoading || showAnswer || !question}
+                sx={{
+                  backgroundColor: '#4CAF50', // Green
+                  color: '#ffffff', // White
+                  '&:hover': {
+                    backgroundColor: '#388E3C', // Darker green on hover
+                  },
+                  '&:disabled': {
+                    backgroundColor: 'rgba(76, 175, 80, 0.5)', // Lighter green when disabled
+                    color: 'rgba(255, 255, 255, 0.7)',
+                  }
+                }}
+              >
+                Show Answer
+              </Button>
               <Button
                 variant="contained"
                 color="primary"
@@ -206,9 +279,9 @@ export const SkillsRefresherDetail = () => {
               >
                 Next Question
               </Button>
-                  <Button
+              <Button
                 variant="outlined"
-                color="primary"
+                color="primary" 
                 onClick={() => navigate('/skills')}
                 disabled={isLoading}
               >
