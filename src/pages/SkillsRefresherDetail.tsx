@@ -137,15 +137,28 @@ export const SkillsRefresherDetail = () => {
                   '& .token.class-name': { color: '#4ec9b0' },
                   '& .token.operator': { color: '#d4d4d4' },
                   '& .token.punctuation': { color: '#d4d4d4' }
-                },
-                '& .options': {
+                },                '& .options': {
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 1.5,
                   padding: 2,
                   backgroundColor: 'rgba(255, 255, 255, 0.03)',
                   borderRadius: 1,
-                  fontFamily: 'monospace'
+                  fontFamily: 'monospace',
+                  '& .option:nth-of-type(odd)': {
+                    backgroundColor: 'rgba(144, 202, 249, 0.05)',
+                    padding: '8px 12px',
+                    borderRadius: '4px'
+                  },
+                  '& .option:nth-of-type(even)': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                    padding: '8px 12px',
+                    borderRadius: '4px'
+                  },
+                  '& .option:hover': {
+                    backgroundColor: 'rgba(144, 202, 249, 0.1)',
+                    transition: 'background-color 0.2s ease'
+                  }
                 },
                 '& .answer-box': {
                   marginTop: 2,
