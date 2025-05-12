@@ -196,8 +196,8 @@ export const SkillsRefresherDetail = () => {
                 }
               }}
               dangerouslySetInnerHTML={{ __html: question }}
-            />
-            <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>
+            />            <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>
+          
               <Button
                 variant="contained"
                 color="primary"
@@ -205,6 +205,14 @@ export const SkillsRefresherDetail = () => {
                 disabled={isLoading}
               >
                 Next Question
+              </Button>
+                  <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => navigate('/skills')}
+                disabled={isLoading}
+              >
+                Done
               </Button>
             </Stack>
           </>
