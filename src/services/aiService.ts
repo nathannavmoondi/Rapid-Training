@@ -21,7 +21,7 @@ Format the response in this exact HTML structure:
 
 <div class="question-container">
     <div class="question">
-        [Your question text here. If the question includes a code snippet, format it like this: <pre><code class="language-javascript">const snippet = "example";</code></pre> within the question text.]
+        [Your question text here. If the question includes a code snippet, format it like this: <pre><code class="language-javascript">const snippet = "example";</code></pre> within the question text. Ensure the class attribute is one of the supported languages listed below.]
     </div>
     <div class="options">
         <div class="option">A) [Option A]</div>
@@ -44,11 +44,25 @@ Format the response in this exact HTML structure:
 </div>
 
 Important:
-1. For code examples in the answer section, use <pre><code class="language-typescript"> (or other relevant language like language-javascript, language-python, etc.) tags.
+1. For code examples in the answer section, use <pre><code class="language-xxx"> tags. For "language-xxx", use one of the following based on the snippet's language: "language-typescript", "language-javascript", "language-jsx", "language-tsx", "language-markup", or "language-css".
 2. Indent code properly inside the code block.
 3. Put each explanation point on a new line using <p> tags.
-4. If the question itself contains a code snippet (e.g., asking "What does this code do?"), that snippet must also be wrapped in <pre><code class="language-xxx"> tags (e.g., language-javascript, language-python, etc., matching the snippet's language) directly within the <div class="question">.
-5. Make code examples practical and focused. Ensure all code, whether in question or answer, is correctly embedded within the specified <pre><code> structure.`;
+4. If the question itself contains a code snippet (e.g., asking "What does this code do?"), that snippet must also be wrapped in <pre><code class="language-xxx"> tags directly within the <div class="question">. For "language-xxx", use one of the following based on the snippet's language: "language-typescript", "language-javascript", "language-jsx", "language-tsx", "language-markup", or "language-css".
+5. Make code examples practical and focused. Ensure all code, whether in question or answer, is correctly embedded within the specified <pre><code> structure with a supported language class.
+Supported language classes for <code class="language-xxx"> are: language-typescript, language-javascript, language-jsx, language-tsx, language-markup, language-css.
+6. All code snippets, whether in the main question text (inside <div class="question">) or in the answer/explanation section, MUST be wrapped in <pre><code class="language-xxx">...your code here...</code></pre> tags. This structure is MANDATORY.
+7. The \`language-xxx\` part of the class on the <code> tag is ESSENTIAL for syntax highlighting. You MUST use ONLY ONE of the following specific and supported language classes:
+    - \`language-markup\` (for HTML, XML, SVG)
+    - \`language-css\`
+    - \`language-javascript\`
+    - \`language-jsx\`
+    - \`language-typescript\`
+    - \`language-tsx\`
+   Do NOT use any other language classes (e.g., do not use \`language-python\`, \`language-java\`, \`language-text\`, \`language-generic\` etc.). If a code snippet is for a language not in this list, please use \`language-javascript\` if it's a generic script-like snippet or \`language-markup\` if it resembles HTML/XML. Avoid generating code snippets for languages not on this list if possible.
+8. The example structure for a code snippet within the question text is: \`<pre><code class="language-javascript">const snippet = "example";</code></pre>\`. Adhere to this, using an appropriate language class from the list in point 7.
+9. Indent code properly inside the <code> block.
+10. Put each explanation point in the answer section on a new line using <p> tags.
+11. Make code examples practical and focused.`;
 
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",        
