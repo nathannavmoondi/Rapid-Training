@@ -38,7 +38,7 @@ export const Details = () => {
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent'
           }}>
-            Welcome to Algo Demo
+            Welcome to Skills Refresher 
           </Typography>
 
           <Box sx={{ 

@@ -1,8 +1,14 @@
 import { AppBar, Toolbar, Button, Typography, Box } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActive = (path: string) => {
+    if (path === '/algorithms' && location.pathname === '/') return true;
+    return location.pathname === path;
+  };
 
   return (
     <AppBar position="static" sx={{ 
@@ -29,29 +35,34 @@ export const Navbar = () => {
             transition: 'color 0.2s ease'
           }}
         >
-          Algo Demo - Nathan Nav Moondi
+          Skill Resfresher Demo - Nathan Nav Moondi
         </Typography>        <Box sx={{ 
           display: 'flex', 
           gap: 2,
           marginLeft: 'auto'
-        }}>
-          <Button 
+        }}>          <Button 
             size="small" 
             color="inherit" 
             onClick={() => navigate('/algorithms')}
             sx={{
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backgroundColor: isActive('/algorithms') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
               '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.2)'
+                backgroundColor: isActive('/algorithms') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
               }
             }}
           >
-               Algorithms
+            Algorithms
           </Button>
           <Button 
             size="small" 
             color="inherit" 
             onClick={() => navigate('/skills')}
+            sx={{
+              backgroundColor: isActive('/skills') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
+              '&:hover': {
+                backgroundColor: isActive('/skills') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
+              }
+            }}
           >
             Skills Refresher
           </Button>
@@ -59,6 +70,12 @@ export const Navbar = () => {
             size="small" 
             color="inherit" 
             onClick={() => navigate('/details')}
+            sx={{
+              backgroundColor: isActive('/details') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
+              '&:hover': {
+                backgroundColor: isActive('/details') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
+              }
+            }}
           >         
             Details
           </Button>

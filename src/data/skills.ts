@@ -62,5 +62,33 @@ export const skills: Skill[] = [
     category: 'general',
     description: 'Fundamental algorithms and data structures for efficient problem-solving',
     topics: ['Time Complexity', 'Space Complexity', 'Search/Sort', 'Dynamic Programming', 'Graph Algorithms']
+  },
+  {
+    id: 'nodejs',
+    title: 'Node.js',
+    category: 'backend',
+    description: 'Server-side JavaScript development with Node.js ecosystem',
+    topics: ['Express.js', 'Event Loop', 'Streams', 'Async Programming', 'RESTful APIs']
+  },
+  {
+    id: 'python',
+    title: 'Python',
+    category: 'backend',
+    description: 'Python programming with focus on backend development and automation',
+    topics: ['Django/Flask', 'Data Structures', 'OOP in Python', 'Decorators', 'Package Management']
+  },
+  {
+    id: 'cpp',
+    title: 'C++',
+    category: 'backend',
+    description: 'Modern C++ programming and systems development',
+    topics: ['Memory Management', 'STL', 'Templates', 'Multi-threading', 'Smart Pointers']
+  },
+  {
+    id: 'git',
+    title: 'Git',
+    category: 'general',
+    description: 'Version control and collaborative development with Git',
+    topics: ['Branching Strategies', 'Merge Conflicts', 'Git Flow', 'Advanced Commands', 'Best Practices']
   }
 ];
