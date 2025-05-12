@@ -60,7 +60,8 @@ Important:
         },
         body: JSON.stringify({
           ///works: deepseek/deepseek-prover-v2"
-          model: "google/gemini-2.0-flash-001", // Using GPT-3.5-Turbo for faster responses
+          //:floor optimizes prices
+          model: "google/gemini-2.0-flash-001:floor", // Using GPT-3.5-Turbo for faster responses
           //model: 'gpt-3.5-turbo',
           temperature: 0.9, // Increase randomness
           messages: [            { 

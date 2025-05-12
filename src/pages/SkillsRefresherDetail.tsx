@@ -108,10 +108,14 @@ export const SkillsRefresherDetail = () => {
                   gap: 3
                 },                '& .question': {
                   fontSize: '1.1rem',
-                  color: 'primary.light',
+                  color: '#fff',
                   opacity: 1.0,
                   fontWeight: 500,
                   marginBottom: 2,
+                  padding: '16px',
+                  backgroundColor: '#121212',
+                  borderRadius: 1,
+                  border: '1px solid #333',
                   '& pre': {
                     margin: '16px 0',
                     padding: '16px',
