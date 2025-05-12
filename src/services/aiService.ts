@@ -50,7 +50,6 @@ Important:
 4. If the question itself contains a code snippet (e.g., asking "What does this code do?"), that snippet must also be wrapped in <pre><code class="language-xxx"> tags (e.g., language-javascript, language-python, etc., matching the snippet's language) directly within the <div class="question">.
 5. Make code examples practical and focused. Ensure all code, whether in question or answer, is correctly embedded within the specified <pre><code> structure.`;
 
-console.log("Prompt: ", prompt);
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",        
         headers: {
