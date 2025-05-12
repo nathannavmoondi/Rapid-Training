@@ -4,9 +4,16 @@ import { useNavigate, useLocation } from 'react-router-dom';
 export const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
   const isActive = (path: string) => {
-    if (path === '/algorithms' && location.pathname === '/') return true;
+    // For skills pages
+    if (path === '/skills' && (location.pathname === '/skills' || location.pathname.startsWith('/skills/'))) {
+      return true;
+    }
+    // For algorithm pages
+    if (path === '/algorithms' && (location.pathname === '/algorithms' || location.pathname.startsWith('/algorithm/'))) {
+      return true;
+    }
+    // For other pages
     return location.pathname === path;
   };
 
@@ -44,8 +51,9 @@ export const Navbar = () => {
             size="small" 
             color="inherit" 
             onClick={() => navigate('/skills')}
-            sx={{
-              backgroundColor: isActive('/skills') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
+            sx={{              backgroundColor: isActive('/skills') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
+              borderBottom: isActive('/skills') ? '2px solid #90CAF9' : 'none',
+              fontWeight: isActive('/skills') ? 600 : 400,
               '&:hover': {
                 backgroundColor: isActive('/skills') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
               }
@@ -57,8 +65,9 @@ export const Navbar = () => {
             size="small" 
             color="inherit" 
             onClick={() => navigate('/algorithms')}
-            sx={{
-              backgroundColor: isActive('/algorithms') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
+            sx={{              backgroundColor: isActive('/algorithms') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
+              borderBottom: isActive('/algorithms') ? '2px solid #90CAF9' : 'none',
+              fontWeight: isActive('/algorithms') ? 600 : 400,
               '&:hover': {
                 backgroundColor: isActive('/algorithms') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
               }
@@ -70,8 +79,9 @@ export const Navbar = () => {
             size="small" 
             color="inherit" 
             onClick={() => navigate('/details')}
-            sx={{
-              backgroundColor: isActive('/details') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
+            sx={{              backgroundColor: isActive('/details') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
+              borderBottom: isActive('/details') ? '2px solid #90CAF9' : 'none',
+              fontWeight: isActive('/details') ? 600 : 400,
               '&:hover': {
                 backgroundColor: isActive('/details') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
               }
