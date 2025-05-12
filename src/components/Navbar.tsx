@@ -30,8 +30,7 @@ export const Navbar = () => {
           }}
         >
           Algo Demo - Nathan Nav Moondi
-        </Typography>
-        <Box sx={{ 
+        </Typography>        <Box sx={{ 
           display: 'flex', 
           gap: 2,
           marginLeft: 'auto'
@@ -40,14 +39,27 @@ export const Navbar = () => {
             size="small" 
             color="inherit" 
             onClick={() => navigate('/algorithms')}
+            sx={{
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.2)'
+              }
+            }}
           >
-            Algorithms
+               Algorithms
+          </Button>
+          <Button 
+            size="small" 
+            color="inherit" 
+            onClick={() => navigate('/skills')}
+          >
+            Skills Refresher
           </Button>
           <Button 
             size="small" 
             color="inherit" 
             onClick={() => navigate('/details')}
-          >
+          >         
             Details
           </Button>
           <Button 

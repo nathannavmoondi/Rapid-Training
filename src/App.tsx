@@ -8,7 +8,10 @@ import { Footer } from './components/Footer';
 import { AlgorithmList } from './pages/AlgorithmList';
 import { AlgorithmDetail } from './pages/AlgorithmDetail';
 import { Details } from './pages/Details';
+import { SkillsRefresher } from './pages/SkillsRefresher';
+import { SkillsRefresherDetail } from './pages/SkillsRefresherDetail';
 import './App.css';
+import './styles/prism-custom.css';  // Add this line
 
 function App() {
   return (
@@ -27,6 +30,8 @@ function App() {
               <Route path="/algorithms" element={<AlgorithmList />} />
               <Route path="/algorithm/:id" element={<AlgorithmDetail />} />
               <Route path="/details" element={<Details />} />
+              <Route path="/skills" element={<SkillsRefresher />} />
+              <Route path="/skills/detail" element={<SkillsRefresherDetail />} />
             </Routes>
           </Box>
           <Footer />

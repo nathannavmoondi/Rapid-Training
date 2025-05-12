@@ -15,7 +15,7 @@ export const Footer = () => {
       }}
     >
       <Typography variant="body2" align="center">
-        © {new Date().getFullYear()} Algo Demo - Nathan Nav Moondi. All rights reserved.
+        © {new Date().getFullYear()} Algo Demo - Nathan Nav Moondi and Happy Dappy Technologies. All rights reserved.
       </Typography>
     </Box>
   );
