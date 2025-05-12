@@ -1,4 +1,4 @@
-interface Skill {
+export interface Skill {
   id: string;
   title: string;
   category: 'frontend' | 'backend' | 'general';

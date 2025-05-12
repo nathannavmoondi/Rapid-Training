@@ -1,3 +1,5 @@
+import { getSkillTopics } from './skillsService';
+
 export const requestRefresher = async (level: string, skillDescription: string): Promise<string> => {
   try {    // Try different environment variable formats since Vite and CRA handle them differently
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
@@ -6,7 +8,10 @@ export const requestRefresher = async (level: string, skillDescription: string):
     console.log('Level:', level);
     console.log('Skill Description:', skillDescription);
     console.log('API Key exists:', !!apiKey); // Log if API key exists without exposing the key
-    console.log('API Key:', apiKey); // Log the API key (for debugging purposes, remove in production)
+    
+    // Get topics for the skill
+    const { getSkillTopics } = require('./skillsService');
+    const topics = getSkillTopics(skillDescription);
 
     const callOpenRouter = async () => {
       if (!apiKey) {

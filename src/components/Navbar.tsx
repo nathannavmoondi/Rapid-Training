@@ -35,7 +35,7 @@ export const Navbar = () => {
             transition: 'color 0.2s ease'
           }}
         >
-          Skill Resfresher Demo - Nathan Nav Moondi
+          Skill Refresher Demo - Nathan Nav Moondi
         </Typography>        <Box sx={{ 
           display: 'flex', 
           gap: 2,

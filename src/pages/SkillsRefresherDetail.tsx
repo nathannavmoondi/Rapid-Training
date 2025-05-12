@@ -7,10 +7,11 @@
  * - Navigation between questions
  * - Progress tracking
  */
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Container, Typography, Paper, Box, Button, Stack } from '@mui/material';
 import { skills } from '../data/skills';
+import type { Skill } from '../data/skills';
 import { requestRefresher } from '../services/aiService';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
@@ -22,45 +23,77 @@ import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-css';
 import '../styles/answer-section.css';
 
+// Debounced highlight function
+const debounce = <T extends (...args: any[]) => void>(func: T, wait: number) => {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+};
+
+const highlightCode = debounce(() => {
+  const codeBlocks = document.querySelectorAll('pre code');
+  codeBlocks.forEach((block) => {
+    if (block instanceof HTMLElement) {
+      Prism.highlightElement(block);
+    }
+  });
+}, 100);
+
 export const SkillsRefresherDetail = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const skillId = searchParams.get('skill');
-  const skill = skills.find(s => s.id === skillId);
+  const skillTitle = searchParams.get('skill');
+  const contentRef = useRef<HTMLDivElement>(null);
+  
   const [isLoading, setIsLoading] = useState(false);
   const [question, setQuestion] = useState('');
-  const contentRef = useRef<HTMLDivElement>(null);
+  const [currentSkill, setCurrentSkill] = useState<Skill | undefined>();
 
-  const handleAskQuestion = async () => {
+  // Find skill immediately without state updates
+  useEffect(() => {
+    if (!skillTitle) return;
+    
+    const customSkillsJson = localStorage.getItem('customSkills');
+    const customSkills = customSkillsJson ? JSON.parse(customSkillsJson) : [];
+    const allSkills = [...skills, ...customSkills];
+    const foundSkill = allSkills.find(s => s.title === skillTitle);
+    
+    if (foundSkill) {
+      setCurrentSkill(foundSkill);
+    }
+  }, [skillTitle]);
+
+  const handleAskQuestion = useCallback(async () => {
+    if (!currentSkill?.title) return;
+    
     setIsLoading(true);
     try {
-      const response = await requestRefresher('intermediate', skill?.title || '');
+      const response = await requestRefresher('intermediate', currentSkill.title);
       setQuestion(response || 'Failed to load question. Please try again.');
     } catch (error) {
       console.error('Error fetching question:', error);
       setQuestion('Failed to load question. Please try again.');
     }
     setIsLoading(false);
-  };
+  }, [currentSkill?.title]);
 
+  // Fetch initial question only when currentSkill changes
   useEffect(() => {
-    if (skill) {
+    if (currentSkill?.title) {
       handleAskQuestion();
     }
-  }, [skill]);  useEffect(() => {
-    if (!isLoading && question && contentRef.current) {
-      // Force a re-highlight of all code blocks
-      const codeBlocks = contentRef.current.querySelectorAll('code[class*="language-"]');
-      codeBlocks.forEach((block) => {
-        if (block.textContent) {
-          block.innerHTML = block.textContent;
-          Prism.highlightElement(block);
-        }
-      });
+  }, [currentSkill?.title, handleAskQuestion]);
+
+  // Syntax highlighting effect
+  useEffect(() => {
+    if (!isLoading && question) {
+      highlightCode();
     }
   }, [question, isLoading]);
 
-  if (!skill) {
+  if (!currentSkill) {
     return (
       <Container sx={{ py: 4 }}>
         <Typography variant="h5" color="error">
@@ -74,10 +107,10 @@ export const SkillsRefresherDetail = () => {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom color="primary.main">
-          {skill.title} Skills Refresher
+          {currentSkill.title} Skills Refresher
         </Typography>
         <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-          Topic areas: {skill.topics.join(', ')}
+          Topic areas: {currentSkill.topics.join(', ')}
         </Typography>
       </Box>
 
@@ -95,8 +128,10 @@ export const SkillsRefresherDetail = () => {
           <>
             <Typography variant="h6" gutterBottom sx={{ color: 'primary.light' }}>
               Practice Question
-            </Typography>            <Box
+            </Typography>
+            <Box
               ref={contentRef}
+              className="question-content"
               sx={{ 
                 my: 3,
                 p: 3, 
@@ -106,121 +141,51 @@ export const SkillsRefresherDetail = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 3
-                },                '& .question': {
+                },
+                '& .question': {
                   fontSize: '1.1rem',
                   color: '#fff',
-                  opacity: 1.0,
                   fontWeight: 500,
                   marginBottom: 2,
-                  padding: '16px',
+                  p: 2,
                   backgroundColor: '#121212',
                   borderRadius: 1,
                   border: '1px solid #333',
-                  '& pre': {
-                    margin: '16px 0',
-                    padding: '16px',
-                    backgroundColor: '#000',
-                    borderRadius: '4px',
-                    overflow: 'auto',
-                    border: '1px solid #333'
-                  },
-                  '& code': {
-                    fontFamily: '"Fira Code", "Consolas", monospace',
-                    fontSize: '0.95rem',
-                    color: '#fff'
-                  },
-                  '& .token.comment': { color: '#6a9955' },
-                  '& .token.string': { color: '#ce9178' },
-                  '& .token.number': { color: '#b5cea8' },
-                  '& .token.keyword': { color: '#569cd6' },
-                  '& .token.function': { color: '#dcdcaa' },
-                  '& .token.class-name': { color: '#4ec9b0' },
-                  '& .token.operator': { color: '#d4d4d4' },
-                  '& .token.punctuation': { color: '#d4d4d4' }
-                },                '& .options': {
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1.5,
-                  padding: 2,
-                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                  borderRadius: 1,
-                  fontFamily: 'monospace',
-                  '& .option:nth-of-type(odd)': {
-                    backgroundColor: 'rgba(144, 202, 249, 0.05)',
-                    padding: '8px 12px',
-                    borderRadius: '4px'
-                  },
-                  '& .option:nth-of-type(even)': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                    padding: '8px 12px',
-                    borderRadius: '4px'
-                  },
-                  '& .option:hover': {
-                    backgroundColor: 'rgba(144, 202, 249, 0.1)',
-                    transition: 'background-color 0.2s ease'
-                  }
                 },
-                '& .answer-box': {
-                  marginTop: 2,
-                  padding: '16px',
-                  backgroundColor: '#121212',
+                '& pre': {
+                  margin: '16px 0',
+                  p: 2,
+                  backgroundColor: '#000',
                   borderRadius: 1,
+                  overflow: 'auto',
                   border: '1px solid #333'
                 },
-                '& .correct-answer': {
-                  color: '#4caf50',
-                  fontWeight: 'bold',
-                  marginBottom: 2,
-                  fontSize: '1.5rem',
-                  paddingBottom: '8px',
-                  borderBottom: '1px solid #333'
+                '& code': {
+                  fontFamily: '"Fira Code", "Consolas", monospace',
+                  fontSize: '0.95rem',
+                  color: '#fff'
                 },
-                '& .explanation': {
-                  color: '#fff',
-                  '& p': {
-                    margin: '12px 0',
-                    lineHeight: 1.8,
-                    fontSize: '1rem'
-                  },
-                  '& pre': {
-                    margin: '16px 0',
-                    padding: '16px',
-                    backgroundColor: '#000',
-                    borderRadius: '4px',
-                    overflow: 'auto',
-                    border: '1px solid #333'
-                  },
-                  '& code': {
-                    fontFamily: '"Fira Code", "Consolas", monospace',
-                    fontSize: '0.95rem',
-                    color: '#fff'
-                  },
-                  '& .token.comment': { color: '#6a9955' },
-                  '& .token.string': { color: '#ce9178' },
-                  '& .token.number': { color: '#b5cea8' },
-                  '& .token.keyword': { color: '#569cd6' },
-                  '& .token.function': { color: '#dcdcaa' },
-                  '& .token.class-name': { color: '#4ec9b0' },
-                  '& .token.operator': { color: '#d4d4d4' },
-                  '& .token.punctuation': { color: '#d4d4d4' }
+                '& .token': {
+                  '&.comment': { color: '#6a9955' },
+                  '&.string': { color: '#ce9178' },
+                  '&.number': { color: '#b5cea8' },
+                  '&.keyword': { color: '#569cd6' },
+                  '&.function': { color: '#dcdcaa' },
+                  '&.class-name': { color: '#4ec9b0' },
+                  '&.operator': { color: '#d4d4d4' },
+                  '&.punctuation': { color: '#d4d4d4' }
                 }
               }}
               dangerouslySetInnerHTML={{ __html: question }}
             />
-            <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 4 }}>
-              <Button 
-                variant="outlined" 
+            <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>
+              <Button
+                variant="contained"
                 color="primary"
                 onClick={handleAskQuestion}
+                disabled={isLoading}
               >
                 Next Question
-              </Button>
-              <Button 
-                variant="contained" 
-                color="primary"
-                onClick={() => navigate('/skills')}
-              >
-                Done
               </Button>
             </Stack>
           </>
