@@ -50,5 +50,15 @@ export const theme = createTheme({
         },
       },
     },
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          color: '#90caf9', // Light blue, same as primary.main
+          '&:hover': {
+            color: '#e3f2fd', // Lighter blue on hover, same as primary.light
+          },
+        },
+      },
+    },
   },
 });

@@ -28,6 +28,9 @@ import 'prismjs/components/prism-python'; // Added for Python support
 import 'prismjs/components/prism-rust'; // Added for Rust support
 import 'prismjs/components/prism-go'; // Added for Go support
 import 'prismjs/components/prism-ruby'; // Added for Ruby support
+import 'prismjs/components/prism-sql'; // Added for SQL support
+import 'prismjs/components/prism-java'; // Added for Java support
+import 'prismjs/components/prism-csharp'; // Added for C# support
 import '../styles/answer-section.css';
 
 // Debounced highlight function
@@ -226,11 +229,11 @@ export const SkillsRefresherDetail = () => {
         }}
       >
         {isLoading && !question ? ( 
-          <Typography>Loading question...</Typography>
+          <Typography> { isSlideDeck ? 'Loading Slidedeck...' : 'Loading question...'}</Typography>
         ) : (
           <>
             <Typography variant="h6" gutterBottom sx={{ color: 'primary.light' }}>
-              { isSlideDeck ? 'Slide Deck (the basics)' : 'Practice Question'}
+              { isSlideDeck ? 'Slide Deck (basics of ' + currentSkill?.title + ')' : 'Practice Question'}
             </Typography>
             <Box
               ref={contentRef}
@@ -277,7 +280,14 @@ export const SkillsRefresherDetail = () => {
                   '&.class-name': { color: '#4ec9b0' }, 
                   '&.operator': { color: '#d4d4d4' }, 
                   '&.punctuation': { color: '#d4d4d4' } 
-                }
+                },
+                '& a': { // Style for anchor tags
+                  color: 'primary.main',
+                  textDecoration: 'underline',
+                  '&:hover': {
+                    color: 'primary.light',
+                  },
+                },
               }}
               dangerouslySetInnerHTML={{ __html: htmlToRender }}
             />
