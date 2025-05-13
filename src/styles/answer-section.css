@@ -42,3 +42,57 @@
   font-size: 0.95rem !important;
   color: #ffffff !important;
 }
+
+.content-block {
+  margin-top: 20px;
+  padding: 24px;
+  background-color: #1c1c1c;
+  border-radius: 8px;
+  border: 1px solid #383838;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.content-block h2 {
+  margin-top: 0;
+  color: lightblue; /* As per previous requests for h1/h2 styling */
+  padding-bottom: 10px;
+  border-bottom: 1px solid #444;
+  margin-bottom: 15px;
+}
+
+.content-block p {
+  margin: 12px 0;
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+.content-block ul, .content-block ol {
+  margin-left: 20px;
+  padding-left: 20px;
+}
+
+.content-block li {
+  margin-bottom: 8px;
+}
+
+.content-block pre {
+  margin: 16px 0 !important;
+  padding: 20px !important;
+  background-color: #000000 !important;
+  border-radius: 4px !important;
+  overflow: auto !important;
+  border: 1px solid #333 !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.content-block code {
+  font-family: "Fira Code", Consolas, monospace !important;
+  font-size: 0.95rem !important;
+  color: #ffffff !important;
+  background-color: transparent !important; /* For inline code */
+}
+
+/* Ensure code inside pre maintains pre background, not overridden by inline code style */
+.content-block pre code {
+    background-color: #000000 !important; 
+}

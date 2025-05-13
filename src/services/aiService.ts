@@ -111,45 +111,30 @@ Important:
   // 1. The response should be pure HTML content, without any \`style\` tags or inline style attributes. All styling will be handled by the existing site's CSS.
 
   if (level === "slidedeck"){
-    prompt = `create me slidedeck introducing basic and intermediate concepts of ${skillDescription} to someone who knows nothing about it. for timestamp ${new Date().toISOString()}
+    prompt = `Create a slidedeck introducing basic and intermediate concepts of ${skillDescription} for someone new to the topic. Timestamp: ${new Date().toISOString()}.
 
-    Make it pretty lengthy.  Insert external links if you wish. Do not include images.
-    
-    do not include a head element.
+The slidedeck's content MUST be structured into logical sections. Each major section (e.g., Introduction, Basic Concepts, Intermediate Concepts, External Resources) MUST be wrapped in its own separate \`<div class="content-block">\`.
+Within each \`<div class="content-block">\`, use appropriate HTML tags:
+- Use \`<h2>\` for the main title of that section.
+- Use \`<p>\` for all paragraphs of text.
+- Use \`<ul>\` or \`<ol>\` for lists, with \`<li>\` for list items.
 
-    Important:
-1. Ensure there are youtube links in the youtube recomendation section.
-2. For code examples in the answer section, use <pre><code class="language-xxx"> tags. For "language-xxx", use one of the following based on the snippet's language: "language-typescript", "language-javascript", "language-jsx", "language-tsx", "language-markup", "language-css", "language-graphql", "language-cpp", "language-python", "language-rust", "language-go", "language-ruby", "language-sql", "language-java", "language-csharp".
-3. Do not put in any code examples or sections
-4. Put each explanation point on a new line using <p> tags.
-5. If the question itself contains a code snippet (e.g., asking "What does this code do?"), that snippet must also be wrapped in <pre><code class="language-xxx"> tags directly within the <div class="question">. For "language-xxx", use one of the following based on the snippet's language: "language-typescript", "language-javascript", "language-jsx", "language-tsx", "language-markup", "language-css", "language-graphql", "language-cpp", "language-python", "language-rust", "language-go", "language-ruby", "language-sql", "language-java", "language-csharp".
-6. Make code examples practical and focused. Ensure all code, whether in question or answer, is correctly embedded within the specified <pre><code> structure with a supported language class.
-Supported language classes for <code class="language-xxx"> are: language-typescript, language-javascript, language-jsx, language-tsx, language-markup, language-css, language-graphql, language-cpp, language-python, language-rust, language-go, language-ruby, language-sql, language-java, language-csharp.
-7. All code snippets, whether in the main question text (inside <div class="question">) or in the answer/explanation section, MUST be wrapped in <pre><code class="language-xxx">...your code here...</code></pre> tags. This structure is MANDATORY.
-8. The \`language-xxx\` part of the class on the <code> tag is ESSENTIAL for syntax highlighting. You MUST use ONLY ONE of the following specific and supported language classes:
-    - \`language-markup\` (for HTML, XML, SVG)
-    - \`language-css\`
-    - \`language-javascript\`
-    - \`language-jsx\`
-    - \`language-typescript\`
-    - \`language-tsx\`
-    - \`language-graphql\`
-    - \`language-cpp\`
-    - \`language-python\`
-    - \`language-rust\`
-    - \`language-go\`
-    - \`language-ruby\`
-    - \`language-sql\`
-    - \`language-java\`
-    - \`language-csharp\`
-   Do NOT use any other language classes (e.g., do not use \`language-java\`, \`language-text\`, \`language-generic\` etc.). If a code snippet is for a language not in this list, please use \`language-javascript\` if it's a generic script-like snippet or \`language-markup\` if it resembles HTML/XML. Avoid generating code snippets for languages not on this list if possible.
-9. The example structure for a code snippet within the question text is: \`<pre><code class="language-javascript">const snippet = "example";</code></pre>\`. Adhere to this, using an appropriate language class from the list in point 7.
-10. Indent code properly inside the <code> block.
-11. Put each explanation point on a new line using <p> tags.
-12. Make code examples practical and focused.
-13. At end, include section on external links, external courses and good youtube course videos
-14. Ensure all images you include actually exist and won't give 404 error `
+The slidedeck should be comprehensive and lengthy.
+It must NOT include any images.
+It must NOT include a \`<head>\` HTML element.
+It must NOT include any \`<style>\` tags or inline style attributes. All styling is handled by existing CSS.
+It must NOT include any code examples, code snippets, or code-related sections.
 
+Important Content and Formatting Rules:
+1.  The entire response MUST be pure HTML.
+2.  Structure: Divide the slidedeck into distinct sections (Introduction, concepts, resources). Each of these sections MUST be enclosed in \`<div class="content-block">\`.
+3.  Section Titles: Use \`<h2>\` for the title of each section within its \`<div class="content-block">\`.
+4.  Text: All explanatory text and content points must be within \`<p>\` tags. Ensure clear separation of paragraphs.
+5.  External Resources Section: The final section MUST be dedicated to "External Resources". This section should include:
+    a.  Links to relevant external websites or articles for further learning.
+    b.  Recommendations for external courses.
+    c.  Recommendations for good YouTube course videos, including actual, valid YouTube links.
+`
   }
 
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
