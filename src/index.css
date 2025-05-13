@@ -38,3 +38,11 @@ body::after {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
+
+h1 {
+  color: lightblue;
+}
+
+h2 {
+  color: lightblue;
+}

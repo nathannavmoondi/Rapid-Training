@@ -229,7 +229,7 @@ export const SkillsRefresherDetail = () => {
         }}
       >
         {isLoading && !question ? ( 
-          <Typography> { isSlideDeck ? 'Loading Slidedeck...' : 'Loading question...'}</Typography>
+          <Typography> { isSlideDeck ? 'Loading Slidedeck... (please wait)' : 'Loading question...'}</Typography>
         ) : (
           <>
             <Typography variant="h6" gutterBottom sx={{ color: 'primary.light' }}>

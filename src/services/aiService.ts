@@ -108,15 +108,19 @@ Important:
   }
   console.log("Prompt: ", prompt);
 
-  if (level === "slidedeck"){
-    prompt = `create me slidedeck introducting basic and intermediate concepts of ${skillDescription} to someone who knows nothing about it. for timestamp ${new Date().toISOString()}
+  // 1. The response should be pure HTML content, without any \`style\` tags or inline style attributes. All styling will be handled by the existing site's CSS.
 
-    Make it pretty lengthy.  Insert images and external links if you wish.
+  if (level === "slidedeck"){
+    prompt = `create me slidedeck introducing basic and intermediate concepts of ${skillDescription} to someone who knows nothing about it. for timestamp ${new Date().toISOString()}
+
+    Make it pretty lengthy.  Insert external links if you wish. Do not include images.
     
+    do not include a head element.
+
     Important:
-1. The response should be pure HTML content, without any \`<style>\` tags or inline style attributes. All styling will be handled by the existing site's CSS.
+1. Ensure there are youtube links in the youtube recomendation section.
 2. For code examples in the answer section, use <pre><code class="language-xxx"> tags. For "language-xxx", use one of the following based on the snippet's language: "language-typescript", "language-javascript", "language-jsx", "language-tsx", "language-markup", "language-css", "language-graphql", "language-cpp", "language-python", "language-rust", "language-go", "language-ruby", "language-sql", "language-java", "language-csharp".
-3. Indent code properly inside the code block.
+3. Do not put in any code examples or sections
 4. Put each explanation point on a new line using <p> tags.
 5. If the question itself contains a code snippet (e.g., asking "What does this code do?"), that snippet must also be wrapped in <pre><code class="language-xxx"> tags directly within the <div class="question">. For "language-xxx", use one of the following based on the snippet's language: "language-typescript", "language-javascript", "language-jsx", "language-tsx", "language-markup", "language-css", "language-graphql", "language-cpp", "language-python", "language-rust", "language-go", "language-ruby", "language-sql", "language-java", "language-csharp".
 6. Make code examples practical and focused. Ensure all code, whether in question or answer, is correctly embedded within the specified <pre><code> structure with a supported language class.
