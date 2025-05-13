@@ -21,6 +21,12 @@ import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-graphql'; // Added for GraphQL support
+import 'prismjs/components/prism-cpp'; // Added for C++ support
+import 'prismjs/components/prism-python'; // Added for Python support
+import 'prismjs/components/prism-rust'; // Added for Rust support
+import 'prismjs/components/prism-go'; // Added for Go support
+import 'prismjs/components/prism-ruby'; // Added for Ruby support
 import '../styles/answer-section.css';
 
 // Debounced highlight function
@@ -103,6 +109,7 @@ export const SkillsRefresherDetail = () => {
   const [question, setQuestion] = useState('');
   const [currentSkill, setCurrentSkill] = useState<Skill | undefined>();
   const [showAnswer, setShowAnswer] = useState(false); // Added state for answer visibility
+  const [isSlideDeck, setIsSlideDeck] = useState(false); // Added state for slide deck
 
   // Find skill immediately
   useEffect(() => {
@@ -132,11 +139,32 @@ export const SkillsRefresherDetail = () => {
     }
   }, [skillTitle]);
 
+  const handleSlideDeck = useCallback(async () => {
+    
+    console.log('in slide deck', currentSkill?.title);
+    if (!currentSkill?.title) return;
+    
+    setIsLoading(true);
+    setShowAnswer(false); // Reset answer visibility for new question
+    setIsSlideDeck(true);
+    setQuestion(''); // Clear previous question while loading new one
+    try {
+      const response = await requestRefresher('slidedeck', currentSkill.title, currentSkill.category);
+      setQuestion(response || 'Failed to load question. Please try again.');
+    } catch (error) {
+      console.error('Error fetching question:', error);
+      setQuestion('Failed to load question. Please try again.');
+    }
+    setIsLoading(false);
+    setShowAnswer(false); // Reset answer visibility for new question
+  }, [currentSkill?.title]); 
+
   const handleAskQuestion = useCallback(async () => {
     if (!currentSkill?.title) return;
     
     setIsLoading(true);
     setShowAnswer(false); // Reset answer visibility for new question
+    setIsSlideDeck(false);
     setQuestion(''); // Clear previous question while loading new one
     try {
       const response = await requestRefresher('intermediate', currentSkill.title, currentSkill.category);
@@ -201,7 +229,7 @@ export const SkillsRefresherDetail = () => {
         ) : (
           <>
             <Typography variant="h6" gutterBottom sx={{ color: 'primary.light' }}>
-              Practice Question
+              { isSlideDeck ? 'Slide Deck (the basics)' : 'Practice Question'}
             </Typography>
             <Box
               ref={contentRef}
@@ -257,7 +285,7 @@ export const SkillsRefresherDetail = () => {
                 variant="contained"
                 // color="secondary" // Replaced by sx prop for custom styling
                 onClick={() => setShowAnswer(true)}
-                disabled={isLoading || showAnswer || !question}
+                disabled={isLoading || showAnswer || !question || isSlideDeck}
                 sx={{
                   backgroundColor: '#4CAF50', // Green
                   color: '#ffffff', // White
@@ -287,6 +315,22 @@ export const SkillsRefresherDetail = () => {
                 disabled={isLoading}
               >
                 Done
+              </Button>
+            </Stack>
+            <Stack direction="row" spacing={2} justifyContent="flex-end" mt={2}> {/* New Stack for the Slidedeck button */}
+              <Button
+                variant="contained"
+                onClick={handleSlideDeck} // Added onClick handler
+                disabled={isLoading} // Added disabled state
+                sx={{
+                  backgroundColor: '#FF9800', // Orange, adjust as needed
+                  color: '#ffffff',
+                  '&:hover': {
+                    backgroundColor: '#F57C00', // Darker orange on hover
+                  },
+                }}
+              >
+                Slidedeck (the basics)
               </Button>
             </Stack>
           </>
