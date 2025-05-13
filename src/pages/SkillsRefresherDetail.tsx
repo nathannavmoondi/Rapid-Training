@@ -21,6 +21,7 @@ import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-c'; // Added for C-like language dependency
 import 'prismjs/components/prism-graphql'; // Added for GraphQL support
 import 'prismjs/components/prism-cpp'; // Added for C++ support
 import 'prismjs/components/prism-python'; // Added for Python support

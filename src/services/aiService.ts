@@ -132,13 +132,8 @@ Supported language classes for <code class="language-xxx"> are: language-typescr
    Do NOT use any other language classes (e.g., do not use \`language-java\`, \`language-text\`, \`language-generic\` etc.). If a code snippet is for a language not in this list, please use \`language-javascript\` if it's a generic script-like snippet or \`language-markup\` if it resembles HTML/XML. Avoid generating code snippets for languages not on this list if possible.
 8. The example structure for a code snippet within the question text is: \`<pre><code class="language-javascript">const snippet = "example";</code></pre>\`. Adhere to this, using an appropriate language class from the list in point 7.
 9. Indent code properly inside the <code> block.
-10. Put each explanation point in the answer section on a new line using <p> tags.
+10. Put each explanation point on a new line using <p> tags.
 11. Make code examples practical and focused.`
-
-   const showAnswerButton = document.getElementById('show-answer-button') as HTMLButtonElement;
-   if (showAnswerButton) {
-     showAnswerButton.disabled = true;
-   }
 
   }
 
