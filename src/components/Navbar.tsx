@@ -42,7 +42,7 @@ export const Navbar = () => {
             transition: 'color 0.2s ease'
           }}
         >
-          Skills Refresher Demo - Nathan Nav Moondi
+          Rapid Training AI - Nathan Nav Moondi
         </Typography>        <Box sx={{ 
           display: 'flex', 
           gap: 2,
