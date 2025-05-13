@@ -59,7 +59,7 @@ export const Navbar = () => {
               }
             }}
           >
-            Skills Refresher
+            Rapid Training 
           </Button>
           <Button 
             size="small" 

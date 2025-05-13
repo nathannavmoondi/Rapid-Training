@@ -80,7 +80,7 @@ export const SkillsRefresher = () => {  const navigate = useNavigate();
 
   return (
     <Container sx={{ py: 2 }}>      <Typography variant="h5" sx={{ mb: 0.5, color: 'primary.main', fontWeight: 'bold' }}>
-      Refresh Your Skills -&nbsp;
+      Rapid Training -&nbsp;
         {currentTab === 'all' ? 'All Skills' :
          currentTab === 'frontend' ? 'Frontend Development' :
          currentTab === 'backend' ? 'Backend Development' :

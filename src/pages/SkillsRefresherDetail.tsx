@@ -181,7 +181,7 @@ export const SkillsRefresherDetail = () => {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom color="primary.main">
-          {currentSkill.title} Skills Refresher
+          {currentSkill.title} Rapid Training AI
         </Typography>
         <Typography variant="subtitle1" color="text.secondary" gutterBottom>
           Topic areas: {currentSkill.topics.join(', ')}
