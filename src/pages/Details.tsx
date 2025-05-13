@@ -62,14 +62,11 @@ export const Details = () => {
 
           <Typography variant="body1" paragraph align="center" sx={{ fontSize: '1.1rem' }}>
             This page is to help you refresh your skills as well as various algorithms I wrote by hand as part of interview tests or for my own usage.
-            <br />
+            <br /><br />
             Hope you enjoy this site as it's mainly to show off my design and development skills.
           </Typography>
 
-          <Typography variant="body1" paragraph align="center" sx={{ fontSize: '1.1rem' }}>
-            I have many others but wanted to keep the most common.
-          </Typography>
-
+          
           <Box sx={{ 
             width: '100%',
             bgcolor: '#153d69', // Changed from primary.main to dark blue
