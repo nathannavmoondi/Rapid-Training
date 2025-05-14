@@ -8,8 +8,8 @@
  * - Progress tracking
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Container, Typography, Paper, Box, Button, Stack } from '@mui/material';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'; // Added useLocation
+import { Container, Typography, Paper, Box, Button, Stack, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel } from '@mui/material'; // Added Radio components
 import { skills } from '../data/skills';
 import type { Skill } from '../data/skills';
 import { requestRefresher } from '../services/aiService';
@@ -32,6 +32,7 @@ import 'prismjs/components/prism-sql'; // Added for SQL support
 import 'prismjs/components/prism-java'; // Added for Java support
 import 'prismjs/components/prism-csharp'; // Added for C# support
 import '../styles/answer-section.css';
+import { useQuiz } from '../contexts/quizContext'; // Import useQuiz
 
 // Debounced highlight function
 const debounce = <T extends (...args: any[]) => void>(func: T, wait: number) => {
@@ -105,6 +106,26 @@ const getProcessedQuestionHtml = (html: string, answerVisible: boolean): string 
 export const SkillsRefresherDetail = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation(); // Get current location
+  const { 
+    score, 
+    quizzesTaken, 
+    selectedAnswer, 
+    isQuizActive, 
+    startQuiz, 
+    selectAnswer: selectQuizAnswer, // Renamed to avoid conflict with local state if any
+    submitAnswer: submitQuizAnswer,
+    resetQuiz,
+    setPreviousPath,
+    previousPath
+  } = useQuiz();
+
+  // Ref to track the latest isQuizActive state for unmount cleanup
+  const isQuizActiveRef = useRef(isQuizActive);
+  useEffect(() => {
+    isQuizActiveRef.current = isQuizActive;
+  }, [isQuizActive]);
+
   const skillTitle = searchParams.get('skill');
   const SkillCategory = searchParams.get('category');
   const contentRef = useRef<HTMLDivElement>(null);
@@ -144,32 +165,46 @@ export const SkillsRefresherDetail = () => {
   }, [skillTitle]);
 
   const handleSlideDeck = useCallback(async () => {
-    
-    console.log('in slide deck', currentSkill?.title);
+    if (isQuizActive) {
+      resetQuiz();
+    }
+    // ... rest of original handleSlideDeck logic
     if (!currentSkill?.title) return;
-    
     setIsLoading(true);
     setShowAnswer(false); // Reset answer visibility for new question
     setIsSlideDeck(true);
     setQuestion(''); // Clear previous question while loading new one
     try {
       const response = await requestRefresher('slidedeck', currentSkill.title, currentSkill.category);
-      setQuestion(response || 'Failed to load question. Please try again.');
+      setQuestion(response || 'Failed to load slidedeck. Please try again.');
     } catch (error) {
-      console.error('Error fetching question:', error);
-      setQuestion('Failed to load question. Please try again.');
+      console.error('Error fetching slidedeck:', error);
+      setQuestion('Failed to load slidedeck. Please try again.');
     }
     setIsLoading(false);
-    setShowAnswer(false); // Reset answer visibility for new question
-  }, [currentSkill?.title]); 
+  }, [currentSkill?.title, currentSkill?.category, isQuizActive, resetQuiz]);
 
-  const handleAskQuestion = useCallback(async () => {
+  const handleRequestNewQuestion = useCallback(async (intendsNewQuizRound: boolean) => {
     if (!currentSkill?.title) return;
-    
+
     setIsLoading(true);
-    setShowAnswer(false); // Reset answer visibility for new question
+    setShowAnswer(false);
     setIsSlideDeck(false);
-    setQuestion(''); // Clear previous question while loading new one
+    setQuestion('');
+    
+    if (intendsNewQuizRound && quizzesTaken < 3) {
+      if (!previousPath) { // Set previous path only if not already set (e.g. by "Start Quiz with this Q")
+        setPreviousPath(location.pathname + location.search);
+      }
+      startQuiz(); // Sets isQuizActive = true, resets selectedAnswer for the new question
+    } else if (!intendsNewQuizRound && isQuizActive) {
+      // If fetching a regular question while a quiz was active, effectively end the quiz mode for this question.
+      // The quiz context's submitAnswer already sets isQuizActive to false.
+      // If a user explicitly asks for a "New Question" (not "Next Quiz Question"), reset the quiz progression.
+      resetQuiz();
+    }
+
+
     try {
       const response = await requestRefresher('intermediate', currentSkill.title, currentSkill.category);
       setQuestion(response || 'Failed to load question. Please try again.');
@@ -178,14 +213,18 @@ export const SkillsRefresherDetail = () => {
       setQuestion('Failed to load question. Please try again.');
     }
     setIsLoading(false);
-  }, [currentSkill?.title]); 
+  }, [currentSkill, startQuiz, setPreviousPath, location.pathname, location.search, quizzesTaken, resetQuiz, isQuizActive, previousPath]);
 
   // Fetch initial question only when currentSkill changes and has a title
   useEffect(() => {
     if (currentSkill?.title) {
-      handleAskQuestion();
+      if (quizzesTaken >= 3 && !isLoading) { // also check !isLoading to prevent race conditions
+        navigate('/quiz-results');
+      } else if (!question && !isLoading && !isQuizActive) { // Fetch initial question if none exists, not loading, AND not in a quiz
+        handleRequestNewQuestion(false); 
+      }
     }
-  }, [currentSkill?.title, handleAskQuestion]); 
+  }, [currentSkill, quizzesTaken, navigate, handleRequestNewQuestion, question, isLoading, isQuizActive]); // Added isQuizActive
 
   // Syntax highlighting effect
   useEffect(() => {
@@ -194,7 +233,18 @@ export const SkillsRefresherDetail = () => {
         highlightCode();
       });
     }
-  }, [question, isLoading, showAnswer]); 
+  }, [question, isLoading, showAnswer, isQuizActive]); // Added isQuizActive to dependency array
+
+  // Cleanup effect to reset quiz if user navigates away while quiz is active
+  useEffect(() => {
+    return () => {
+      // Only reset if quiz was active at the point of unmount (or equivalent navigation)
+      if (isQuizActiveRef.current) {
+        // console.log("SkillsRefresherDetail unmounting with active quiz (checked via ref), resetting.");
+        resetQuiz();
+      }
+    };
+  }, [resetQuiz]); // resetQuiz is stable due to useCallback in context
 
   if (!currentSkill) {
     return (
@@ -208,6 +258,41 @@ export const SkillsRefresherDetail = () => {
   }
 
   const htmlToRender = getProcessedQuestionHtml(question, showAnswer);
+
+  const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    selectQuizAnswer(event.target.value);
+  };
+
+  const handleSubmitQuizAnswer = () => {
+    if (selectedAnswer && question) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(question, 'text/html');
+      const correctAnswerElement = doc.querySelector('.correct-answer');
+      if (correctAnswerElement?.textContent) {
+        submitQuizAnswer(correctAnswerElement.textContent);
+      } else {
+        // Fallback or error if correct answer can't be parsed
+        console.warn("Could not parse correct answer from question HTML.");
+        submitQuizAnswer("Error: Could not determine correct answer."); // Or handle differently
+      }
+    }
+    setShowAnswer(true); // Show answer section after submission
+    // REMOVED: Problematic navigation logic. Relies on useEffect watching quizzesTaken.
+    // if (quizzesTaken + 1 >= 3) {
+    //     navigate('/quiz-results');
+    // }
+  };
+  
+  const handleStartThisQuestionAsQuiz = () => {
+    if (quizzesTaken < 3) {
+      setPreviousPath(location.pathname + location.search);
+      startQuiz(); // Makes the current question a quiz question
+    } else {
+      navigate('/quiz-results');
+    }
+  };
+
+  const quizOptions = ['A', 'B', 'C', 'D'];
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -249,7 +334,7 @@ export const SkillsRefresherDetail = () => {
                   gap: 3 
                 },
                 '& .question': { 
-                  fontSize: '1.1rem',
+                  fontSize: '1.2rem', // Changed from 1.1rem
                   color: '#fff', 
                   fontWeight: 500,
                   marginBottom: 2, 
@@ -268,7 +353,7 @@ export const SkillsRefresherDetail = () => {
                 },
                 '& code': {
                   fontFamily: '"Fira Code", "Consolas", monospace',
-                  fontSize: '0.95rem',
+                  fontSize: '1.0rem', // Changed from 0.95rem
                   color: '#fff' 
                 },
                 '& .token': {
@@ -291,59 +376,118 @@ export const SkillsRefresherDetail = () => {
               }}
               dangerouslySetInnerHTML={{ __html: htmlToRender }}
             />
-            <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>
-              <Button
-                variant="contained"
-                // color="secondary" // Replaced by sx prop for custom styling
-                onClick={() => setShowAnswer(true)}
-                disabled={isLoading || showAnswer || !question || isSlideDeck}
-                sx={{
-                  backgroundColor: '#4CAF50', // Green
-                  color: '#ffffff', // White
-                  '&:hover': {
-                    backgroundColor: '#388E3C', // Darker green on hover
-                  },
-                  '&:disabled': {
-                    backgroundColor: 'rgba(76, 175, 80, 0.5)', // Lighter green when disabled
-                    color: 'rgba(255, 255, 255, 0.7)',
-                  }
-                }}
-              >
-                Show Answer
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleAskQuestion}
-                disabled={isLoading}
-              >
-                Next Question
-              </Button>
-              <Button
-                variant="outlined"
-                color="primary" 
-                onClick={() => navigate('/skills')}
-                disabled={isLoading}
-              >
-                Done
-              </Button>
-            </Stack>
-            <Stack direction="row" spacing={2} justifyContent="flex-end" mt={2}> {/* New Stack for the Slidedeck button */}
-              <Button
-                variant="contained"
-                onClick={handleSlideDeck} // Added onClick handler
-                disabled={isLoading} // Added disabled state
-                sx={{
-                  backgroundColor: '#FF9800', // Orange, adjust as needed
-                  color: '#ffffff',
-                  '&:hover': {
-                    backgroundColor: '#F57C00', // Darker orange on hover
-                  },
-                }}
-              >
-                Slidedeck (the basics)
-              </Button>
-            </Stack>
+
+            {!isSlideDeck && isQuizActive && !showAnswer && (
+              <FormControl component="fieldset" sx={{ my: 2, p:2, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1 }}>
+                <FormLabel component="legend" sx={{ color: 'primary.light', mb: 1 }}>Choose an answer:</FormLabel>
+                <RadioGroup row aria-label="quiz-option" name="quiz-option-group" value={selectedAnswer || ''} onChange={handleOptionChange}>
+                  {quizOptions.map((option) => (
+                    <FormControlLabel 
+                      key={option} 
+                      value={option} 
+                      control={<Radio sx={{ color: 'primary.light', '&.Mui-checked': { color: 'secondary.main' } }} />} 
+                      label={option} 
+                      sx={{ color: 'text.secondary' }}
+                    />
+                  ))}
+                </RadioGroup>
+              </FormControl>
+            )}
+
+            {isQuizActive && !showAnswer && quizzesTaken < 3 && (
+              <Box sx={{ my: 2, p: 1, backgroundColor: 'lightgreen', borderRadius: 1, textAlign: 'center' }}>
+                <Typography variant="body2" sx={{ color: 'black' }}>
+                  Questions remaining in this quiz: {3 - quizzesTaken}
+                </Typography>
+              </Box>
+            )}
+
+            {/* Button Container: Adjusted for new layout */}
+            <Box sx={{ mt: 3 }}>
+              {/* First row of buttons */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                {/* Left-aligned: Start Quiz Button */}
+                <Box>
+                  {!isSlideDeck && !isQuizActive && !showAnswer && quizzesTaken < 3 && (
+                    <Button
+                      variant="contained"
+                      onClick={handleStartThisQuestionAsQuiz}
+                      disabled={isLoading || !question}
+                      sx={{ backgroundColor: '#FFC107', color: 'black', '&:hover': { backgroundColor: '#FFA000'} }}
+                    >
+                      Start Quiz (This Q)
+                    </Button>
+                  )}
+                </Box>
+
+                {/* Right-aligned group */}
+                <Stack direction="row" spacing={1} justifyContent="flex-end" flexWrap="wrap">
+                  <Button
+                    variant="contained"
+                    onClick={isQuizActive && !showAnswer ? handleSubmitQuizAnswer : () => setShowAnswer(true)}
+                    disabled={isLoading || showAnswer || !question || isSlideDeck || (isQuizActive && !selectedAnswer && !showAnswer)}
+                    sx={{ 
+                      backgroundColor: (isQuizActive && !showAnswer) ? '#007bff' : '#4CAF50', 
+                      color: 'white',
+                      '&:hover': { backgroundColor: (isQuizActive && !showAnswer) ? '#0056b3' : '#388E3C'}
+                    }}
+                  >
+                    {isQuizActive && !showAnswer ? 'Submit Answer' : 'Show Answer'}
+                  </Button>
+
+                  {showAnswer && !isSlideDeck && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        if (quizzesTaken < 3) {
+                          handleRequestNewQuestion(!!previousPath); 
+                        } else {
+                          navigate('/quiz-results');
+                        }
+                      }}
+                      disabled={isLoading}
+                      sx={{ backgroundColor: '#2196F3', '&:hover': { backgroundColor: '#1976D2'} }}
+                    >
+                      {quizzesTaken < 3 ? 'Next Question' : 'Show Results'}
+                    </Button>
+                  )}
+
+                  {/* "New Practice Question" button visibility changed here */}
+                  {!isSlideDeck && (!previousPath || !showAnswer) && (
+                    <Button // General "New Question" - distinct from "Next Quiz Question"
+                      variant="contained"
+                      color="info"
+                      onClick={() => handleRequestNewQuestion(false)} // Always fetches a non-quiz question, resets quiz if active
+                      disabled={isLoading} // isSlideDeck is implicitly handled by the outer condition
+                      sx={{ backgroundColor: '#17a2b8', '&:hover': { backgroundColor: '#117a8b'} }}
+                    >
+                      {!isQuizActive && !showAnswer && !isSlideDeck ? 'Next Question' : 'End Quiz'}
+                    </Button>
+                  )}
+                  
+                  <Button
+                    variant="outlined"
+                    onClick={() => { resetQuiz(); navigate(-1); }}
+                    sx={{ borderColor: 'primary.main', color: 'primary.main', '&:hover': { borderColor: 'primary.light', backgroundColor: 'rgba(255, 255, 255, 0.08)'} }}
+                  >
+                    Done (Back to Skill)
+                  </Button>
+                </Stack>
+              </Box>
+
+              {/* Second row for Slidedeck button */}
+              <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ mt: 1 }}>
+                <Button
+                  variant="contained"
+                  onClick={handleSlideDeck} // handleSlideDeck now also calls resetQuiz if active
+                  disabled={isLoading || isSlideDeck}
+                  sx={{ backgroundColor: '#FF9800', '&:hover': { backgroundColor: '#F57C00'} }}
+                >
+                  Slidedeck (The Basics)
+                </Button>
+              </Stack>
+            </Box>
           </>
         )}
       </Paper>

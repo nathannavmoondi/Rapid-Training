@@ -5,18 +5,20 @@ export const requestRefresher = async (level: string, skillDescription: string, 
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
     
     // Get topics for the skill
-    const { getSkillTopics } = require('./skillsService');
-    const topics = getSkillTopics(skillDescription);
+    //const { getSkillTopics } = require('./skillsService');
+    //const topics = getSkillTopics(skillDescription);
 
     const callOpenRouter = async () => {
       if (!apiKey) {
         throw new Error('API key not found in environment variables!');
       }
 
-      var prompt = `Create a completely new ${level} difficulty ${skillDescription} question for timestamp ${new Date().toISOString()}.
+      var prompt = `I'm creating a ${skillDescription} quiz for a job applicant.  
+      Give me a completely new ${level} difficulty ${skillDescription} question.
 
 Do not include the word html and GRAVE ACCENT in the answer.
 Include a practical code example with syntax highlighting in the answer section.
+Each question should be different topic from previous question.  Ask a random topic each time. 
 Format the response in this exact HTML structure:
 
 <div class="question-container">

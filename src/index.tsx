@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+// QuizProvider is now in App.tsx, no need to import or use it here.
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
