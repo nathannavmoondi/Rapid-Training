@@ -54,13 +54,28 @@ const highlightCode = debounce(() => {
 }, 100);
 
 // Helper function to process HTML for answer visibility and quiz status
-const getProcessedQuestionHtml = (html: string, answerVisible: boolean, showFeedback: boolean = false, isCorrect: boolean | null = null): string => {
+const getProcessedQuestionHtml = (html: string, answerVisible: boolean, showFeedback: boolean = false, isCorrect: boolean | null = null, maxQuizzes?: number, quizzesTaken?: number): string => {
   if (!html) return '';
-
-  // Handle answer box visibility
-  html = html.replace(/<div\s+[^>]*class="[^"]*\banswer-box\b[^"]*">[\s\S]*?<\/div>/gi, (match) => {
-    return answerVisible ? match : match.replace(/^(<div[^>]*>)/, '$1<div style="display:none">') + '</div>';
-  });
+  
+  // Handle both answer box and explanation visibility
+  const answerBoxRegex = /<div\s+[^>]*class="[^"]*\banswer-box\b[^"]*">[\s\S]*?<\/div>/gi;
+  const explanationRegex = /<div\s+[^>]*class="[^"]*\bexplanation\b[^"]*">[\s\S]*?<\/div>/gi;
+  
+  // If answer shouldn't be visible, remove both sections entirely
+  if (!answerVisible) {
+    // First remove explanation divs
+    html = html.replace(explanationRegex, '');
+    // Then remove answer box divs
+    html = html.replace(answerBoxRegex, '');
+  } else {
+    // When showing answer, ensure both sections are properly visible
+    html = html.replace(explanationRegex, (match) => {
+      return match.replace(/<div style="display:none">/g, '<div>');
+    });
+    html = html.replace(answerBoxRegex, (match) => {
+      return match.replace(/<div style="display:none">/g, '<div>');
+    });
+  }
 
   // Handle quiz status content
   if (showFeedback && isCorrect !== null) {
@@ -83,30 +98,30 @@ const getProcessedQuestionHtml = (html: string, answerVisible: boolean, showFeed
       <div style="margin: 16px 0; padding: 8px; border: 1px solid grey; border-radius: 4px; text-align: center">
         <span style="color: white; font-size: 14px;">Questions remaining in this quiz: #NUM#</span>
       </div>
-    `.replace('#NUM#', '3'); // This will be replaced with actual count in the component
+    `.replace('#NUM#', String((maxQuizzes ?? 5) - (quizzesTaken ?? 0))); // Show remaining questions
   }
 
   return html;
 };
 
-export const SkillsRefresherDetail = () => {
-  const [searchParams] = useSearchParams();
+export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation(); // Get current location
-  const { 
+    const { 
     score, 
-    quizzesTaken, 
+    quizzesTaken,
+    maxQuizzes,
     selectedAnswer, 
     isQuizActive, 
-    level, // Added level
-    lastAnswerCorrect, // Added lastAnswerCorrect
+    level,
+    lastAnswerCorrect,
     startQuiz, 
-    selectAnswer: selectQuizAnswer, // Renamed to avoid conflict with local state if any
+    selectAnswer: selectQuizAnswer,
     submitAnswer: submitQuizAnswer,
     resetQuiz,
     setPreviousPath,
     previousPath,
-    setLevel // Added setLevel
+    setLevel
   } = useQuiz();
 
   // Ref to track the latest isQuizActive state for unmount cleanup
@@ -118,10 +133,9 @@ export const SkillsRefresherDetail = () => {
   // Add lastAnswerCorrect to the ref as well if needed, or ensure dependencies using it are correct.
   // For now, direct usage of lastAnswerCorrect from context in render should be fine.
 
-  const skillTitle = searchParams.get('skill');
-  const SkillCategory = searchParams.get('category');
+  const skillTitle = searchParams.get('skill');  const skillCategory = searchParams.get('category');
   const contentRef = useRef<HTMLDivElement>(null);
-  const quizContentRef = useRef<HTMLDivElement>(null); // Add ref for quiz content section
+  const quizContentRef = useRef<HTMLDivElement>(null);// Add ref for quiz content section
   
   const [isLoading, setIsLoading] = useState(false);
   const [question, setQuestion] = useState('');
@@ -185,7 +199,7 @@ export const SkillsRefresherDetail = () => {
     setIsSlideDeck(false);
     setQuestion('');
     
-    if (intendsNewQuizRound && quizzesTaken < 3) {
+    if (intendsNewQuizRound && quizzesTaken < maxQuizzes) {
       if (!previousPath) { // Set previous path only if not already set (e.g. by "Start Quiz with this Q")
         setPreviousPath(location.pathname + location.search);
       }
@@ -207,17 +221,14 @@ export const SkillsRefresherDetail = () => {
     }
     setIsLoading(false);
   }, [currentSkill, startQuiz, setPreviousPath, location.pathname, location.search, quizzesTaken, resetQuiz, isQuizActive, previousPath, level]);
-
   // Fetch initial question only when currentSkill changes and has a title
   useEffect(() => {
     if (currentSkill?.title) {
-      if (quizzesTaken >= 3 && !isLoading) { // also check !isLoading to prevent race conditions
-        navigate('/quiz-results');
-      } else if (!question && !isLoading && !isQuizActive) { // Fetch initial question if none exists, not loading, AND not in a quiz
+      if (!question && !isLoading && !isQuizActive) { // Fetch initial question if none exists, not loading, AND not in a quiz
         handleRequestNewQuestion(false); 
       }
     }
-  }, [currentSkill, quizzesTaken, navigate, handleRequestNewQuestion, question, isLoading, isQuizActive]); // Added isQuizActive
+  }, [currentSkill, handleRequestNewQuestion, question, isLoading, isQuizActive]); // Added isQuizActive
 
   // Syntax highlighting effect
   useEffect(() => {
@@ -248,19 +259,21 @@ export const SkillsRefresherDetail = () => {
         <Button onClick={() => navigate('/skills')} sx={{ mt: 2 }}>Back to Skills</Button>
       </Container>
     );
-  }
-  const htmlToRender = getProcessedQuestionHtml(
+  }  const htmlToRender = getProcessedQuestionHtml(
     question, 
     showAnswer,
     showAnswer && !isSlideDeck, // Only show feedback when answer is shown and not in slidedeck
-    lastAnswerCorrect  // Pass the correct/incorrect state
+    lastAnswerCorrect,  // Pass the correct/incorrect state
+    maxQuizzes,
+    quizzesTaken
   );
 
   const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     selectQuizAnswer(event.target.value);
   };
+  const handleSubmitQuizAnswer = () => {    // Get the current scroll position before any updates
+    const currentScrollPosition = window.scrollY;
 
-  const handleSubmitQuizAnswer = () => {
     if (selectedAnswer && question) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(question, 'text/html');
@@ -273,38 +286,48 @@ export const SkillsRefresherDetail = () => {
         submitQuizAnswer("Error: Could not determine correct answer."); // Or handle differently
       }
     }
+
+    // Use requestAnimationFrame to maintain scroll position during state update
+    requestAnimationFrame(() => {
+      window.scrollTo(0, currentScrollPosition);
+      
+      // After maintaining position, smoothly scroll to quiz status
+      setTimeout(() => {
+        const quizStatusElement = document.querySelector('.quiz-status');
+        if (quizStatusElement) {
+          quizStatusElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
+    });
+    
     setShowAnswer(true); // Show answer section after submission
-    // REMOVED: Problematic navigation logic. Relies on useEffect watching quizzesTaken.
-    // if (quizzesTaken + 1 >= 3) {
-    //     navigate('/quiz-results');
-    // }
-    // After state updates, scroll to the quiz-status section
-    setTimeout(() => {
-      const quizStatusElement = document.querySelector('.quiz-status');
-      if (quizStatusElement) {
-        quizStatusElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 100); // Small delay to ensure DOM has updated
   };
   
   const handleStartThisQuestionAsQuiz = () => {
-    if (quizzesTaken < 3) {
+    if (quizzesTaken < maxQuizzes) {
       setPreviousPath(location.pathname + location.search);
       startQuiz(); // Makes the current question a quiz question
     } else {
       navigate('/quiz-results');
     }
-  };
+  };  const handleShowAnswer = () => {
+    // Get the current scroll position before any updates
+    const currentScrollPosition = window.scrollY;
 
-  const handleShowAnswer = () => {
+    // Use requestAnimationFrame to maintain scroll position during state update
+    requestAnimationFrame(() => {
+      window.scrollTo(0, currentScrollPosition);
+      
+      // After maintaining position, smoothly scroll to quiz status
+      setTimeout(() => {
+        const quizStatusElement = document.querySelector('.quiz-status');
+        if (quizStatusElement) {
+          quizStatusElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
+    });
+
     setShowAnswer(true);
-    // Add scroll behavior after showing answer
-    setTimeout(() => {
-      const quizStatusElement = document.querySelector('.quiz-status');
-      if (quizStatusElement) {
-        quizStatusElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 100);
   };
 
   const quizOptions = ['A', 'B', 'C', 'D'];
@@ -414,7 +437,7 @@ export const SkillsRefresherDetail = () => {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
                 {/* Left-aligned: Start Quiz Button */}
                 <Box>
-                  {!isSlideDeck && !isQuizActive && !showAnswer && quizzesTaken < 3 && (
+                  {!isSlideDeck && !isQuizActive && !showAnswer && quizzesTaken < maxQuizzes && (
                     <Button
                       variant="contained"
                       onClick={handleStartThisQuestionAsQuiz}
@@ -439,24 +462,28 @@ export const SkillsRefresherDetail = () => {
                     }}
                   >
                     {isQuizActive && !showAnswer ? 'Submit Answer' : 'Show Answer'}
-                  </Button>
-
-                  {showAnswer && !isSlideDeck && (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => {
-                        if (quizzesTaken < 3) {
-                          handleRequestNewQuestion(!!previousPath); 
-                        } else {
-                          navigate('/quiz-results');
-                        }
-                      }}
-                      disabled={isLoading}
-                      sx={{ backgroundColor: '#2196F3', '&:hover': { backgroundColor: '#1976D2'} }}
-                    >
-                      {quizzesTaken < 3 ? 'Next Question' : 'Show Results'}
-                    </Button>
+                  </Button>                  {showAnswer && !isSlideDeck && (
+                    quizzesTaken < maxQuizzes ? (
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleRequestNewQuestion(!!previousPath)}
+                        disabled={isLoading}
+                        sx={{ backgroundColor: '#2196F3', '&:hover': { backgroundColor: '#1976D2'} }}
+                      >
+                        Next Question
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => navigate('/quiz-results')}
+                        disabled={isLoading}
+                        sx={{ backgroundColor: '#2196F3', '&:hover': { backgroundColor: '#1976D2'} }}
+                      >
+                        View Results
+                      </Button>
+                    )
                   )}
 
                   {/* "New Practice Question" button visibility changed here */}
@@ -471,13 +498,12 @@ export const SkillsRefresherDetail = () => {
                       {!isQuizActive && !showAnswer && !isSlideDeck ? 'Next Question' : 'End Quiz'}
                     </Button>
                   )}
-                  
-                  <Button
+                    <Button
                     variant="outlined"
-                    onClick={() => { resetQuiz(); navigate(-1); }}
+                    onClick={() => { resetQuiz(); navigate('/skills'); }}
                     sx={{ borderColor: 'primary.main', color: 'primary.main', '&:hover': { borderColor: 'primary.light', backgroundColor: 'rgba(255, 255, 255, 0.08)'} }}
                   >
-                    Done (Back to Skill)
+                    Done (Back to Skills)
                   </Button>
                 </Stack>
               </Box>

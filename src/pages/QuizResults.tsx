@@ -5,7 +5,7 @@ import { Container, Typography, Button, Box, Paper } from '@mui/material';
 
 export const QuizResults: React.FC = () => {
   const navigate = useNavigate();
-  const { score, quizzesTaken, previousPath, resetQuiz } = useQuiz();
+  const { score, quizzesTaken, previousPath, maxQuizzes, resetQuiz } = useQuiz();
 
   const handleGoBack = () => {
     if (previousPath) {
@@ -22,10 +22,10 @@ export const QuizResults: React.FC = () => {
         </Typography>
         <Box sx={{ my: 3 }}>
           <Typography variant="h6" color="text.secondary">
-            You took {quizzesTaken} quiz(zes).
+            You answered {quizzesTaken} questions.
           </Typography>
-          <Typography variant="h5" sx={{ mt: 2, color: score >= 0 ? 'success.main' : 'error.main' }}>
-            Your final score is: {score}
+          <Typography variant="h5" sx={{ mt: 2, color: score >= (maxQuizzes/2) ? 'success.main' : 'error.main' }}>
+            Your final score is: {score} correct answers
           </Typography>
         </Box>
         <Button variant="contained" color="primary" onClick={handleGoBack} sx={{ mt: 2 }}>

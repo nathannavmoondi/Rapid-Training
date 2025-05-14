@@ -3,6 +3,7 @@ import React, { createContext, useState, useContext, ReactNode, useCallback } fr
 interface QuizContextType {
   score: number;
   quizzesTaken: number;
+  maxQuizzes: number;
   selectedAnswer: string | null;
   isQuizActive: boolean;
   previousPath: string | null;
@@ -21,6 +22,7 @@ const QuizContext = createContext<QuizContextType | undefined>(undefined);
 export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [score, setScore] = useState(0);
   const [quizzesTaken, setQuizzesTaken] = useState(0);
+  const [maxQuizzes] = useState(3); // Added maxQuizzes as a constant state
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isQuizActive, setIsQuizActive] = useState(false);
   const [previousPath, setPreviousPath_internal] = useState<string | null>(null);
@@ -47,7 +49,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (isCorrect) {
         setScore(prevScore => prevScore + 1);
       } else {
-        setScore(prevScore => prevScore - 1);
+        setScore(prevScore => prevScore);
       }
       setQuizzesTaken(prevQuizzes => prevQuizzes + 1);
       setIsQuizActive(false);
@@ -69,10 +71,10 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const setLevel = useCallback((newLevel: string) => {
     setLevelState(newLevel);
   }, []);
-  
-  const contextValue = {
+    const contextValue = {
     score,
     quizzesTaken,
+    maxQuizzes,
     selectedAnswer,
     isQuizActive,
     previousPath,
