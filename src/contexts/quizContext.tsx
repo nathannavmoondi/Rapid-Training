@@ -6,11 +6,13 @@ interface QuizContextType {
   selectedAnswer: string | null;
   isQuizActive: boolean;
   previousPath: string | null;
+  level: string; // Added level
   startQuiz: () => void;
   selectAnswer: (answer: string) => void;
   submitAnswer: (correctAnswer: string) => void;
   resetQuiz: () => void;
   setPreviousPath: (path: string) => void;
+  setLevel: (level: string) => void; // Added setLevel
 }
 
 const QuizContext = createContext<QuizContextType | undefined>(undefined);
@@ -21,6 +23,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isQuizActive, setIsQuizActive] = useState(false);
   const [previousPath, setPreviousPath_internal] = useState<string | null>(null); // Renamed setter for clarity
+  const [level, setLevelState] = useState<string>('intermediate'); // Added level state, default to intermediate
 
   const startQuiz = useCallback(() => {
     setIsQuizActive(true);
@@ -58,6 +61,10 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const setPreviousPath = useCallback((path: string) => {
     setPreviousPath_internal(path);
   }, []); // setPreviousPath_internal (useState setter) is a stable reference
+
+  const setLevel = useCallback((newLevel: string) => { // Added setLevel function
+    setLevelState(newLevel);
+  }, []); // setLevelState is a stable reference
   
   const contextValue = {
     score,
@@ -65,11 +72,13 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     selectedAnswer,
     isQuizActive,
     previousPath,
+    level, // Provide level
     startQuiz,
     selectAnswer,
     submitAnswer,
     resetQuiz,
     setPreviousPath,
+    setLevel, // Provide setLevel
   };
 
   return <QuizContext.Provider value={contextValue}>{children}</QuizContext.Provider>;

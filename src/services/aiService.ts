@@ -14,7 +14,7 @@ export const requestRefresher = async (level: string, skillDescription: string, 
       }
 
       var prompt = `I'm creating a ${skillDescription} quiz for a job applicant.  
-      Give me a completely new ${level} difficulty ${skillDescription} question.
+      Give me a completely new random ${level} difficulty ${skillDescription} question on a random topic.
 
 Do not include the word html and GRAVE ACCENT in the answer.
 Include a practical code example with syntax highlighting in the answer section.

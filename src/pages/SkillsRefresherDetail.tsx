@@ -9,7 +9,7 @@
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'; // Added useLocation
-import { Container, Typography, Paper, Box, Button, Stack, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel } from '@mui/material'; // Added Radio components
+import { Container, Typography, Paper, Box, Button, Stack, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Select, MenuItem, InputLabel } from '@mui/material'; // Added Select, MenuItem, InputLabel
 import { skills } from '../data/skills';
 import type { Skill } from '../data/skills';
 import { requestRefresher } from '../services/aiService';
@@ -112,12 +112,14 @@ export const SkillsRefresherDetail = () => {
     quizzesTaken, 
     selectedAnswer, 
     isQuizActive, 
+    level, // Added level
     startQuiz, 
     selectAnswer: selectQuizAnswer, // Renamed to avoid conflict with local state if any
     submitAnswer: submitQuizAnswer,
     resetQuiz,
     setPreviousPath,
-    previousPath
+    previousPath,
+    setLevel // Added setLevel
   } = useQuiz();
 
   // Ref to track the latest isQuizActive state for unmount cleanup
@@ -206,14 +208,14 @@ export const SkillsRefresherDetail = () => {
 
 
     try {
-      const response = await requestRefresher('intermediate', currentSkill.title, currentSkill.category);
+      const response = await requestRefresher(level, currentSkill.title, currentSkill.category); // Use level from context
       setQuestion(response || 'Failed to load question. Please try again.');
     } catch (error) {
       console.error('Error fetching question:', error);
       setQuestion('Failed to load question. Please try again.');
     }
     setIsLoading(false);
-  }, [currentSkill, startQuiz, setPreviousPath, location.pathname, location.search, quizzesTaken, resetQuiz, isQuizActive, previousPath]);
+  }, [currentSkill, startQuiz, setPreviousPath, location.pathname, location.search, quizzesTaken, resetQuiz, isQuizActive, previousPath, level]);
 
   // Fetch initial question only when currentSkill changes and has a title
   useEffect(() => {
@@ -293,6 +295,7 @@ export const SkillsRefresherDetail = () => {
   };
 
   const quizOptions = ['A', 'B', 'C', 'D'];
+  const difficultyLevels = ['basic', 'intermediate', 'advanced'];
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -395,8 +398,8 @@ export const SkillsRefresherDetail = () => {
             )}
 
             {isQuizActive && !showAnswer && quizzesTaken < 3 && (
-              <Box sx={{ my: 2, p: 1, backgroundColor: 'lightgreen', borderRadius: 1, textAlign: 'center' }}>
-                <Typography variant="body2" sx={{ color: 'black' }}>
+              <Box sx={{ my: 2, p: 1, border: '1px solid grey', borderRadius: 1, textAlign: 'center' }}>
+                <Typography variant="body2" sx={{ color: 'white' }}>
                   Questions remaining in this quiz: {3 - quizzesTaken}
                 </Typography>
               </Box>
@@ -476,8 +479,46 @@ export const SkillsRefresherDetail = () => {
                 </Stack>
               </Box>
 
-              {/* Second row for Slidedeck button */}
-              <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ mt: 1 }}>
+              {/* Second row for Slidedeck button and Level dropdown */}
+              <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center" sx={{ mt: 1 }}>
+                <Typography variant="body1" sx={{ color: 'white', mr: 1 }}>Level:</Typography>
+                <FormControl sx={{ minWidth: 120 }} size="small">
+                  <InputLabel id="level-select-label" sx={{ color: 'black' }}></InputLabel>
+                  <Select
+                    labelId="level-select-label"
+                    id="level-select"
+                    value={level}
+                    label=""
+                    onChange={(e) => setLevel(e.target.value as string)}
+                    disabled={isLoading || isQuizActive} // Disable if loading or quiz is active
+                    sx={{
+                      backgroundColor: 'lightblue',
+                      color: 'black',
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'black', // Ensure border is visible against lightblue
+                      },
+                      '& .MuiSvgIcon-root': {
+                        color: 'black', // Dropdown arrow color
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'black', // Border color when focused
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'black', // Border color on hover
+                      },
+                    }}
+                  >
+                    {difficultyLevels.map((levelName) => (
+                      <MenuItem 
+                        key={levelName} 
+                        value={levelName} 
+                        sx={{ color: 'black',  backgroundColor: 'lightblue', }} // Ensure menu item text is black
+                      >
+                        {levelName.charAt(0).toUpperCase() + levelName.slice(1)}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
                 <Button
                   variant="contained"
                   onClick={handleSlideDeck} // handleSlideDeck now also calls resetQuiz if active
