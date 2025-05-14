@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react'; // Added useCallback
+import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
 
 interface QuizContextType {
   score: number;
@@ -6,13 +6,14 @@ interface QuizContextType {
   selectedAnswer: string | null;
   isQuizActive: boolean;
   previousPath: string | null;
-  level: string; // Added level
+  level: string;
+  lastAnswerCorrect: boolean | null;
   startQuiz: () => void;
   selectAnswer: (answer: string) => void;
   submitAnswer: (correctAnswer: string) => void;
   resetQuiz: () => void;
   setPreviousPath: (path: string) => void;
-  setLevel: (level: string) => void; // Added setLevel
+  setLevel: (level: string) => void;
 }
 
 const QuizContext = createContext<QuizContextType | undefined>(undefined);
@@ -22,49 +23,52 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [quizzesTaken, setQuizzesTaken] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isQuizActive, setIsQuizActive] = useState(false);
-  const [previousPath, setPreviousPath_internal] = useState<string | null>(null); // Renamed setter for clarity
-  const [level, setLevelState] = useState<string>('intermediate'); // Added level state, default to intermediate
+  const [previousPath, setPreviousPath_internal] = useState<string | null>(null);
+  const [level, setLevelState] = useState<string>('intermediate');
+  const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null);
 
   const startQuiz = useCallback(() => {
     setIsQuizActive(true);
-    setSelectedAnswer(null); // Reset selected answer when a new quiz starts
-  }, []); // setIsQuizActive and setSelectedAnswer are stable references
+    setSelectedAnswer(null);
+    setLastAnswerCorrect(null);
+  }, []);
 
   const selectAnswer = useCallback((answer: string) => {
-    // The calling component (SkillsRefresherDetail) already ensures this is called 
-    // only when a quiz is active by conditionally rendering the RadioGroup.
     setSelectedAnswer(answer);
-  }, []); // setSelectedAnswer is a stable reference
+  }, []);
 
   const submitAnswer = useCallback((correctAnswer: string) => {
     if (selectedAnswer) {
-      // Extract the letter from "Correct Answer: X"
       const correctAnswerLetter = correctAnswer.replace("Correct Answer: ", "").trim().charAt(0);
-      if (selectedAnswer.charAt(0).toUpperCase() === correctAnswerLetter.toUpperCase()) {
+      const isCorrect = selectedAnswer.charAt(0).toUpperCase() === correctAnswerLetter.toUpperCase();
+      
+      setLastAnswerCorrect(isCorrect);
+      
+      if (isCorrect) {
         setScore(prevScore => prevScore + 1);
       } else {
-        setScore(prevScore => prevScore); // Corrected: Decrement score for incorrect answer
+        setScore(prevScore => prevScore - 1);
       }
       setQuizzesTaken(prevQuizzes => prevQuizzes + 1);
-      setIsQuizActive(false); // Deactivate quiz mode after submitting an answer
+      setIsQuizActive(false);
     }
-  }, [selectedAnswer]); // Depends on selectedAnswer state
+  }, [selectedAnswer]);
 
   const resetQuiz = useCallback(() => {
     setScore(0);
     setQuizzesTaken(0);
     setSelectedAnswer(null);
     setIsQuizActive(false);
-    // previousPath is not reset here, as it's for navigation
-  }, []); // All setters are stable references
+    setLastAnswerCorrect(null);
+  }, []);
 
   const setPreviousPath = useCallback((path: string) => {
     setPreviousPath_internal(path);
-  }, []); // setPreviousPath_internal (useState setter) is a stable reference
+  }, []);
 
-  const setLevel = useCallback((newLevel: string) => { // Added setLevel function
+  const setLevel = useCallback((newLevel: string) => {
     setLevelState(newLevel);
-  }, []); // setLevelState is a stable reference
+  }, []);
   
   const contextValue = {
     score,
@@ -72,13 +76,14 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     selectedAnswer,
     isQuizActive,
     previousPath,
-    level, // Provide level
+    level,
+    lastAnswerCorrect,
     startQuiz,
     selectAnswer,
     submitAnswer,
     resetQuiz,
     setPreviousPath,
-    setLevel, // Provide setLevel
+    setLevel,
   };
 
   return <QuizContext.Provider value={contextValue}>{children}</QuizContext.Provider>;

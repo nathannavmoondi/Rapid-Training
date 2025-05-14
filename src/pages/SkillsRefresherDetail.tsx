@@ -10,6 +10,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'; // Added useLocation
 import { Container, Typography, Paper, Box, Button, Stack, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Select, MenuItem, InputLabel } from '@mui/material'; // Added Select, MenuItem, InputLabel
+import { CheckCircleOutline, HighlightOff } from '@mui/icons-material'; // Added icons for feedback
 import { skills } from '../data/skills';
 import type { Skill } from '../data/skills';
 import { requestRefresher } from '../services/aiService';
@@ -113,6 +114,7 @@ export const SkillsRefresherDetail = () => {
     selectedAnswer, 
     isQuizActive, 
     level, // Added level
+    lastAnswerCorrect, // Added lastAnswerCorrect
     startQuiz, 
     selectAnswer: selectQuizAnswer, // Renamed to avoid conflict with local state if any
     submitAnswer: submitQuizAnswer,
@@ -127,6 +129,9 @@ export const SkillsRefresherDetail = () => {
   useEffect(() => {
     isQuizActiveRef.current = isQuizActive;
   }, [isQuizActive]);
+  
+  // Add lastAnswerCorrect to the ref as well if needed, or ensure dependencies using it are correct.
+  // For now, direct usage of lastAnswerCorrect from context in render should be fine.
 
   const skillTitle = searchParams.get('skill');
   const SkillCategory = searchParams.get('category');
@@ -397,10 +402,39 @@ export const SkillsRefresherDetail = () => {
               </FormControl>
             )}
 
-            {isQuizActive && !showAnswer && quizzesTaken < 3 && (
+            {/* Display for "Questions remaining" OR "Correct/Incorrect Feedback" */}
+            {isQuizActive && !showAnswer && quizzesTaken < 3 && !isSlideDeck && (
               <Box sx={{ my: 2, p: 1, border: '1px solid grey', borderRadius: 1, textAlign: 'center' }}>
                 <Typography variant="body2" sx={{ color: 'white' }}>
                   Questions remaining in this quiz: {3 - quizzesTaken}
+                </Typography>
+              </Box>
+            )}
+
+            {previousPath && showAnswer && lastAnswerCorrect !== null && !isSlideDeck && (
+              <Box 
+                sx={{ 
+                  my: 2, 
+                  p: 2, 
+                  border: `2px solid ${lastAnswerCorrect ? 'green' : 'red'}`, 
+                  borderRadius: 1, 
+                  backgroundColor: 'transparent',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                {lastAnswerCorrect ? 
+                  <CheckCircleOutline sx={{ mr: 1, color: 'green', fontSize: 'h6.fontSize' }} /> : 
+                  <HighlightOff sx={{ mr: 1, color: 'red', fontSize: 'h6.fontSize' }} />
+                }
+                <Typography 
+                  variant="h6"
+                  sx={{ 
+                    color: lastAnswerCorrect ? 'white' : 'red',
+                  }}
+                >
+                  {lastAnswerCorrect ? 'Correct!' : 'Incorrect!'}
                 </Typography>
               </Box>
             )}
