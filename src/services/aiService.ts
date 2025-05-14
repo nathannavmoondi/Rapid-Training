@@ -31,6 +31,7 @@ Format the response in this exact HTML structure:
         <div class="option">C) [Option C]</div>
         <div class="option">D) [Option D]</div>
     </div>
+    <div class="quiz-status"></div>
     <div class="answer-box">
         <div class="correct-answer">
             Correct Answer: [Letter]
@@ -91,6 +92,7 @@ Format the response in this exact HTML structure:
         <div class="option">C) [Option C]</div>
         <div class="option">D) [Option D]</div>
     </div>
+    <div class="quiz-status"></div>
     <div class="answer-box">
         <div class="correct-answer">
             Correct Answer: [Letter]

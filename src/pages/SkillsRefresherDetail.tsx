@@ -53,55 +53,40 @@ const highlightCode = debounce(() => {
   });
 }, 100);
 
-// Helper function to process HTML for answer visibility
-const getProcessedQuestionHtml = (html: string, answerVisible: boolean): string => {
+// Helper function to process HTML for answer visibility and quiz status
+const getProcessedQuestionHtml = (html: string, answerVisible: boolean, showFeedback: boolean = false, isCorrect: boolean | null = null): string => {
   if (!html) return '';
 
-  // Regex to target the answer-box div.
-  // Captures:
-  // 1. tagStart: The part of the tag before style: (<div ... class="...answer-box...")
-  // 2. styleAttributeGroup (optional): The whole style attribute like ' style="color:red;"'
-  // 3. styleContent (optional, nested in group 2): The content of the style attribute like 'color:red;'
-  // 4. tagEndAfterStyle: The part of the tag after style (or after class if no style) up to and including >
-  const answerBoxRegex = /(<div\s+[^>]*class="[^"]*\banswer-box\b[^"]*")(\s+style="([^"]*)")?([^>]*>)/gi;
-
-  return html.replace(answerBoxRegex, (match, tagStart, styleAttributeGroup, styleContent, tagEndAfterStyle) => {
-    if (answerVisible) {
-      // SHOWING: Remove 'display:none' or any 'display:*' from the style attribute
-      if (styleAttributeGroup && typeof styleContent === 'string') {
-        const cleanedStyles = styleContent
-          .split(';')
-          .map((s: string) => s.trim())
-          .filter((s: string) => s && !s.toLowerCase().startsWith('display:'))
-          .join('; ')
-          .trim();
-        if (cleanedStyles) {
-          return `${tagStart} style="${cleanedStyles}"${tagEndAfterStyle}`;
-        } else {
-          // Style attribute becomes completely empty, remove it.
-          return `${tagStart}${tagEndAfterStyle}`;
-        }
-      }
-      // No style attribute to modify, or styleContent is not a string.
-      // If answerVisible is true, the element should be visible. If it had no style or no display:none, it's already fine.
-      return match; 
-    } else {
-      // HIDING: Add or ensure 'display:none'
-      let currentStylesArray: string[];
-      if (styleAttributeGroup && typeof styleContent === 'string') { // Existing style attribute was matched
-        currentStylesArray = styleContent.split(';')
-          .map((s: string) => s.trim())
-          .filter((s: string) => s && !s.toLowerCase().startsWith('display:'));
-      } else { // No existing style attribute or styleContent was not a string
-        currentStylesArray = [];
-      }
-      // Add display:none if not already present (though filter should handle it, this is an explicit check)
-      if (!currentStylesArray.some(style => style.toLowerCase().startsWith('display:'))) {
-        currentStylesArray.push('display:none');
-      }
-      return `${tagStart} style="${currentStylesArray.join('; ').trim()}"${tagEndAfterStyle}`;
-    }
+  // Handle answer box visibility
+  html = html.replace(/<div\s+[^>]*class="[^"]*\banswer-box\b[^"]*">[\s\S]*?<\/div>/gi, (match) => {
+    return answerVisible ? match : match.replace(/^(<div[^>]*>)/, '$1<div style="display:none">') + '</div>';
   });
+
+  // Handle quiz status content
+  if (showFeedback && isCorrect !== null) {
+    const feedbackContent = `
+      <div style="margin: 16px 0; padding: 16px; border: 2px solid ${isCorrect ? 'green' : 'red'}; border-radius: 4px; background-color: transparent; display: flex; align-items: center; justify-content: center">
+        <span style="margin-right: 8px; color: ${isCorrect ? 'green' : 'red'}; font-size: 24px;">
+          ${isCorrect ? '✓' : '✕'}
+        </span>
+        <span style="font-size: 20px; color: ${isCorrect ? 'white' : 'red'}">
+          ${isCorrect ? 'Correct!' : 'Incorrect!'}
+        </span>
+      </div>
+    `;
+    
+    // Replace empty quiz-status div with our feedback
+    html = html.replace(/<div class="quiz-status"><\/div>/, `<div class="quiz-status">${feedbackContent}</div>`);
+  } else if (!showFeedback && !answerVisible) {
+    // Show remaining questions when not showing feedback
+    const remainingContent = `
+      <div style="margin: 16px 0; padding: 8px; border: 1px solid grey; border-radius: 4px; text-align: center">
+        <span style="color: white; font-size: 14px;">Questions remaining in this quiz: #NUM#</span>
+      </div>
+    `.replace('#NUM#', '3'); // This will be replaced with actual count in the component
+  }
+
+  return html;
 };
 
 export const SkillsRefresherDetail = () => {
@@ -136,6 +121,7 @@ export const SkillsRefresherDetail = () => {
   const skillTitle = searchParams.get('skill');
   const SkillCategory = searchParams.get('category');
   const contentRef = useRef<HTMLDivElement>(null);
+  const quizContentRef = useRef<HTMLDivElement>(null); // Add ref for quiz content section
   
   const [isLoading, setIsLoading] = useState(false);
   const [question, setQuestion] = useState('');
@@ -263,8 +249,12 @@ export const SkillsRefresherDetail = () => {
       </Container>
     );
   }
-
-  const htmlToRender = getProcessedQuestionHtml(question, showAnswer);
+  const htmlToRender = getProcessedQuestionHtml(
+    question, 
+    showAnswer,
+    showAnswer && !isSlideDeck, // Only show feedback when answer is shown and not in slidedeck
+    lastAnswerCorrect  // Pass the correct/incorrect state
+  );
 
   const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     selectQuizAnswer(event.target.value);
@@ -288,6 +278,13 @@ export const SkillsRefresherDetail = () => {
     // if (quizzesTaken + 1 >= 3) {
     //     navigate('/quiz-results');
     // }
+    // After state updates, scroll to the quiz-status section
+    setTimeout(() => {
+      const quizStatusElement = document.querySelector('.quiz-status');
+      if (quizStatusElement) {
+        quizStatusElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100); // Small delay to ensure DOM has updated
   };
   
   const handleStartThisQuestionAsQuiz = () => {
@@ -297,6 +294,17 @@ export const SkillsRefresherDetail = () => {
     } else {
       navigate('/quiz-results');
     }
+  };
+
+  const handleShowAnswer = () => {
+    setShowAnswer(true);
+    // Add scroll behavior after showing answer
+    setTimeout(() => {
+      const quizStatusElement = document.querySelector('.quiz-status');
+      if (quizStatusElement) {
+        quizStatusElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
   };
 
   const quizOptions = ['A', 'B', 'C', 'D'];
@@ -385,7 +393,7 @@ export const SkillsRefresherDetail = () => {
               dangerouslySetInnerHTML={{ __html: htmlToRender }}
             />
 
-            {!isSlideDeck && isQuizActive && !showAnswer && (
+            {!isSlideDeck && isQuizActive && (
               <FormControl component="fieldset" sx={{ my: 2, p:2, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1 }}>
                 <FormLabel component="legend" sx={{ color: 'primary.light', mb: 1 }}>Choose an answer:</FormLabel>
                 <RadioGroup row aria-label="quiz-option" name="quiz-option-group" value={selectedAnswer || ''} onChange={handleOptionChange}>
@@ -400,46 +408,7 @@ export const SkillsRefresherDetail = () => {
                   ))}
                 </RadioGroup>
               </FormControl>
-            )}
-
-            {/* Display for "Questions remaining" OR "Correct/Incorrect Feedback" */}
-            {isQuizActive && !showAnswer && quizzesTaken < 3 && !isSlideDeck && (
-              <Box sx={{ my: 2, p: 1, border: '1px solid grey', borderRadius: 1, textAlign: 'center' }}>
-                <Typography variant="body2" sx={{ color: 'white' }}>
-                  Questions remaining in this quiz: {3 - quizzesTaken}
-                </Typography>
-              </Box>
-            )}
-
-            {previousPath && showAnswer && lastAnswerCorrect !== null && !isSlideDeck && (
-              <Box 
-                sx={{ 
-                  my: 2, 
-                  p: 2, 
-                  border: `2px solid ${lastAnswerCorrect ? 'green' : 'red'}`, 
-                  borderRadius: 1, 
-                  backgroundColor: 'transparent',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                {lastAnswerCorrect ? 
-                  <CheckCircleOutline sx={{ mr: 1, color: 'green', fontSize: 'h6.fontSize' }} /> : 
-                  <HighlightOff sx={{ mr: 1, color: 'red', fontSize: 'h6.fontSize' }} />
-                }
-                <Typography 
-                  variant="h6"
-                  sx={{ 
-                    color: lastAnswerCorrect ? 'white' : 'red',
-                  }}
-                >
-                  {lastAnswerCorrect ? 'Correct!' : 'Incorrect!'}
-                </Typography>
-              </Box>
-            )}
-
-            {/* Button Container: Adjusted for new layout */}
+            )}            {/* Button Container: Adjusted for new layout */}
             <Box sx={{ mt: 3 }}>
               {/* First row of buttons */}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
@@ -461,7 +430,7 @@ export const SkillsRefresherDetail = () => {
                 <Stack direction="row" spacing={1} justifyContent="flex-end" flexWrap="wrap">
                   <Button
                     variant="contained"
-                    onClick={isQuizActive && !showAnswer ? handleSubmitQuizAnswer : () => setShowAnswer(true)}
+                    onClick={isQuizActive && !showAnswer ? handleSubmitQuizAnswer : handleShowAnswer}
                     disabled={isLoading || showAnswer || !question || isSlideDeck || (isQuizActive && !selectedAnswer && !showAnswer)}
                     sx={{ 
                       backgroundColor: (isQuizActive && !showAnswer) ? '#007bff' : '#4CAF50', 
