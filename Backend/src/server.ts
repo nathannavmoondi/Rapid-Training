@@ -33,18 +33,24 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ error: 'Something broke!' });
 });
 
-app.listen(port, async () => {
-  console.log(`Server is running on port ${port}`);
-  
-  // Test database connection
-  try {
-    const isConnected = await db.testConnection();
-    if (isConnected) {
-      console.log('Successfully connected to the database');
-    } else {
-      console.error('Failed to connect to the database');
+// Only start the server if we're not in a serverless environment
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, async () => {
+    console.log(`Server is running on port ${port}`);
+    
+    // Test database connection
+    try {
+      const isConnected = await db.testConnection();
+      if (isConnected) {
+        console.log('Successfully connected to the database');
+      } else {
+        console.error('Failed to connect to the database');
+      }
+    } catch (error) {
+      console.error('Error testing database connection:', error);
     }
-  } catch (error) {
-    console.error('Error testing database connection:', error);
-  }
-});
+  });
+}
+
+// Export the app for serverless environments
+export default app;

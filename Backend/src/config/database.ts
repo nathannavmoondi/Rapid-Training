@@ -3,16 +3,20 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const poolConfig: PoolConfig = {
-  user: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-  host: process.env.POSTGRES_HOST,
-  port: 5432,
-  database: process.env.POSTGRES_DATABASE,
-  ssl: {
-    rejectUnauthorized: false // Required for Supabase connections
-  }
-};
+// Use connection URL for Vercel deployment compatibility
+const poolConfig: PoolConfig = process.env.POSTGRES_URL
+  ? {
+      connectionString: process.env.POSTGRES_URL,
+      ssl: {
+        rejectUnauthorized: false
+      }
+    }
+  : {
+      connectionString: process.env.POSTGRES_URL_NON_POOLING,
+      ssl: {
+        rejectUnauthorized: false
+      }
+    };
 
 // Log the connection string (without sensitive data) for debugging
 console.log('Attempting to connect to database...');
