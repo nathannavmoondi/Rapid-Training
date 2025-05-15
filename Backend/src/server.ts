@@ -1,0 +1,50 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import apiRoutes from './routes/index';
+import { db } from './services/database.service';
+
+// Load environment variables
+dotenv.config();
+
+const app = express();
+const port = process.env.PORT || 5000;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Routes
+app.use('/api', apiRoutes);
+
+// Health check endpoint with DB status
+app.get('/health', async (req, res) => {
+  const dbStatus = await db.testConnection();
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    database: dbStatus ? 'Connected' : 'Disconnected'
+  });
+});
+
+// Error handling middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something broke!' });
+});
+
+app.listen(port, async () => {
+  console.log(`Server is running on port ${port}`);
+  
+  // Test database connection
+  try {
+    const isConnected = await db.testConnection();
+    if (isConnected) {
+      console.log('Successfully connected to the database');
+    } else {
+      console.error('Failed to connect to the database');
+    }
+  } catch (error) {
+    console.error('Error testing database connection:', error);
+  }
+});
