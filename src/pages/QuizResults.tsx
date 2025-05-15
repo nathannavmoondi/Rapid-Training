@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useQuiz } from '../contexts/quizContext';
 import { Container, Typography, Button, Box, Paper } from '@mui/material';
 
-export const QuizResults: React.FC = () => {
-  const navigate = useNavigate();
-  const { score, quizzesTaken, previousPath, maxQuizzes, resetQuiz } = useQuiz();
+export const QuizResults: React.FC = () => {  const navigate = useNavigate();
+  const { score, quizzesTaken, previousPath, maxQuizzes, resetQuiz, skillDescription } = useQuiz();
 
   const handleGoBack = () => {
     if (previousPath) {
@@ -16,9 +15,21 @@ export const QuizResults: React.FC = () => {
 
   return (
     <Container maxWidth="sm" sx={{ py: 4, textAlign: 'center' }}>
-      <Paper elevation={3} sx={{ p: 4, backgroundColor: 'rgba(45, 45, 45, 0.8)', borderRadius: 2 }}>
-        <Typography variant="h4" component="h1" gutterBottom color="primary.main">
+      <Paper elevation={3} sx={{ p: 4, backgroundColor: 'rgba(45, 45, 45, 0.8)', borderRadius: 2 }}>        <Typography variant="h4" component="h1" gutterBottom color="primary.main">
           Quiz Results
+        </Typography>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            mb: 3,
+            color: 'primary.light',
+            fontStyle: 'italic',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            backgroundColor: 'rgba(144, 202, 249, 0.1)'
+          }}
+        >
+          {skillDescription}
         </Typography>
         <Box sx={{ my: 3 }}>
           <Typography variant="h6" color="text.secondary">

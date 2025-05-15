@@ -121,7 +121,8 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     resetQuiz,
     setPreviousPath,
     previousPath,
-    setLevel
+    setLevel,
+    setSkillDescription,
   } = useQuiz();
 
   // Ref to track the latest isQuizActive state for unmount cleanup
@@ -198,10 +199,12 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     setShowAnswer(false);
     setIsSlideDeck(false);
     setQuestion('');
-    
-    if (intendsNewQuizRound && quizzesTaken < maxQuizzes) {
+      if (intendsNewQuizRound && quizzesTaken < maxQuizzes) {
       if (!previousPath) { // Set previous path only if not already set (e.g. by "Start Quiz with this Q")
         setPreviousPath(location.pathname + location.search);
+      }
+      if (currentSkill) {
+        setSkillDescription(currentSkill.title); // Set skill description when starting a new quiz round
       }
       startQuiz(); // Sets isQuizActive = true, resets selectedAnswer for the new question
     } else if (!intendsNewQuizRound && isQuizActive) {
@@ -302,15 +305,15 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     
     setShowAnswer(true); // Show answer section after submission
   };
-  
-  const handleStartThisQuestionAsQuiz = () => {
-    if (quizzesTaken < maxQuizzes) {
+    const handleStartThisQuestionAsQuiz = () => {
+    if (quizzesTaken < maxQuizzes && currentSkill) {
       setPreviousPath(location.pathname + location.search);
+      setSkillDescription(currentSkill.title); // Set the skill description
       startQuiz(); // Makes the current question a quiz question
     } else {
       navigate('/quiz-results');
     }
-  };  const handleShowAnswer = () => {
+  };const handleShowAnswer = () => {
     // Get the current scroll position before any updates
     const currentScrollPosition = window.scrollY;
 
@@ -473,8 +476,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                       >
                         Next Question
                       </Button>
-                    ) : (
-                      <Button
+                    ) : (                      <Button
                         variant="contained"
                         color="primary"
                         onClick={() => navigate('/quiz-results')}
@@ -512,8 +514,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
               <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center" sx={{ mt: 1 }}>
                 <Typography variant="body1" sx={{ color: 'white', mr: 1 }}>Level:</Typography>
                 <FormControl sx={{ minWidth: 120 }} size="small">
-                  <InputLabel id="level-select-label" sx={{ color: 'black' }}></InputLabel>
-                  <Select
+                  <InputLabel id="level-select-label" sx={{ color: 'black' }}></InputLabel>                  <Select
                     labelId="level-select-label"
                     id="level-select"
                     value={level}
@@ -523,6 +524,9 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                     sx={{
                       backgroundColor: 'lightblue',
                       color: 'black',
+                      '& -webkit-text-fill-color': {
+                        color: 'black', // This ensures the selected text is black
+                      },
                       '& .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'black', // Ensure border is visible against lightblue
                       },

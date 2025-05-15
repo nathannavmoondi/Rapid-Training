@@ -84,7 +84,7 @@ Format the response in this exact HTML structure:
 
 <div class="question-container">
     <div class="question">
-        [Your question text here. If the question includes a code snippet, format it like this: <pre><code class="language-javascript">const snippet = "example";</code></pre> within the question text. Ensure the class attribute is one of the supported languages listed below.]
+        [Your question text here. ]
     </div>
     <div class="options">
         <div class="option">A) [Option A]</div>
@@ -98,17 +98,15 @@ Format the response in this exact HTML structure:
             Correct Answer: [Letter]
         </div>
         <div class="explanation">
-            <p>[First line of explanation]</p>
-            <pre><code class="language-typescript">
-                [Your code example here with proper indentation]
-            </code></pre>
+            <p>[First line of explanation]</p>            
             <p>[Rest of the explanation with each point on a new line]</p>
         </div>
     </div>
 </div>
 
 Important:
-1. Put each explanation point in the answer section on a new line using <p> tags.`;
+1. Put each explanation point in the answer section on a new line using <p> tags.
+2. Do not include any code examples, code snippets, or code-related sections.`;
   }
   console.log("Prompt: ", prompt);
 
@@ -117,7 +115,9 @@ Important:
   if (level === "slidedeck"){
     prompt = `Create a slidedeck introducing basic and intermediate concepts of ${skillDescription} for someone new to the topic. Timestamp: ${new Date().toISOString()}.
 
-The slidedeck's content MUST be structured into logical sections. Each major section (e.g., Introduction, Basic Concepts, Intermediate Concepts, External Resources) MUST be wrapped in its own separate \`<div class="content-block">\`.
+The slidedeck's content MUST be structured into logical sections. 
+Each major section (e.g., Introduction, Basic Concepts, Intermediate Concepts, External Resources) MUST be wrapped 
+in its own separate \`<div class="content-block">\`.
 Within each \`<div class="content-block">\`, use appropriate HTML tags:
 - Use \`<h2>\` for the main title of that section.
 - Use \`<p>\` for all paragraphs of text.
@@ -127,7 +127,8 @@ The slidedeck should be comprehensive and lengthy.
 It must NOT include any images.
 It must NOT include a \`<head>\` HTML element.
 It must NOT include any \`<style>\` tags or inline style attributes. All styling is handled by existing CSS.
-It must NOT include any code examples, code snippets, or code-related sections.
+${(skillCategory === "non-technology") ? "It must NOT include any code examples, code snippets, or code-related sections" : ""}
+
 
 Important Content and Formatting Rules:
 1.  The entire response MUST be pure HTML.

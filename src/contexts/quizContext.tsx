@@ -9,12 +9,14 @@ interface QuizContextType {
   previousPath: string | null;
   level: string;
   lastAnswerCorrect: boolean | null;
+  skillDescription: string;
   startQuiz: () => void;
   selectAnswer: (answer: string) => void;
   submitAnswer: (correctAnswer: string) => void;
   resetQuiz: () => void;
   setPreviousPath: (path: string) => void;
   setLevel: (level: string) => void;
+  setSkillDescription: (description: string) => void;
 }
 
 const QuizContext = createContext<QuizContextType | undefined>(undefined);
@@ -25,9 +27,9 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [maxQuizzes] = useState(3); // Added maxQuizzes as a constant state
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isQuizActive, setIsQuizActive] = useState(false);
-  const [previousPath, setPreviousPath_internal] = useState<string | null>(null);
-  const [level, setLevelState] = useState<string>('intermediate');
+  const [previousPath, setPreviousPath_internal] = useState<string | null>(null);  const [level, setLevelState] = useState<string>('intermediate');
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null);
+  const [skillDescription, setSkillDescription] = useState<string>('');
 
   const startQuiz = useCallback(() => {
     setIsQuizActive(true);
@@ -54,14 +56,14 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setQuizzesTaken(prevQuizzes => prevQuizzes + 1);
       setIsQuizActive(false);
     }
-  }, [selectedAnswer]);
-
-  const resetQuiz = useCallback(() => {
+  }, [selectedAnswer]);  const resetQuiz = useCallback(() => {
     setScore(0);
     setQuizzesTaken(0);
     setSelectedAnswer(null);
     setIsQuizActive(false);
     setLastAnswerCorrect(null);
+    setSkillDescription(''); // Reset skill description when resetting quiz
+    setPreviousPath_internal(null); // Reset previous path when resetting quiz
   }, []);
 
   const setPreviousPath = useCallback((path: string) => {
@@ -71,7 +73,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const setLevel = useCallback((newLevel: string) => {
     setLevelState(newLevel);
   }, []);
-    const contextValue = {
+  const contextValue = {
     score,
     quizzesTaken,
     maxQuizzes,
@@ -80,12 +82,14 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     previousPath,
     level,
     lastAnswerCorrect,
+    skillDescription,
     startQuiz,
     selectAnswer,
     submitAnswer,
     resetQuiz,
     setPreviousPath,
     setLevel,
+    setSkillDescription,
   };
 
   return <QuizContext.Provider value={contextValue}>{children}</QuizContext.Provider>;
