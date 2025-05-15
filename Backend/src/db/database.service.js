@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DatabaseService = void 0;
-const config_1 = __importDefault(require("../config"));
+const config_1 = __importDefault(require("../config/config"));
 class DatabaseService {
     static executeQuery(query_1) {
         return __awaiter(this, arguments, void 0, function* (query, params = []) {

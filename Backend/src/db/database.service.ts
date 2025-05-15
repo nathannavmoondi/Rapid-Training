@@ -1,4 +1,4 @@
-import pool from '../config';
+import pool from '../config/config';
 import { QueryResult } from 'pg';
 
 export class DatabaseService {

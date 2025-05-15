@@ -21,11 +21,26 @@ const requestSqlStatement = (description, table) => __awaiter(void 0, void 0, vo
             if (!apiKey) {
                 throw new Error('API key not found in environment variables!');
             }
-            var prompt = `This is the table structure:
+            var prompt = `This is the table structure for customers:
       
-      customers with id, name, city.
+    CustomerID: string;
+    CompanyName: string;
+    ContactName?: string;
+    ContactTitle?: string;
+    Address?: string;
+     City?: string;
+    Region?: string;
+    PostalCode?: string;
+    Country?: string;
+    Phone?: string;
+    Fax?: string;
+
+      Give me the sql statement for this prompt :  "${description}".  
+
+      1. Do not add backticks in the response.
+      2. Do not add the words sql in front of the statement.
+      3. Use the table name "${table}" in the sql statement.
       
-      Give me the sql statement for this operation :  a ${description}.  
       `;
             console.log("Prompt: ", prompt);
             // 1. The response should be pure HTML content, without any \`style\` tags or inline style attributes. All styling will be handled by the existing site's CSS.
