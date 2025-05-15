@@ -20,8 +20,9 @@ class CustomersController {
         });
         this.runSqlStatement = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const { text } = req.params; //eg: give me all the customers
-                const sql = yield (0, aiDbService_1.requestSqlStatement)(text, "customers");
+                const { prompt } = req.params; //eg: give me all the customers
+                console.log('text is >>', prompt);
+                const sql = yield (0, aiDbService_1.requestSqlStatement)(prompt, "customers");
                 console.log('sql is >>', sql);
                 const result = yield database_service_1.db.query(sql);
                 res.json({

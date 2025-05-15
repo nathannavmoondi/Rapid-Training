@@ -45,7 +45,7 @@ router.get('/test-db', (req, res) => __awaiter(void 0, void 0, void 0, function*
 }));
 // Customer routes
 router.get('/sql', (req, res) => customersController.getSqlStatement(req, res));
-router.get('/sql/:id', (req, res) => customersController.runSqlStatement(req, res));
+router.get('/sql/:prompt', (req, res) => customersController.runSqlStatement(req, res));
 router.get('/customers', (req, res) => customersController.getAllCustomers(req, res));
 router.get('/customers/:id', (req, res) => customersController.getCustomerById(req, res));
 // Test route

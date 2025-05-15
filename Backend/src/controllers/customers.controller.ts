@@ -10,8 +10,9 @@ export class CustomersController {
   };
   runSqlStatement = async(req: Request, res: Response): Promise<void> => {
     try {
-      const { text } = req.params; //eg: give me all the customers
-      const sql = await requestSqlStatement(text, "customers");
+      const { prompt  } = req.params; //eg: give me all the customers
+      console.log('text is >>', prompt);
+      const sql = await requestSqlStatement(prompt, "customers");
       console.log('sql is >>', sql);
       const result = await db.query<Customer>(sql);
       res.json({

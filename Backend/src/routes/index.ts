@@ -39,7 +39,7 @@ router.get('/test-db', async (req, res) => {
 
 // Customer routes
 router.get('/sql', (req: Request, res: Response) => customersController.getSqlStatement(req, res));
-router.get('/sql/:id', (req: Request, res: Response) => customersController.runSqlStatement(req, res));
+router.get('/sql/:prompt', (req: Request, res: Response) => customersController.runSqlStatement(req, res));
 router.get('/customers', (req: Request, res: Response) => customersController.getAllCustomers(req, res));
 router.get('/customers/:id', (req: Request, res: Response) => customersController.getCustomerById(req, res));
 

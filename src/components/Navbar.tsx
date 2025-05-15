@@ -74,8 +74,7 @@ export const Navbar = () => {
             }}
           >
             Algorithms
-          </Button>
-          <Button 
+          </Button>          <Button 
             size="small" 
             color="inherit" 
             onClick={() => navigate('/details')}
@@ -88,6 +87,20 @@ export const Navbar = () => {
             }}
           >         
             Details
+          </Button>
+          <Button 
+            size="small" 
+            color="inherit" 
+            onClick={() => navigate('/prompt-db')}
+            sx={{              backgroundColor: isActive('/prompt-db') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
+              borderBottom: isActive('/prompt-db') ? '2px solid #90CAF9' : 'none',
+              fontWeight: isActive('/prompt-db') ? 600 : 400,
+              '&:hover': {
+                backgroundColor: isActive('/prompt-db') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
+              }
+            }}
+          >         
+            Prompt DB
           </Button>
           <Button 
             size="small"

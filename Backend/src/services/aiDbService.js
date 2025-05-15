@@ -23,26 +23,33 @@ const requestSqlStatement = (description, table) => __awaiter(void 0, void 0, vo
             }
             var prompt = `This is the table structure for customers:
       
-    CustomerID: string;
-    CompanyName: string;
-    ContactName?: string;
-    ContactTitle?: string;
-    Address?: string;
-     City?: string;
-    Region?: string;
-    PostalCode?: string;
-    Country?: string;
-    Phone?: string;
-    Fax?: string;
+    CustomerID: string;        # Unique identifier for each customer
+    CompanyName: string;       # Name of the customer's company
+    ContactName?: string;      # Full name of the contact person (this contains both first and last names)
+    ContactTitle?: string;     # Job title of the contact person
+    Address?: string;         # Street address
+    City?: string;           # City name
+    Region?: string;         # State or region
+    PostalCode?: string;     # Postal/ZIP code
+    Country?: string;        # Country name
+    Phone?: string;          # Phone number
+    Fax?: string;           # Fax number
 
-      Give me the sql statement for this prompt :  "${description}".  
-
-      1. Do not add backticks in the response.
-      2. Do not add the words sql in front of the statement.
-      3. Use the table name "${table}" in the sql statement.
+    Example queries and their SQL:
+    "show me customers from Germany" -> SELECT * FROM customers WHERE Country = 'Germany'
+    "show me customers named Anders" -> SELECT * FROM customers WHERE ContactName LIKE '%Anders%'
+    
+    Now, give me the SQL statement for this prompt: "${description}"
+    
+    Requirements:
+    1. Do not add backticks in the response
+    2. Do not add the word 'sql' in front of the statement
+    3. Use the table name "${table}"
+    4. If searching for a name, use ContactName with LIKE
+    5. Return only the SQL statement with no additional text
+    6. For every text field, use case-insensitive search
       
       `;
-            console.log("Prompt: ", prompt);
             // 1. The response should be pure HTML content, without any \`style\` tags or inline style attributes. All styling will be handled by the existing site's CSS.
             const response = yield fetch("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",
@@ -58,7 +65,7 @@ const requestSqlStatement = (description, table) => __awaiter(void 0, void 0, vo
                     temperature: 0.9, // Increase randomness
                     messages: [{
                             role: "system",
-                            content: "I am converting english text to sql statement.."
+                            content: "You are a SQL expert that converts English descriptions into precise SQL queries. For name searches, always use LIKE with wildcards to match partial names. Never return just 'SELECT *' without proper WHERE conditions if the prompt asks for specific data. Always consider case-insensitive searches for text fields."
                         },
                         {
                             role: "user",

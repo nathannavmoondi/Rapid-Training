@@ -12,6 +12,7 @@ import { SkillsRefresher } from './pages/SkillsRefresher';
 import { SkillsRefresherDetail } from './pages/SkillsRefresherDetail';
 import { QuizResults } from './pages/QuizResults'; // Import QuizResults
 import { QuizProvider } from './contexts/quizContext'; // Import QuizProvider
+import { PromptDB } from './pages/PromptDB';
 import './App.css';
 import './styles/prism-custom.css';  // Add this line
 
@@ -32,10 +33,10 @@ function App() {
                 <Route path="/" element={<Navigate to="/skills" replace />} />
                 <Route path="/algorithms" element={<AlgorithmList />} />
                 <Route path="/algorithm/:id" element={<AlgorithmDetail />} />
-                <Route path="/details" element={<Details />} />
-                <Route path="/skills" element={<SkillsRefresher />} />
+                <Route path="/details" element={<Details />} />                <Route path="/skills" element={<SkillsRefresher />} />
                 <Route path="/skills/detail" element={<SkillsRefresherDetail />} />
-                <Route path="/quiz-results" element={<QuizResults />} /> {/* Add route for QuizResults */}
+                <Route path="/quiz-results" element={<QuizResults />} />
+                <Route path="/prompt-db" element={<PromptDB />} />
               </Routes>
             </Container>
             <Footer />
