@@ -10,7 +10,7 @@ const customersController = new CustomersController();
 router.get('/test-db', async (req, res) => {
   
   const cstring = process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING;
-  
+
   try {
 
    
@@ -36,7 +36,7 @@ router.get('/test-db', async (req, res) => {
   } catch (error) {
     const err = error as Error;
     res.status(500).json({ 
-      status: 'Error',
+      status: 'Error!',
       connectionString: cstring,
       message: err.message,
       stack: err.stack
