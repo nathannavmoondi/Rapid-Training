@@ -22,6 +22,7 @@ export const PromptDB: React.FC = () => {
       const queryText = prompt.trim() || 'show me all customers'; // Default query if empty
       const encodedPrompt = encodeURIComponent(queryText);
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      console.log('api is', apiUrl);
       const response = await fetch(`${apiUrl}/api/sql/${encodedPrompt}`);
       const data = await response.json();
       setResult(JSON.stringify(data, null, 2));

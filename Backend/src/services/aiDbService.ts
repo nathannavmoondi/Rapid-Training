@@ -45,12 +45,12 @@ export const requestSqlStatement = async (description: string, table: string): P
 
   // 1. The response should be pure HTML content, without any \`style\` tags or inline style attributes. All styling will be handled by the existing site's CSS.
 
- 
+ console.log('api key', apiKey);
 
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
-           "Authorization": `Bearer ${apiKey}`,  // Replace with your actual API key
+           "Authorization": `Bearer ${apiKey}`,  // Replace with your actual API key           
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -70,6 +70,8 @@ export const requestSqlStatement = async (description: string, table: string): P
           ]
         })
       });      const data = await response.json();
+
+      console.log('response is >>', data);
       let content = data.choices?.[0]?.message?.content;
       
       // Clean up any markdown code blocks and format them properly
