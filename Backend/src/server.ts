@@ -13,7 +13,10 @@ const port = process.env.PORT || 5000;
 
 // CORS middleware
 app.use(cors({
-  origin: '*',
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://rapid-training-kji1kvuf3-nathan-nav-moondis-projects.vercel.app']
+    : '*',
+  credentials: true,
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   preflightContinue: false,

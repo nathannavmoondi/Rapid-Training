@@ -2,7 +2,8 @@ import express, { Request, Response } from 'express';
 import { CustomersController } from '../controllers/customers.controller';
 import { db } from '../services/database.service';
 import { connect } from 'http2';
-
+  const cors = require('cors');
+  
 const router = express.Router();
 const customersController = new CustomersController();
 
@@ -48,7 +49,7 @@ router.get('/test-db', async (req, res) => {
 
 // Customer routes
 router.get('/sql', (req: Request, res: Response) => customersController.getSqlStatement(req, res));
-router.get('/sql/:prompt', (req: Request, res: Response) => customersController.runSqlStatement(req, res));
+router.get('/sql/:prompt', cors(), (req: Request, res: Response) => customersController.runSqlStatement(req, res));
 router.get('/customers', (req: Request, res: Response) => customersController.getAllCustomers(req, res));
 router.get('/customers/:id', (req: Request, res: Response) => customersController.getCustomerById(req, res));
 

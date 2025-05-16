@@ -19,11 +19,18 @@ export const PromptDB: React.FC = () => {
   const handleFetch = async () => {
     try {
       setExpanded(false); // Collapse the table structure when fetching
-      const queryText = prompt.trim() || 'show me all customers'; // Default query if empty
-      const encodedPrompt = encodeURIComponent(queryText);
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const queryText = prompt.trim() || 'show me all customers'; // Default query if empty      const encodedPrompt = encodeURIComponent(queryText);
+      // In development, use localhost, in production use the Vercel URL
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://rapid-training-kji1kvuf3-nathan-nav-moondis-projects.vercel.app'
+        : 'http://localhost:5000';
       console.log('api is', apiUrl);
-      const response = await fetch(`${apiUrl}/api/sql/${encodedPrompt}`);
+      const response = await fetch(`${apiUrl}/api/sql/${encodedPrompt}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
       const data = await response.json();
       setResult(JSON.stringify(data, null, 2));
     } catch (error) {
