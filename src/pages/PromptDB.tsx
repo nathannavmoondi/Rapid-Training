@@ -22,7 +22,7 @@ export const PromptDB: React.FC = () => {
       const queryText = prompt.trim() || 'show me all customers'; // Default query if empty      const encodedPrompt = encodeURIComponent(queryText);
       // In development, use localhost, in production use the Vercel URL
       const apiUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://rapid-training-kji1kvuf3-nathan-nav-moondis-projects.vercel.app'
+        ? process.env.REACT_APP_API_URL
         : 'http://localhost:5000';
       console.log('api is', apiUrl);
       const response = await fetch(`${apiUrl}/api/sql/${prompt}`, {
