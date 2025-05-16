@@ -17,7 +17,9 @@ export class CustomersController {
       const result = await db.query<Customer>(sql);
       res.json({
         sql: sql,
-        results: result.rows
+        results: result.rows,
+        test: "test2"
+
       });
     } catch (error) {
       console.error('Error executing SQL statement:', error);

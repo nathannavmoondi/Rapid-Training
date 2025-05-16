@@ -10,13 +10,16 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Middleware
+
+// CORS middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://algo-demo.vercel.app', process.env.FRONTEND_URL].filter((origin): origin is string => !!origin),
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  origin: '*',
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
 app.use(express.json());
 
 // Routes
@@ -34,8 +37,13 @@ app.get('/health', async (req, res) => {
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something broke!' });
+  console.error('Error details:', err);
+  console.error('Stack trace:', err.stack);
+  res.status(500).json({ 
+    error: 'Server error', 
+    message: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
 });
 
 // Only start the server if we're not in a serverless environment

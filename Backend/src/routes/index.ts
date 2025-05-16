@@ -6,6 +6,8 @@ import { connect } from 'http2';
 const router = express.Router();
 const customersController = new CustomersController();
 
+console.log('routes');
+
 // Test database connection
 router.get('/test-db', async (req, res) => {
   
