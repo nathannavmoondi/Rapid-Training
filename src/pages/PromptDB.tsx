@@ -25,7 +25,7 @@ export const PromptDB: React.FC = () => {
         ? 'https://rapid-training-kji1kvuf3-nathan-nav-moondis-projects.vercel.app'
         : 'http://localhost:5000';
       console.log('api is', apiUrl);
-      const response = await fetch(`${apiUrl}/api/sql/${encodedPrompt}`, {
+      const response = await fetch(`${apiUrl}/api/sql/${prompt}`, {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
