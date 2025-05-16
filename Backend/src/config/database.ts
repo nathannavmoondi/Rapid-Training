@@ -9,9 +9,15 @@ const parseConnectionString = (url: string | undefined) => {
   return url.includes('sslmode=require') ? url : `${url}${url.includes('?') ? '&' : '?'}sslmode=require`;
 };
 
-// Use connection URL for Vercel deployment compatibility
+// For Vercel deployment, prefer the pooled connection URL
+const connectionString = process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING;
+
+if (!connectionString) {
+  throw new Error('Database connection URL is not provided');
+}
+
 const poolConfig: PoolConfig = {
-  connectionString: parseConnectionString(process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING),
+  connectionString: parseConnectionString(connectionString),
   ssl: {
     rejectUnauthorized: false
   }
@@ -19,7 +25,7 @@ const poolConfig: PoolConfig = {
 
 // Log the connection string (without sensitive data) for debugging
 console.log('Attempting to connect to database...');
-const redactedUrl = process.env.POSTGRES_URL_NON_POOLING?.replace(/:[^:@]*@/, ':****@') || 'No URL found';
+const redactedUrl = connectionString.replace(/:[^:@]*@/, ':****@');
 console.log('Connection URL (redacted):', redactedUrl);
 
 export const pool = new Pool(poolConfig);
