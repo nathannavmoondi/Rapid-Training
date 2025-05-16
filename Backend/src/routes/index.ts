@@ -1,13 +1,19 @@
 import express, { Request, Response } from 'express';
 import { CustomersController } from '../controllers/customers.controller';
 import { db } from '../services/database.service';
+import { connect } from 'http2';
 
 const router = express.Router();
 const customersController = new CustomersController();
 
 // Test database connection
 router.get('/test-db', async (req, res) => {
+  
+  const cstring = process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING;
+  
   try {
+
+   
     // Test basic connection
     const versionResult = await db.query<{ version: string }>('SELECT version()');
     
@@ -31,6 +37,7 @@ router.get('/test-db', async (req, res) => {
     const err = error as Error;
     res.status(500).json({ 
       status: 'Error',
+      connectionString: cstring,
       message: err.message,
       stack: err.stack
     });
