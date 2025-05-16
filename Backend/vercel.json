@@ -3,20 +3,18 @@
   "builds": [
     {
       "src": "src/server.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["dist/**"]
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "src/server.ts"
-    },
-    {
       "src": "/(.*)",
-      "dest": "src/server.ts"
+      "dest": "src/server.ts",
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "X-Requested-With, Content-Type, Accept"
+      }
     }
   ]
 }
