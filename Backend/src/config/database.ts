@@ -3,20 +3,19 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Parse the connection URL to ensure SSL mode is properly set
+const parseConnectionString = (url: string | undefined) => {
+  if (!url) return url;
+  return url.includes('sslmode=require') ? url : `${url}${url.includes('?') ? '&' : '?'}sslmode=require`;
+};
+
 // Use connection URL for Vercel deployment compatibility
-const poolConfig: PoolConfig = process.env.POSTGRES_URL
-  ? {
-      connectionString: process.env.POSTGRES_URL,
-      ssl: {
-        rejectUnauthorized: false
-      }
-    }
-  : {
-      connectionString: process.env.POSTGRES_URL_NON_POOLING,
-      ssl: {
-        rejectUnauthorized: false
-      }
-    };
+const poolConfig: PoolConfig = {
+  connectionString: parseConnectionString(process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING),
+  ssl: {
+    rejectUnauthorized: false
+  }
+};
 
 // Log the connection string (without sensitive data) for debugging
 console.log('Attempting to connect to database...');
