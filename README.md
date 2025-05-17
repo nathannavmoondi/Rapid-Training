@@ -1,6 +1,8 @@
-# Algorithm Visualization Demo
+# Rapid Training and AI Showcase Demo
 
-A modern React application that demonstrates various algorithms implemented in both C# and JavaScript. The application provides an interactive interface for exploring and understanding different algorithms through clean visualization and detailed explanations.
+A modern React application that demonstrates rapid training quizzes, ai showcase and various algorithms implemented in both C# and JavaScript. The application provides an interactive interface for exploring and understanding different algorithms through clean visualization and detailed explanations.
+
+backend: https://rapid-training-api.vercel.app/api/sql/show%20me%20all%20customers
 
 ## 📸 Screenshots
 
@@ -22,6 +24,12 @@ A modern React application that demonstrates various algorithms implemented in b
 - Material-UI (MUI)
 - React Router
 - Modern CSS-in-JS styling
+
+## deploy backend in vercel
+vercel --prod
+
+## deploy frontend in vercel
+push commit to github
 
 ## 🛠️ Setup and Installation
 
