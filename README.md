@@ -3,6 +3,7 @@
 A modern React application that demonstrates rapid training quizzes, ai showcase and various algorithms implemented in both C# and JavaScript. The application provides an interactive interface for exploring and understanding different algorithms through clean visualization and detailed explanations.
 
 frontend: https://rapid-training-ai.vercel.app/
+
 backend: https://rapid-training-api.vercel.app/api/sql/show%20me%20all%20customers
 
 ## 📸 Screenshots
