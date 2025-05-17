@@ -489,7 +489,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                   )}
 
                   {/* "New Practice Question" button visibility changed here */}
-                  {!isSlideDeck && (!previousPath || !showAnswer) && (
+                  {isQuizActive && (
                     <Button // General "New Question" - distinct from "Next Quiz Question"
                       variant="contained"
                       color="info"
@@ -497,7 +497,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                       disabled={isLoading} // isSlideDeck is implicitly handled by the outer condition
                       sx={{ backgroundColor: '#17a2b8', '&:hover': { backgroundColor: '#117a8b'} }}
                     >
-                      {!isQuizActive && !showAnswer && !isSlideDeck ? 'Next Question' : 'End Quiz'}
+                     End Quiz
                     </Button>
                   )}
                     <Button
