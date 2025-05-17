@@ -7,25 +7,25 @@ export class CustomersController {
     
     var sql = await requestSqlStatement("give me all the customers", "customer");
     res.json(sql);
-  };
+  };  
   runSqlStatement = async(req: Request, res: Response): Promise<void> => {
+    let sql = "";
     try {
       const { prompt  } = req.params; //eg: give me all the customers
       console.log('text is >>', prompt);
-      const sql = await requestSqlStatement(prompt, "customers");
+      sql = await requestSqlStatement(prompt, "customers");
       console.log('sql is >>', sql);
       const result = await db.query<Customer>(sql);
       res.json({
         sql: sql,
-        results: result.rows,
-        test: "test2"
-
+        results: result.rows
       });
     } catch (error) {
       console.error('Error executing SQL statement:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       res.status(500).json({ 
         error: `Internal server error: ${errorMessage}`,
+        sql: sql,
         details: error instanceof Error ? error.stack : undefined
       });
     }
