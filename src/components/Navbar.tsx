@@ -73,22 +73,8 @@ export const Navbar = () => {
               }
             }}
           >
-            Algorithms
-          </Button>          <Button 
-            size="small" 
-            color="inherit" 
-            onClick={() => navigate('/details')}
-            sx={{              backgroundColor: isActive('/details') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
-              borderBottom: isActive('/details') ? '2px solid #90CAF9' : 'none',
-              fontWeight: isActive('/details') ? 600 : 400,
-              '&:hover': {
-                backgroundColor: isActive('/details') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
-              }
-            }}
-          >         
-            Details
-          </Button>
-          <Button 
+            Algorithms          </Button>         
+           <Button 
             size="small" 
             color="inherit" 
             onClick={() => navigate('/prompt-db')}
@@ -102,6 +88,35 @@ export const Navbar = () => {
           >         
             Prompt DB
           </Button>
+          <Button 
+            size="small" 
+            color="inherit" 
+            onClick={() => navigate('/marketing-ai')}
+            sx={{              backgroundColor: isActive('/marketing-ai') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
+              borderBottom: isActive('/marketing-ai') ? '2px solid #90CAF9' : 'none',
+              fontWeight: isActive('/marketing-ai') ? 600 : 400,
+              '&:hover': {
+                backgroundColor: isActive('/marketing-ai') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
+              }
+            }}
+          >         
+            Marketing AI
+          </Button>
+           <Button 
+            size="small" 
+            color="inherit" 
+            onClick={() => navigate('/details')}
+            sx={{              backgroundColor: isActive('/details') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
+              borderBottom: isActive('/details') ? '2px solid #90CAF9' : 'none',
+              fontWeight: isActive('/details') ? 600 : 400,
+              '&:hover': {
+                backgroundColor: isActive('/details') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
+              }
+            }}
+          >         
+            Details
+          </Button>
+         
           <Button 
             size="small"
             color="inherit" 

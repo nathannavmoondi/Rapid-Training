@@ -192,3 +192,113 @@ Important Content and Formatting Rules:
     return 'There was an error processing your request. Please try again later.';
   }
 };
+
+export const getMarketingPlan = async (url: string): Promise<string> => {
+  try {
+    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+    
+    console.log('api key', apiKey);
+    const callOpenRouter = async () => {
+      if (!apiKey) {
+        throw new Error('API key not found in environment variables!');
+      }
+
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.0-flash-001:floor",
+          temperature: 0.7,
+          messages: [            { 
+              role: "system", 
+              content: "You are a marketing expert with deep knowledge of digital marketing, social media strategies, and traditional marketing channels. Format your response in clear sections with headers starting with # and key details using Key: Value format."
+            },
+            { 
+              role: "user", 
+              content: `Create a comprehensive marketing analysis for ${url}. Structure your response with the following sections:
+
+# Overview
+Provide a brief overview of their marketing strategy
+
+# Digital Marketing Channels
+Break down their digital marketing presence and effectiveness
+
+# Social Media Strategy
+Detail their social media platforms, posting frequency, and engagement metrics
+
+# Traditional Marketing
+Analyze their traditional marketing channels (TV, radio, print, etc.)
+
+# Budget Allocation
+Estimate their marketing budget distribution across channels
+
+# Key Performance Metrics
+List their main success metrics and benchmarks
+
+# Recommendations
+Provide actionable recommendations for similar marketing results
+
+Use specific numbers, percentages, and metrics where possible. Format key statistics and data points as "Key: Value" pairs for better readability.`
+            }
+          ]
+        })
+      });      const data = await response.json();
+      let content = data.choices?.[0]?.message?.content;
+        if (content) {
+        // Split content into sections
+        const sections = content.split(/(?=# )/);
+        
+        // Format content into sections with proper HTML structure
+        content = `<div class="marketing-plan">
+          ${sections.map((section: string) => {
+            const lines = section.trim().split('\n');
+            if (lines[0].startsWith('# ')) {
+              // This is a section with a header
+              const header = lines[0].replace('# ', '');
+              const body = lines.slice(1).join('\n');
+              return `
+                <h3 class="section-title">${header}</h3>
+                ${body.split('\n').map((line: string) => {
+                  if (line.includes(': ')) {
+                    const [key, value] = line.split(': ');
+                    return `<div class="detail-item">
+                      <strong>${key.trim()}</strong>
+                      <span>${value.trim()}</span>
+                    </div>`;
+                  }
+                  return line.trim() ? `<p>${line.trim()}</p>` : '';
+                }).join('')}
+              `;
+            }
+            return section ? `<p>${section.trim()}</p>` : '';
+          }).join('')}
+        </div>`;
+
+        // Clean up any markdown code blocks and format them properly
+        interface CodeBlock {
+          _: string;
+          lang: string | undefined;
+          code: string;
+        }
+
+                content = content
+                  .replace(/```(\w+)?\s*\n?([\s\S]*?)\n?```/g, (_?: string, lang?: string, code?: string): string => {
+                    const language: string = lang || 'markup';
+                    return `<pre><code class="language-${language}">${(code ?? '').trim()}</code></pre>`;
+                  })
+                  .trim();
+      }
+      
+      return content || 'No marketing plan generated. Please try again.';
+    };
+  
+    return await callOpenRouter();
+  
+  } catch (error) {
+    console.error('Error generating marketing plan:', error);
+    return 'There was an error processing your request. Please try again later.';
+  }
+};
