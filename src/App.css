@@ -62,3 +62,13 @@ pre {
     transform: rotate(360deg);
   }
 }
+
+
+.content-section{
+  color: white !important
+}
+
+
+.section-title{
+  color: lightblue;
+}

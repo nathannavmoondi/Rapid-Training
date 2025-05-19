@@ -214,68 +214,72 @@ export const getMarketingPlan = async (url: string): Promise<string> => {
           temperature: 0.7,
           messages: [            { 
               role: "system", 
-              content: "You are a marketing expert with deep knowledge of digital marketing, social media strategies, and traditional marketing channels. Format your response in clear sections with headers starting with # and key details using Key: Value format."
+              content: "You are a marketing expert with deep knowledge of digital marketing, social media strategies, and traditional marketing channels. Return your response in properly formatted HTML with sections and styled elements."
             },
             { 
               role: "user", 
-              content: `Create a comprehensive marketing analysis for ${url}. Structure your response with the following sections:
+              content: `Create a comprehensive marketing analysis for ${url}. Format the response compactly using this exact HTML structure:
 
-# Overview
-Provide a brief overview of their marketing strategy
+<div class="marketing-plan"><div class="content-section">
+<h3 class="section-title">Overview</h3>
+<p>[Brief overview of their marketing strategy - keep it concise]</p>
+<div class="detail-item"><strong>Brand Awareness</strong><span>[Value]</span></div>
+<div class="detail-item"><strong>Market Share</strong><span>[Value]</span></div></div>
 
-# Digital Marketing Channels
-Break down their digital marketing presence and effectiveness
+<div class="content-section">
+<h3 class="section-title">Digital Marketing Channels</h3>
+<p>[Brief digital strategy overview]</p>
+<div class="detail-item"><strong>SEO Ranking</strong><span>[Value]</span></div>
+<div class="detail-item"><strong>Website Traffic</strong><span>[Value]</span></div></div>
 
-# Social Media Strategy
-Detail their social media platforms, posting frequency, and engagement metrics
+<div class="content-section">
+<h3 class="section-title">Social Media Strategy</h3>
+<p>[Brief social media overview]</p>
+<div class="detail-item"><strong>Platform Mix</strong><span>[List platforms]</span></div>
+<div class="detail-item"><strong>Engagement Rate</strong><span>[Value]</span></div></div>
 
-# Traditional Marketing
-Analyze their traditional marketing channels (TV, radio, print, etc.)
+<div class="content-section">
+<h3 class="section-title">Traditional Marketing</h3>
+<p>[Brief traditional marketing overview]</p>
+<div class="detail-item"><strong>TV Ad Spend</strong><span>[Value]</span></div>
+<div class="detail-item"><strong>Print Reach</strong><span>[Value]</span></div></div>
 
-# Budget Allocation
-Estimate their marketing budget distribution across channels
+<div class="content-section">
+<h3 class="section-title">Budget Allocation</h3>
+<p>[Brief budget overview]</p>
+<div class="detail-item"><strong>Digital</strong><span>[Value]</span></div>
+<div class="detail-item"><strong>Traditional</strong><span>[Value]</span></div></div>
 
-# Key Performance Metrics
-List their main success metrics and benchmarks
+<div class="content-section">
+<h3 class="section-title">Key Performance Metrics</h3>
+<div class="detail-item"><strong>ROI</strong><span>[Value]</span></div>
+<div class="detail-item"><strong>Conversion Rate</strong><span>[Value]</span></div></div>
 
-# Recommendations
-Provide actionable recommendations for similar marketing results
+<div class="content-section">
+<h3 class="section-title">Recommendations</h3>
+<p>1. [First recommendation]</p>
+<p>2. [Second recommendation]</p>
+<p>3. [Third recommendation]</p></div></div>
 
-Use specific numbers, percentages, and metrics where possible. Format key statistics and data points as "Key: Value" pairs for better readability.`
+Important formatting rules:
+1. Use <div class="detail-item"> with nested <strong> and <span> for any key-value pairs
+2. Use <p> tags for regular text content
+3. Each section must be wrapped in <div class="content-section">
+4. Use real numbers, percentages, and metrics where possible
+5. Return the response as pure HTML without any markdown formatting`
             }
           ]
         })
-      });      const data = await response.json();
-      let content = data.choices?.[0]?.message?.content;
-        if (content) {
-        // Split content into sections
-        const sections = content.split(/(?=# )/);
-        
-        // Format content into sections with proper HTML structure
-        content = `<div class="marketing-plan">
-          ${sections.map((section: string) => {
-            const lines = section.trim().split('\n');
-            if (lines[0].startsWith('# ')) {
-              // This is a section with a header
-              const header = lines[0].replace('# ', '');
-              const body = lines.slice(1).join('\n');
-              return `
-                <h3 class="section-title">${header}</h3>
-                ${body.split('\n').map((line: string) => {
-                  if (line.includes(': ')) {
-                    const [key, value] = line.split(': ');
-                    return `<div class="detail-item">
-                      <strong>${key.trim()}</strong>
-                      <span>${value.trim()}</span>
-                    </div>`;
-                  }
-                  return line.trim() ? `<p>${line.trim()}</p>` : '';
-                }).join('')}
-              `;
-            }
-            return section ? `<p>${section.trim()}</p>` : '';
-          }).join('')}
-        </div>`;
+      });      const data = await response.json();      let content = data.choices?.[0]?.message?.content;
+
+      content = content.replace(/^```html\s*/i, '');
+      content = content.replace('```', '');
+
+      return content || 'No marketing plan generated. Please try again.';
+
+      if (content) {
+        // Clean up any extra whitespace and ensure proper formatting
+        content = content.trim();
 
         // Clean up any markdown code blocks and format them properly
         interface CodeBlock {
