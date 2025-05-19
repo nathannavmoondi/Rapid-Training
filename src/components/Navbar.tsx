@@ -23,31 +23,41 @@ export const Navbar = () => {
     }}>
       <Toolbar sx={{ 
         display: 'flex', 
-        justifyContent: 'center',
+        justifyContent: 'space-between', // Changed from 'center'
+        alignItems: 'center', // Added for vertical alignment
         minHeight: '48px !important',
-        py: 0.5
-      }}>        <Typography 
-          variant="subtitle1" 
-          component="div" 
-          onClick={() => navigate('/')} 
-          sx={{ 
-            position: 'absolute',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            fontWeight: 500,
-            cursor: 'pointer',
-            '&:hover': {
-              color: 'rgba(255, 255, 255, 0.8)'
-            },
-            transition: 'color 0.2s ease'
-          }}
-        >
-          Rapid Training AI - Nathan Nav Moondi
-        </Typography>        <Box sx={{ 
+        py: 0.5,
+        px: { xs: 1, sm: 2 } // Add some padding
+      }}>
+        <Box> {/* Wrapper for the title */}
+          <Typography 
+            variant="subtitle1" 
+            component="div" 
+            onClick={() => navigate('/')} 
+            sx={{ 
+              // Removed absolute positioning
+              fontWeight: 500,
+              cursor: 'pointer',
+              '&:hover': {
+                color: 'rgba(255, 255, 255, 0.8)'
+              },
+              transition: 'color 0.2s ease',
+              whiteSpace: 'nowrap', // Prevent title from wrapping
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: { xs: '150px', sm: '300px', md: 'none' } // Responsive max-width for title
+            }}
+          >
+            Rapid Training AI - Nathan Nav Moondi
+          </Typography>
+        </Box>
+        <Box sx={{ 
           display: 'flex', 
-          gap: 2,
-          marginLeft: 'auto'
-        }}>          <Button 
+          gap: { xs: 0.5, sm: 1, md: 2 }, // Responsive gap
+          // Removed marginLeft: 'auto'
+          flexShrink: 0 // Prevent button box from shrinking
+        }}>
+          <Button 
             size="small" 
             color="inherit" 
             onClick={() => navigate('/skills')}

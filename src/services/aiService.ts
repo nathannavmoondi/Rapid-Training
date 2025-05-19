@@ -223,37 +223,37 @@ export const getMarketingPlan = async (url: string): Promise<string> => {
 <div class="marketing-plan"><div class="content-section">
 <h3 class="section-title">Overview</h3>
 <p>[Brief overview of their marketing strategy - keep it concise]</p>
-<div class="detail-item"><strong>Brand Awareness</strong><span>[Value]</span></div>
+<div class="detail-item"><strong>Brand Awareness: </strong><span>[Value]</span></div>
 <div class="detail-item"><strong>Market Share</strong><span>[Value]</span></div></div>
 
 <div class="content-section">
 <h3 class="section-title">Digital Marketing Channels</h3>
 <p>[Brief digital strategy overview]</p>
-<div class="detail-item"><strong>SEO Ranking</strong><span>[Value]</span></div>
-<div class="detail-item"><strong>Website Traffic</strong><span>[Value]</span></div></div>
+<div class="detail-item"><strong>SEO Ranking: </strong><span>[Value]</span></div>
+<div class="detail-item"><strong>Website Traffic: </strong><span>[Value]</span></div></div>
 
 <div class="content-section">
 <h3 class="section-title">Social Media Strategy</h3>
 <p>[Brief social media overview]</p>
-<div class="detail-item"><strong>Platform Mix</strong><span>[List platforms]</span></div>
-<div class="detail-item"><strong>Engagement Rate</strong><span>[Value]</span></div></div>
+<div class="detail-item"><strong>Platform Mix: </strong><span>[List platforms]</span></div>
+<div class="detail-item"><strong>Engagement Rate: </strong><span>[Value]</span></div></div>
 
 <div class="content-section">
 <h3 class="section-title">Traditional Marketing</h3>
 <p>[Brief traditional marketing overview]</p>
-<div class="detail-item"><strong>TV Ad Spend</strong><span>[Value]</span></div>
-<div class="detail-item"><strong>Print Reach</strong><span>[Value]</span></div></div>
+<div class="detail-item"><strong>TV Ad Spend: </strong><span>[Value]</span></div>
+<div class="detail-item"><strong>Print Reach: </strong><span>[Value]</span></div></div>
 
 <div class="content-section">
 <h3 class="section-title">Budget Allocation</h3>
 <p>[Brief budget overview]</p>
-<div class="detail-item"><strong>Digital</strong><span>[Value]</span></div>
-<div class="detail-item"><strong>Traditional</strong><span>[Value]</span></div></div>
+<div class="detail-item"><strong>Digital: </strong><span>[Value]</span></div>
+<div class="detail-item"><strong>Traditional: </strong><span>[Value]</span></div></div>
 
 <div class="content-section">
 <h3 class="section-title">Key Performance Metrics</h3>
-<div class="detail-item"><strong>ROI</strong><span>[Value]</span></div>
-<div class="detail-item"><strong>Conversion Rate</strong><span>[Value]</span></div></div>
+<div class="detail-item"><strong>ROI: </strong><span>[Value]</span></div>
+<div class="detail-item"><strong>Conversion Rate: </strong><span>[Value]</span></div></div>
 
 <div class="content-section">
 <h3 class="section-title">Recommendations</h3>

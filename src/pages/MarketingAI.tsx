@@ -32,6 +32,7 @@ export const MarketingAI: React.FC = () => {
     try {
       setIsLoading(true);
       setButtonText('Please wait....');
+      setResult(''); // Clear previous result to prevent re-display
       setCurrentText('');
       setCurrentIndex(0);
       const urlToAnalyze = url.trim() || 'ford.com';
@@ -65,7 +66,7 @@ export const MarketingAI: React.FC = () => {
           variant="h4" 
           component="h1" 
           gutterBottom 
-          color="primary.main" 
+          color="white" 
           textAlign="center"
           sx={{            fontSize: { xs: '2rem', sm: '2.5rem' },
             fontWeight: 600,
@@ -88,6 +89,7 @@ export const MarketingAI: React.FC = () => {
             placeholder="Enter company URL (e.g., ford.com, tacobell.com)"
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
+                e.preventDefault(); // Prevent new line
                 handleFetch();
               }
             }}

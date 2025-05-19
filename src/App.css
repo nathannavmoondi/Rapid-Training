@@ -70,5 +70,13 @@ pre {
 
 
 .section-title{
-  color: lightblue;
+  color: lightblue !important;
+};
+
+
+.detail-item span {
+  color: white !important;
+}
+span{
+  color: white !important;
 }
