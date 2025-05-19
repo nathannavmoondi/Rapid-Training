@@ -1,5 +1,7 @@
-import { AppBar, Toolbar, Button, Typography, Box } from '@mui/material';
+import { AppBar, Toolbar, Button, Typography, Box, SxProps, Theme } from '@mui/material'; // Added SxProps and Theme
 import { useNavigate, useLocation } from 'react-router-dom';
+
+// Removed favicon import, will use direct path
 
 export const Navbar = () => {
   const navigate = useNavigate();
@@ -17,35 +19,43 @@ export const Navbar = () => {
     return location.pathname === path;
   };
 
+  // Helper function to generate sx props for buttons to avoid repetition and type issues
+  const getButtonSx = (path: string): SxProps<Theme> => ({
+    backgroundColor: isActive(path) ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
+    borderBottom: isActive(path) ? '2px solid #90CAF9' : 'none',
+    fontWeight: isActive(path) ? 600 : 400,
+    '&:hover': {
+      backgroundColor: isActive(path) ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
+    }
+  });
+
   return (
     <AppBar position="static" sx={{ 
       borderBottom: '2px solid rgba(255, 255, 255, 0.2)'
     }}>
       <Toolbar sx={{ 
         display: 'flex', 
-        justifyContent: 'space-between', // Changed from 'center'
-        alignItems: 'center', // Added for vertical alignment
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
         minHeight: '48px !important',
         py: 0.5,
-        px: { xs: 1, sm: 2 } // Add some padding
+        px: { xs: 1, sm: 2 } 
       }}>
-        <Box> {/* Wrapper for the title */}
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/')}>
+          <img src="/favicon.ico" alt="Favicon" style={{ marginRight: '8px', height: '24px', width: '24px' }} />
           <Typography 
             variant="subtitle1" 
             component="div" 
-            onClick={() => navigate('/')} 
             sx={{ 
-              // Removed absolute positioning
               fontWeight: 500,
-              cursor: 'pointer',
+              whiteSpace: 'nowrap', 
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: { xs: '150px', sm: '300px', md: 'none' },
               '&:hover': {
                 color: 'rgba(255, 255, 255, 0.8)'
               },
               transition: 'color 0.2s ease',
-              whiteSpace: 'nowrap', // Prevent title from wrapping
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              maxWidth: { xs: '150px', sm: '300px', md: 'none' } // Responsive max-width for title
             }}
           >
             Rapid Training AI - Nathan Nav Moondi
@@ -53,21 +63,14 @@ export const Navbar = () => {
         </Box>
         <Box sx={{ 
           display: 'flex', 
-          gap: { xs: 0.5, sm: 1, md: 2 }, // Responsive gap
-          // Removed marginLeft: 'auto'
-          flexShrink: 0 // Prevent button box from shrinking
+          gap: { xs: 0.5, sm: 1, md: 2 }, 
+          flexShrink: 0 
         }}>
           <Button 
             size="small" 
             color="inherit" 
             onClick={() => navigate('/skills')}
-            sx={{              backgroundColor: isActive('/skills') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
-              borderBottom: isActive('/skills') ? '2px solid #90CAF9' : 'none',
-              fontWeight: isActive('/skills') ? 600 : 400,
-              '&:hover': {
-                backgroundColor: isActive('/skills') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
-              }
-            }}
+            sx={getButtonSx('/skills')}
           >
             Rapid Training 
           </Button>
@@ -75,55 +78,32 @@ export const Navbar = () => {
             size="small" 
             color="inherit" 
             onClick={() => navigate('/algorithms')}
-            sx={{              backgroundColor: isActive('/algorithms') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
-              borderBottom: isActive('/algorithms') ? '2px solid #90CAF9' : 'none',
-              fontWeight: isActive('/algorithms') ? 600 : 400,
-              '&:hover': {
-                backgroundColor: isActive('/algorithms') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
-              }
-            }}
+            sx={getButtonSx('/algorithms')}
           >
-            Algorithms          </Button>         
+            Algorithms
+          </Button>         
            <Button 
             size="small" 
             color="inherit" 
             onClick={() => navigate('/prompt-db')}
-            sx={{              backgroundColor: isActive('/prompt-db') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
-              borderBottom: isActive('/prompt-db') ? '2px solid #90CAF9' : 'none',
-              fontWeight: isActive('/prompt-db') ? 600 : 400,
-              '&:hover': {
-                backgroundColor: isActive('/prompt-db') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
-              }
-            }}
-          >         
+            sx={getButtonSx('/prompt-db')}
+          >
             Prompt DB
           </Button>
           <Button 
             size="small" 
             color="inherit" 
             onClick={() => navigate('/marketing-ai')}
-            sx={{              backgroundColor: isActive('/marketing-ai') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
-              borderBottom: isActive('/marketing-ai') ? '2px solid #90CAF9' : 'none',
-              fontWeight: isActive('/marketing-ai') ? 600 : 400,
-              '&:hover': {
-                backgroundColor: isActive('/marketing-ai') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
-              }
-            }}
-          >         
+            sx={getButtonSx('/marketing-ai')}
+          >
             Marketing AI
           </Button>
            <Button 
             size="small" 
             color="inherit" 
             onClick={() => navigate('/details')}
-            sx={{              backgroundColor: isActive('/details') ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
-              borderBottom: isActive('/details') ? '2px solid #90CAF9' : 'none',
-              fontWeight: isActive('/details') ? 600 : 400,
-              '&:hover': {
-                backgroundColor: isActive('/details') ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
-              }
-            }}
-          >         
+            sx={getButtonSx('/details')}
+          >
             Details
           </Button>
          
@@ -133,6 +113,12 @@ export const Navbar = () => {
             href="https://github.com/nathannavmoondi" 
             target="_blank"
             rel="noopener noreferrer"
+            // sx prop for external link button can be simpler or use getButtonSx if active state is desired
+            sx={{
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.08)'
+              }
+            }}
           >
             GitHub
           </Button>
