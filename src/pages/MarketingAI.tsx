@@ -151,7 +151,7 @@ export const MarketingAI: React.FC = () => {
           sx={{            py: 1.5,
             mb: 2,
             mt: 1,
-            background: 'linear-gradient(45deg, #1976D2 30%, #2196F3 90%)',
+            background: '#90caf9', // Added quotes
             fontSize: '1.1rem',
             fontWeight: 600,
             textTransform: 'none',
@@ -159,13 +159,13 @@ export const MarketingAI: React.FC = () => {
             letterSpacing: '0.5px',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
-              background: 'linear-gradient(45deg, #1976D2 10%, #2196F3 70%)',
-              transform: 'translateY(-2px)',
+              background: '#90caf9', // Added quotes
+              transform: 'translateY(-2px)', // Added comma
               boxShadow: '0 6px 20px rgba(33, 150, 243, 0.4)',
             },
             '&:disabled': {
-              backgroundColor: 'rgba(144, 202, 249, 0.12)',
-              color: 'rgba(255, 255, 255, 0.3)'
+              backgroundColor:  '#90caf9',
+              color: 'black'
             }
           }}
         >
