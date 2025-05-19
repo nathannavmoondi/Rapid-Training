@@ -266,7 +266,7 @@ Important formatting rules:
 2. Use <p> tags for regular text content
 3. Each section must be wrapped in <div class="content-section">
 4. Use real numbers, percentages, and metrics where possible
-5. Return the response as pure HTML without any markdown formatting`
+5. Return the response as pure HTML without any markdown formatting and no color or style attributes`
             }
           ]
         })

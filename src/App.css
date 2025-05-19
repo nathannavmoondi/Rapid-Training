@@ -73,6 +73,9 @@ pre {
   color: lightblue !important;
 };
 
+.detail-item  {
+  color: white !important;
+}
 
 .detail-item span {
   color: white !important;
