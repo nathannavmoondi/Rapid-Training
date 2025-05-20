@@ -1,11 +1,42 @@
-import { AppBar, Toolbar, Button, Typography, Box, SxProps, Theme } from '@mui/material'; // Added SxProps and Theme
+import { 
+  AppBar, 
+  Toolbar, 
+  Button, 
+  Typography, 
+  Box, 
+  SxProps, 
+  Theme,
+  IconButton,
+  Menu,
+  MenuItem,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate, useLocation } from 'react-router-dom';
-
-// Removed favicon import, will use direct path
+import { useState } from 'react';
 
 export const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    handleClose();
+  };
+
   const isActive = (path: string) => {
     // For skills pages
     if (path === '/skills' && (location.pathname === '/skills' || location.pathname.startsWith('/skills/'))) {
@@ -28,6 +59,15 @@ export const Navbar = () => {
       backgroundColor: isActive(path) ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
     }
   });
+
+  const menuItems = [
+    { label: 'Rapid Training', path: '/skills' },
+    { label: 'Algorithms', path: '/algorithms' },
+    { label: 'Prompt DB', path: '/prompt-db' },
+    { label: 'Marketing AI', path: '/marketing-ai' },
+    { label: 'Details', path: '/details' },
+    { label: 'GitHub', path: 'https://github.com/nathannavmoondi', external: true }
+  ];
 
   return (
     <AppBar position="static" sx={{ 
@@ -61,68 +101,92 @@ export const Navbar = () => {
             Rapid Training AI - Nathan Nav Moondi
           </Typography>
         </Box>
-        <Box sx={{ 
-          display: 'flex', 
-          gap: { xs: 0.5, sm: 1, md: 2 }, 
-          flexShrink: 0 
-        }}>
-          <Button 
-            size="small" 
-            color="inherit" 
-            onClick={() => navigate('/skills')}
-            sx={getButtonSx('/skills')}
-          >
-            Rapid Training 
-          </Button>
-          <Button 
-            size="small" 
-            color="inherit" 
-            onClick={() => navigate('/algorithms')}
-            sx={getButtonSx('/algorithms')}
-          >
-            Algorithms
-          </Button>         
-           <Button 
-            size="small" 
-            color="inherit" 
-            onClick={() => navigate('/prompt-db')}
-            sx={getButtonSx('/prompt-db')}
-          >
-            Prompt DB
-          </Button>
-          <Button 
-            size="small" 
-            color="inherit" 
-            onClick={() => navigate('/marketing-ai')}
-            sx={getButtonSx('/marketing-ai')}
-          >
-            Marketing AI
-          </Button>
-           <Button 
-            size="small" 
-            color="inherit" 
-            onClick={() => navigate('/details')}
-            sx={getButtonSx('/details')}
-          >
-            Details
-          </Button>
-         
-          <Button 
-            size="small"
-            color="inherit" 
-            href="https://github.com/nathannavmoondi" 
-            target="_blank"
-            rel="noopener noreferrer"
-            // sx prop for external link button can be simpler or use getButtonSx if active state is desired
-            sx={{
-              '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.08)'
-              }
-            }}
-          >
-            GitHub
-          </Button>
-        </Box>
+
+        {isMobile ? (
+          <Box>
+            <IconButton
+              size="large"
+              edge="end"
+              color="inherit"
+              aria-label="menu"
+              onClick={handleMenu}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              keepMounted
+              open={open}
+              onClose={handleClose}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              PaperProps={{
+                sx: {
+                  mt: 4.5,
+                  background: 'rgba(35, 35, 35, 0.95)',
+                  border: '1px solid rgba(144, 202, 249, 0.15)',
+                  borderRadius: 2,
+                }
+              }}
+            >
+              {menuItems.map((item) => (
+                <MenuItem 
+                  key={item.label}
+                  onClick={() => item.external ? window.open(item.path, '_blank') : handleNavigation(item.path)}
+                  sx={{
+                    color: 'white',
+                    minWidth: '200px',
+                    ...(isActive(item.path) && !item.external && {
+                      backgroundColor: 'rgba(144, 202, 249, 0.2) !important'
+                    })
+                  }}
+                >
+                  {item.label}
+                </MenuItem>
+              ))}
+            </Menu>
+          </Box>
+        ) : (
+          <Box sx={{ 
+            display: 'flex', 
+            gap: { xs: 0.5, sm: 1, md: 2 }, 
+            flexShrink: 0 
+          }}>
+            {menuItems.map((item) => (
+  item.external ? (
+    <Button
+      key={item.label}
+      size="small"
+      color="inherit"
+      component="a"
+      href={item.path}
+      target="_blank"
+      rel="noopener noreferrer"
+      sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.08)' } }}
+    >
+      {item.label}
+    </Button>
+  ) : (
+    <Button
+      key={item.label}
+      size="small"
+      color="inherit"
+      onClick={() => navigate(item.path)}
+      sx={getButtonSx(item.path)}
+    >
+      {item.label}
+    </Button>
+  )
+))}
+
+          </Box>
+        )}
       </Toolbar>
     </AppBar>
   );
