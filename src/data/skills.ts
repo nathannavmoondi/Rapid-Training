@@ -15,6 +15,13 @@ export const skills: Skill[] = [
     topics: ['Hooks', 'Context API', 'Redux', 'Performance Optimization', 'Component Patterns']
   },
   {
+    id: 'vuejs',
+    title: 'Vue.js',
+    category: 'frontend',
+    description: 'Progressive JavaScript framework for building user interfaces and single-page applications',
+    topics: ['Reactivity', 'Components', 'Vue CLI', 'Vuex', 'Composition API']
+  },
+  {
     id: 'typescript',
     title: 'TypeScript',
     category: 'frontend',
