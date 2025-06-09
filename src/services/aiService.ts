@@ -1,6 +1,51 @@
 import { getSkillTopics } from './skillsService';
 
-export const requestRefresher = async (level: string, skillDescription: string, skillCategory: string): Promise<string> => {
+// Food Saver AI call
+export const getFoodSaverResults = async (foodItem: string, city: string): Promise<string> => {
+  try {
+    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+    if (!apiKey) throw new Error('API key not found in environment variables!');
+    const prompt = `For this product: ${foodItem}, find me the stores with the lowest cost right now. Include walmart and costco. 
+    ive me the list only. Return at least 5.  Return results price per pound.  Format it nicely. In round brackets include product title.
+    Format that part using css as light blue.
+     I'm in ${city}.`;
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.0-flash-001:floor",
+        temperature: 0.7,
+        messages: [
+          {
+            role: "system",
+            content: "You are a helpful assistant that returns a pure HTML list of stores and prices. Do not use markdown. Do not include any explanations, just the formatted list."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ]
+      })
+    });
+    const data = await response.json();
+    let content = data.choices?.[0]?.message?.content;
+    if (content) {
+      content = content.replace(/^```html\s*/i, '');
+      content = content.replace(/```\s*$/, '');
+      content = content.trim();
+    }
+    return content || 'No results found.';
+  } catch (error) {
+    console.error('Error connecting to AI service (Food Saver):', error);
+    return 'There was an error processing your request. Please try again later.';
+  }
+};
+
+
+ export const requestRefresher = async (level: string, skillDescription: string, skillCategory: string): Promise<string> => {
   try {    // Try different environment variable formats since Vite and CRA handle them differently
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
     
@@ -108,7 +153,6 @@ Important:
 1. Put each explanation point in the answer section on a new line using <p> tags.
 2. Do not include any code examples, code snippets, or code-related sections.`;
   }
-  console.log("Prompt: ", prompt);
 
   // 1. The response should be pure HTML content, without any \`style\` tags or inline style attributes. All styling will be handled by the existing site's CSS.
 
@@ -197,7 +241,7 @@ export const getMarketingPlan = async (url: string): Promise<string> => {
   try {
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
     
-    console.log('api key', apiKey);
+    
     const callOpenRouter = async () => {
       if (!apiKey) {
         throw new Error('API key not found in environment variables!');
