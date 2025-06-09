@@ -6,8 +6,8 @@ export const getFoodSaverResults = async (foodItem: string, city: string): Promi
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
     if (!apiKey) throw new Error('API key not found in environment variables!');
     const prompt = `For this product: ${foodItem}, find me the stores with the lowest cost right now. Include walmart and costco. 
-    ive me the list only. Return at least 5.  Return results price per pound.  Format it nicely. In round brackets include product title.
-    Format that part using css as light blue.
+    Give me the list only. Return at least 5.  Return results price per pound.  Format it nicely. Only include pound if it's applicable food item.
+    In round brackets, include the brand title and brand name.
      I'm in ${city}.`;
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",

@@ -33,7 +33,7 @@ export const FoodSaver = () => {
           Find the cheapest stores for your food item.
         </Typography>
         <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-          (example: "skinless chicken breast" or "apples" or "skim milk")
+          (example: "skinless chicken breast" or "apples" or "Sealtest Homogenized 3.25% Milk, 1 L")
         </Typography>
         <Typography variant="subtitle1" gutterBottom sx={{ color: '#42a5f5' }}>
           I wrote this for myself as a helpful tool.
