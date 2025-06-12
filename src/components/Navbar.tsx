@@ -98,7 +98,7 @@ export const Navbar = () => {
               transition: 'color 0.2s ease',
             }}
           >
-            Rapid Training AI - Nathan Nav Moondi
+            Rapid Training AI
           </Typography>
         </Box>
 
