@@ -85,20 +85,51 @@ Supported language classes for <code class="language-xxx"> are: language-typescr
 
 if (startCourse === 1) {
         // Course mode prompt
-        prompt = `Create section ${currentSection} of a comprehensive tutorial course for ${skillDescription}.
-        ${previousContent ? `Previous section covered: [begin section] ${previousContent} [end section]` : 'This is the first section.'}        Show one section only. Next section will be given in next prompt. 
-        Format each content section like:
+        prompt = `Create nicely formatted section ${currentSection} of a comprehensive tutorial course for ${skillDescription}.
+        ${previousContent ? `Previous section covered: [begin section] ${previousContent} [end section]` : 'This is the first section.'}        
+        Show one section only. Next section will be given in next prompt.        Format each content section like:
         <h3 class="section-title">Section Title</h3>        
         [section content]
+
+        Format section content nicely, use line breaks, li's, uls, change colors, nice css, bold, etc.  Use code section if needed.  Stylize.
+
+        All code snippets in section content  MUST be wrapped in <pre><code class="language-xxx">...your code here...</code></pre> tags. This structure is MANDATORY.
+. The \`language-xxx\` part of the class on the <code> tag is ESSENTIAL for syntax highlighting. You MUST use ONLY ONE of the following specific and supported language classes:
+    - \`language-markup\` (for HTML, XML, SVG)
+    - \`language-css\`
+    - \`language-javascript\`
+    - \`language-jsx\`
+    - \`language-typescript\`
+    - \`language-tsx\`
+    - \`language-graphql\`
+    - \`language-cpp\`
+    - \`language-python\`
+    - \`language-rust\`
+    - \`language-go\`
+    - \`language-ruby\`
+    - \`language-sql\`
+    - \`language-java\`
+    - \`language-csharp\`
+ The example structure for a code snippet within the question text is: \`<pre><code class="language-javascript">const snippet = "example";</code></pre>\`. Adhere to this, using an appropriate language class from the list in point 7.
+ Indent code properly inside the <code> block.
+ non code text color shoudl always be white.
         
         At end show ONE multiple choice question on this section.
         Do not include the word html and GRAVE ACCENT in the answer.
+        Do not include any language tags like <lang="en"> or <!DOCTYPE> or <html> or <body>.
+        Do not wrap content in HTML/HEAD/BODY tags.
+        Add plenty of line breaks, do not have runon sentences.
+        Never use any h1 or h2 tags.
+        Never use fragment tags (<> or </> or <></> or <Fragment> or </Fragment>).
+        Never use React or JSX syntax.
   Include a practical code example with syntax highlighting in the answer section.  
   style response nicely.
   Content structure rules:
-  - Use h3 with class "section-title" for all section headings
+  - Use only h3 with class "section-title" for section headings (no h1 or h2)
   - Keep explanations clear and concise
   - Avoid any inline styles
+  - Send only the direct content without any document-level HTML tags or fragments
+  - Use only plain HTML without React/JSX components or fragments
   Format the response in this exact HTML structure:
         
   <div class="question-container">

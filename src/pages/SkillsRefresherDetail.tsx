@@ -643,10 +643,60 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                   </Box>
                 )}
               </Box>
-            </Box>
-          </>
+            </Box>          </>
         )}
-      </Paper>
+      </Paper>      {startCourse === 1 && (
+        <>
+          <Typography 
+            variant="h6" 
+            align="center" 
+            sx={{ 
+              mt: 4, 
+              mb: 1,
+              color: 'white',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              fontWeight: 'bold'
+            }}
+          >
+          
+          </Typography>
+          <Box 
+            sx={{ 
+              p: 3,
+              backgroundColor: 'rgba(25, 118, 210, 0.15)',
+              border: '1px solid rgba(25, 118, 210, 0.4)',
+              borderRadius: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2
+            }}
+          >            <Typography 
+              variant="h6" 
+              align="center" 
+              sx={{ 
+                color: '#90CAF9', 
+                fontWeight: 'bold',
+                mb: 2
+              }}
+            >
+              Rapid Course Training
+            </Typography>
+            <Typography 
+              sx={{ 
+                color: 'white',
+                fontSize: '0.85rem',
+                lineHeight: 1.6,
+                textAlign: 'center'
+              }}
+            >
+              A new concept designed by Nathan Moondi to give the student
+              little snippets of information, quiz them, then go to next part. And can do over and over again until they mastered it.
+              Learn by snippet rather than by entire chapter or course. Easier on the brain and quick dopamine hits.
+            </Typography>
+          </Box>
+        </>
+      )}
     </Container>
   );
 };
