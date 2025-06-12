@@ -83,10 +83,10 @@ const getProcessedQuestionHtml = (html: string, answerVisible: boolean, showFeed
   if (showFeedback && isCorrect !== null) {
     const feedbackContent = `
       <div style="margin: 16px 0; padding: 16px; border: 2px solid ${isCorrect ? 'green' : 'red'}; border-radius: 4px; background-color: transparent; display: flex; align-items: center; justify-content: center">
-        <span style="margin-right: 8px; color: ${isCorrect ? 'green' : 'red'}; font-size: 24px;">
+        <span style="margin-right: 8px; color: ${isCorrect ? 'green' : 'red !important'}; font-size: 24px;">
           ${isCorrect ? '✓' : '✕'}
         </span>
-        <span style="font-size: 20px; color: ${isCorrect ? 'white' : 'red'}">
+        <span style="font-size: 20px; color: ${isCorrect ? 'white' : 'red !important'}">
           ${isCorrect ? 'Correct!' : 'Incorrect!'}
         </span>
       </div>
@@ -482,7 +482,8 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
             )}            {/* Button Container: Adjusted for new layout */}
             <Box sx={{ mt: 3 }}>
               {/* First row of buttons */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>                {/* Left-aligned: Start Quiz Button */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '7px' }}>
+                {/* Left-aligned: Start Quiz Button */}
                 <Box>
                   {!isSlideDeck && !isQuizActive && !showAnswer && quizzesTaken < maxQuizzes && startCourse !== 1 && (
                     <Button
@@ -497,7 +498,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                 </Box>
 
                 {/* Right-aligned group */}
-                <Stack direction="row" spacing={1} justifyContent="flex-end" flexWrap="wrap">
+                <Stack direction="row" spacing={'7px'} justifyContent="flex-end" flexWrap="wrap">
                   <Button
                     variant="contained"
                     onClick={(isQuizActive || startCourse ==1) && !showAnswer ? handleSubmitQuizAnswer : handleShowAnswer}
@@ -553,8 +554,10 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                     Done (Back to Skills)
                   </Button>
                 </Stack>
-              </Box>              {/* Second row for buttons */}
-              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              </Box>
+              
+              {/* Second row for buttons */}
+              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '7px' }}>
                 {startCourse === 1 ? (
                   <>
                     <Button
@@ -567,8 +570,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                       }}
                     >
                       End Course
-                    </Button>
-                    <Box sx={{ display: 'flex', gap: 2 }}>
+                    </Button>                    <Box sx={{ display: 'flex', gap: '7px' }}>
                       <Button
                         variant="contained"
                         onClick={handleStartCourse}
@@ -579,7 +581,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                       </Button>
                     </Box>
                   </>
-                ) : (                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 'auto' }}>
+                ) : (                    <Box sx={{ display: 'flex', alignItems: 'center', gap: '7px', ml: 'auto' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Typography variant="body1" sx={{ color: 'white', mr: 1 }}>Level:</Typography>
                       <FormControl sx={{ minWidth: 120 }} size="small">
