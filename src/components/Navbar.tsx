@@ -59,12 +59,12 @@ export const Navbar = () => {
       backgroundColor: isActive(path) ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
     }
   });
-
   const menuItems = [
     { label: 'Rapid Training', path: '/skills' },
     { label: 'Algorithms', path: '/algorithms' },
     { label: 'Prompt DB', path: '/prompt-db' },
     { label: 'Marketing AI', path: '/marketing-ai' },
+    { label: 'Food Saver', path: '/food-saver' },
     { label: 'Details', path: '/details' },
     { label: 'GitHub', path: 'https://github.com/nathannavmoondi', external: true }
   ];
