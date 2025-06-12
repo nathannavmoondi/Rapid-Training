@@ -86,17 +86,19 @@ Supported language classes for <code class="language-xxx"> are: language-typescr
 if (startCourse === 1) {
         // Course mode prompt
         prompt = `Create section ${currentSection} of a comprehensive tutorial course for ${skillDescription}.
-        ${previousContent ? `Previous section covered: [begin section] ${previousContent} [end section]` : 'This is the first section.'} 
-
-        Show one section only. Next section will be given in next prompt.  Each section should have headings in h3 tags.
+        ${previousContent ? `Previous section covered: [begin section] ${previousContent} [end section]` : 'This is the first section.'}        Show one section only. Next section will be given in next prompt. 
         Format each content section like:
-        <h3 style="color: #2196F3">Section Title</h3>        
+        <h3 class="section-title">Section Title</h3>        
         [section content]
         
         At end show ONE multiple choice question on this section.
         Do not include the word html and GRAVE ACCENT in the answer.
   Include a practical code example with syntax highlighting in the answer section.  
-  style response nicely.  Only use h1 and h2's for headings. Use h3 for section titles.  
+  style response nicely.
+  Content structure rules:
+  - Use h3 with class "section-title" for all section headings
+  - Keep explanations clear and concise
+  - Avoid any inline styles
   Format the response in this exact HTML structure:
         
   <div class="question-container">

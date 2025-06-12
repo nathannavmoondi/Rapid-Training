@@ -75,6 +75,25 @@
   margin-bottom: 8px;
 }
 
+/* Course content styles */
+.section-title {
+  color: #2196F3 !important;
+  font-size: 1.5rem !important;
+  margin-top: 24px !important;
+  margin-bottom: 16px !important;
+}
+
+/* Make sure content is properly visible */
+.question-container {
+  color: #ffffff !important;
+}
+
+.question-container p {
+  color: #ffffff !important;
+  margin: 12px 0 !important;
+  line-height: 1.6 !important;
+}
+
 .content-block pre {
   margin: 16px 0 !important;
   padding: 20px !important;
