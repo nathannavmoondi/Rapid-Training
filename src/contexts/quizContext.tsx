@@ -10,6 +10,8 @@ interface QuizContextType {
   level: string;
   lastAnswerCorrect: boolean | null;
   skillDescription: string;
+  startCourse: number;
+  setStartCourse: (value: number) => void;
   startQuiz: () => void;
   selectAnswer: (answer: string) => void;
   submitAnswer: (correctAnswer: string) => void;
@@ -27,7 +29,8 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [maxQuizzes] = useState(3); // Added maxQuizzes as a constant state
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isQuizActive, setIsQuizActive] = useState(false);
-  const [previousPath, setPreviousPath_internal] = useState<string | null>(null);  const [level, setLevelState] = useState<string>('intermediate');
+  const [previousPath, setPreviousPath_internal] = useState<string | null>(null);
+  const [startCourse, setStartCourse] = useState(0);const [level, setLevelState] = useState<string>('intermediate');
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null);
   const [skillDescription, setSkillDescription] = useState<string>('');
 
@@ -39,24 +42,26 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const selectAnswer = useCallback((answer: string) => {
     setSelectedAnswer(answer);
-  }, []);
-
+  }, []);  
+  
   const submitAnswer = useCallback((correctAnswer: string) => {
     if (selectedAnswer) {
       const correctAnswerLetter = correctAnswer.replace("Correct Answer: ", "").trim().charAt(0);
       const isCorrect = selectedAnswer.charAt(0).toUpperCase() === correctAnswerLetter.toUpperCase();
       
+      console.log(`Selected Answer: ${selectedAnswer}, Correct Answer: ${correctAnswer}, Is Correct: ${isCorrect}`);
+
       setLastAnswerCorrect(isCorrect);
-      
-      if (isCorrect) {
+        if (isCorrect) {
         setScore(prevScore => prevScore + 1);
-      } else {
-        setScore(prevScore => prevScore);
       }
       setQuizzesTaken(prevQuizzes => prevQuizzes + 1);
-      setIsQuizActive(false);
+      setSelectedAnswer(null); // Reset selected answer when submitting
     }
-  }, [selectedAnswer]);  const resetQuiz = useCallback(() => {
+  }, [selectedAnswer]);
+  
+  const resetQuiz = useCallback(() => {
+    console.log('Resetting quiz...');
     setScore(0);
     setQuizzesTaken(0);
     setSelectedAnswer(null);
@@ -72,8 +77,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const setLevel = useCallback((newLevel: string) => {
     setLevelState(newLevel);
-  }, []);
-  const contextValue = {
+  }, []);  const contextValue = {
     score,
     quizzesTaken,
     maxQuizzes,
@@ -90,6 +94,8 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setPreviousPath,
     setLevel,
     setSkillDescription,
+    startCourse,
+    setStartCourse,
   };
 
   return <QuizContext.Provider value={contextValue}>{children}</QuizContext.Provider>;

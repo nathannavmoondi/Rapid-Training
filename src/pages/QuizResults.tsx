@@ -11,6 +11,7 @@ export const QuizResults: React.FC = () => {  const navigate = useNavigate();
       navigate(previousPath);
     }
     resetQuiz(); // Reset quiz state when going back
+    navigate('/skills'); // Navigate to skills page
   };
 
   return (

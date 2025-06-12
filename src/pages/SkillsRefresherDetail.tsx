@@ -56,6 +56,8 @@ const highlightCode = debounce(() => {
 // Helper function to process HTML for answer visibility and quiz status
 const getProcessedQuestionHtml = (html: string, answerVisible: boolean, showFeedback: boolean = false, isCorrect: boolean | null = null, maxQuizzes?: number, quizzesTaken?: number): string => {
   if (!html) return '';
+
+  if (isCorrect == null) isCorrect = false;
   
   // Handle both answer box and explanation visibility
   const answerBoxRegex = /<div\s+[^>]*class="[^"]*\banswer-box\b[^"]*">[\s\S]*?<\/div>/gi;
@@ -123,6 +125,8 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     previousPath,
     setLevel,
     setSkillDescription,
+    setStartCourse,
+    startCourse
   } = useQuiz();
 
   // Ref to track the latest isQuizActive state for unmount cleanup
@@ -183,7 +187,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     setIsSlideDeck(true);
     setQuestion(''); // Clear previous question while loading new one
     try {
-      const response = await requestRefresher('slidedeck', currentSkill.title, currentSkill.category);
+      const response = await requestRefresher('slidedeck', currentSkill.title, currentSkill.category, startCourse);
       setQuestion(response || 'Failed to load slidedeck. Please try again.');
     } catch (error) {
       console.error('Error fetching slidedeck:', error);
@@ -216,7 +220,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
 
 
     try {
-      const response = await requestRefresher(level, currentSkill.title, currentSkill.category); // Use level from context
+      const response = await requestRefresher(level, currentSkill.title, currentSkill.category, startCourse); // Use level from context
       setQuestion(response || 'Failed to load question. Please try again.');
     } catch (error) {
       console.error('Error fetching question:', error);
@@ -332,6 +336,36 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
 
     setShowAnswer(true);
   };
+  const handleStartCourse = async () => {    
+    setIsLoading(true);
+    setShowAnswer(false); // Reset answer visibility for new question    
+    setQuestion(''); // Clear previous question while loading new one
+    try {
+      if (startCourse === 0) {
+        //get rid of local storage previous section
+        localStorage.removeItem('previousContent');
+        localStorage.removeItem('currentSection');
+      }
+      
+      // Set startCourse to 1 and use the new value directly in requestRefresher
+      setStartCourse(1);
+      const response = await requestRefresher('', currentSkill.title, currentSkill.category, 1);
+      setQuestion(response || 'Failed to load course content. Please try again.');
+    } catch (error) {
+      console.error('Error fetching course content:', error);
+      setQuestion('Failed to load course content. Please try again.');
+    }
+    setIsLoading(false);
+  };
+
+  const handleEndCourse = () => {
+    localStorage.removeItem('previousContent');
+    localStorage.removeItem('currentSection');
+    setStartCourse(0);
+    resetQuiz();
+    navigate('/skills');
+    window.scrollTo(0, 0);
+  };
 
   const quizOptions = ['A', 'B', 'C', 'D'];
   const difficultyLevels = ['basic', 'intermediate', 'advanced'];
@@ -356,12 +390,17 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
         }}
       >
         {isLoading && !question ? ( 
-          <Typography> { isSlideDeck ? 'Loading Slidedeck... (please wait)' : 'Loading question...'}</Typography>
+          <Typography>
+            {isSlideDeck ? 'Loading Slidedeck... ' : 
+             startCourse === 1 ? 'Loading Course...' : 'Loading question...'}
+          </Typography>
         ) : (
           <>
             <Typography variant="h6" gutterBottom sx={{ color: 'primary.light' }}>
-              { isSlideDeck ? 'Slide Deck (basics of ' + currentSkill?.title + ')' : 'Practice Question'}
+              {isSlideDeck ? 'Slide Deck (basics of ' + currentSkill?.title + ')' : 
+               startCourse === 1 ? currentSkill?.title + ' Rapid Course' : 'Practice Question'}
             </Typography>
+            
             <Box
               ref={contentRef}
               className="question-content" 
@@ -419,10 +458,16 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
               dangerouslySetInnerHTML={{ __html: htmlToRender }}
             />
 
-            {!isSlideDeck && isQuizActive && (
+            {!isSlideDeck && (isQuizActive || startCourse === 1) && !showAnswer && (
               <FormControl component="fieldset" sx={{ my: 2, p:2, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1 }}>
                 <FormLabel component="legend" sx={{ color: 'primary.light', mb: 1 }}>Choose an answer:</FormLabel>
-                <RadioGroup row aria-label="quiz-option" name="quiz-option-group" value={selectedAnswer || ''} onChange={handleOptionChange}>
+                <RadioGroup 
+                  row 
+                  aria-label="quiz-option" 
+                  name="quiz-option-group" 
+                  value={selectedAnswer || ''} 
+                  onChange={handleOptionChange}
+                >
                   {quizOptions.map((option) => (
                     <FormControlLabel 
                       key={option} 
@@ -437,10 +482,9 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
             )}            {/* Button Container: Adjusted for new layout */}
             <Box sx={{ mt: 3 }}>
               {/* First row of buttons */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-                {/* Left-aligned: Start Quiz Button */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>                {/* Left-aligned: Start Quiz Button */}
                 <Box>
-                  {!isSlideDeck && !isQuizActive && !showAnswer && quizzesTaken < maxQuizzes && (
+                  {!isSlideDeck && !isQuizActive && !showAnswer && quizzesTaken < maxQuizzes && startCourse !== 1 && (
                     <Button
                       variant="contained"
                       onClick={handleStartThisQuestionAsQuiz}
@@ -456,7 +500,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                 <Stack direction="row" spacing={1} justifyContent="flex-end" flexWrap="wrap">
                   <Button
                     variant="contained"
-                    onClick={isQuizActive && !showAnswer ? handleSubmitQuizAnswer : handleShowAnswer}
+                    onClick={(isQuizActive || startCourse ==1) && !showAnswer ? handleSubmitQuizAnswer : handleShowAnswer}
                     disabled={isLoading || showAnswer || !question || isSlideDeck || (isQuizActive && !selectedAnswer && !showAnswer)}
                     sx={{ 
                       backgroundColor: (isQuizActive && !showAnswer) ? '#007bff' : '#4CAF50', 
@@ -465,7 +509,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                     }}
                   >
                     {isQuizActive && !showAnswer ? 'Submit Answer' : 'Show Answer'}
-                  </Button>                  {showAnswer && !isSlideDeck && (
+                  </Button>                  {showAnswer && !isSlideDeck && startCourse !== 1 && (
                     quizzesTaken < maxQuizzes ? (
                       <Button
                         variant="contained"
@@ -476,7 +520,8 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                       >
                         Next Question
                       </Button>
-                    ) : (                      <Button
+                    ) : (
+                      <Button
                         variant="contained"
                         color="primary"
                         onClick={() => navigate('/quiz-results')}
@@ -508,59 +553,96 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                     Done (Back to Skills)
                   </Button>
                 </Stack>
-              </Box>
-
-              {/* Second row for Slidedeck button and Level dropdown */}
-              <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center" sx={{ mt: 1 }}>
-                <Typography variant="body1" sx={{ color: 'white', mr: 1 }}>Level:</Typography>
-                <FormControl sx={{ minWidth: 120 }} size="small">
-                  <InputLabel id="level-select-label" sx={{ color: 'black' }}></InputLabel>                  <Select
-                    labelId="level-select-label"
-                    id="level-select"
-                    value={level}
-                    label=""
-                    onChange={(e) => setLevel(e.target.value as string)}
-                    disabled={isLoading || isQuizActive} // Disable if loading or quiz is active
-                    sx={{
-                      backgroundColor: 'lightblue',
-                      color: 'black',
-                      '& -webkit-text-fill-color': {
-                        color: 'black', // This ensures the selected text is black
-                      },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'black', // Ensure border is visible against lightblue
-                      },
-                      '& .MuiSvgIcon-root': {
-                        color: 'black', // Dropdown arrow color
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'black', // Border color when focused
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'black', // Border color on hover
-                      },
-                    }}
-                  >
-                    {difficultyLevels.map((levelName) => (
-                      <MenuItem 
-                        key={levelName} 
-                        value={levelName} 
-                        sx={{ color: 'black',  backgroundColor: 'lightblue', }} // Ensure menu item text is black
+              </Box>              {/* Second row for buttons */}
+              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                {startCourse === 1 ? (
+                  <>
+                    <Button
+                      variant="contained"
+                      onClick={handleEndCourse}
+                      sx={{ 
+                        backgroundColor: '#ff5252', 
+                        color: 'white',
+                        '&:hover': { backgroundColor: '#d32f2f' }
+                      }}
+                    >
+                      End Course
+                    </Button>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                      <Button
+                        variant="contained"
+                        onClick={handleStartCourse}
+                        disabled={isLoading || isQuizActive}
+                        sx={{ backgroundColor: '#2196F3', '&:hover': { backgroundColor: '#1976D2'} }}
                       >
-                        {levelName.charAt(0).toUpperCase() + levelName.slice(1)}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <Button
-                  variant="contained"
-                  onClick={handleSlideDeck} // handleSlideDeck now also calls resetQuiz if active
-                  disabled={isLoading || isSlideDeck}
-                  sx={{ backgroundColor: '#FF9800', '&:hover': { backgroundColor: '#F57C00'} }}
-                >
-                  Slidedeck (The Basics)
-                </Button>
-              </Stack>
+                        Next Section
+                      </Button>
+                    </Box>
+                  </>
+                ) : (                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 'auto' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Typography variant="body1" sx={{ color: 'white', mr: 1 }}>Level:</Typography>
+                      <FormControl sx={{ minWidth: 120 }} size="small">
+                        <InputLabel id="level-select-label" sx={{ color: 'black' }}></InputLabel><Select
+                        labelId="level-select-label"
+                        id="level-select"
+                        value={level}
+                        label=""
+                        onChange={(e) => setLevel(e.target.value as string)}
+                        disabled={isLoading || isQuizActive}
+                        sx={{
+                          backgroundColor: 'lightblue',
+                          color: 'black',
+                          '& -webkit-text-fill-color': {
+                            color: 'black',
+                          },
+                          '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'black',
+                          },
+                          '& .MuiSvgIcon-root': {
+                            color: 'black',
+                          },
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'black',
+                          },
+                          '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'black',
+                          },
+                          '&.Mui-disabled': {
+                            backgroundColor: '#d3d3d3',
+                            color: '#808080',
+                            '& .MuiSvgIcon-root': {
+                              color: '#808080',
+                            },
+                          },
+                        }}
+                      >
+                        {difficultyLevels.map((levelName) => (
+                          <MenuItem key={levelName} value={levelName}>
+                            {levelName}
+                          </MenuItem>
+                        ))}                    </Select>
+                    </FormControl>
+                    </Box>
+                    <Button
+                      variant="contained"
+                      onClick={handleStartCourse}
+                      disabled={isLoading || isQuizActive}
+                      sx={{ backgroundColor: '#2196F3', '&:hover': { backgroundColor: '#1976D2'} }}
+                    >
+                      Start Course
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={handleSlideDeck}
+                      disabled={isLoading || isQuizActive}
+                      sx={{ backgroundColor: '#FFC107', color: 'black', '&:hover': { backgroundColor: '#FFA000' } }}
+                    >
+                      Slide Deck (the basics)
+                    </Button>
+                  </Box>
+                )}
+              </Box>
             </Box>
           </>
         )}
@@ -568,3 +650,5 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     </Container>
   );
 };
+
+export default SkillsRefresherDetail;

@@ -65,7 +65,6 @@ export const Navbar = () => {
     { label: 'Algorithms', path: '/algorithms' },
     { label: 'Prompt DB', path: '/prompt-db' },
     { label: 'Marketing AI', path: '/marketing-ai' },
-    { label: 'Food Saver', path: '/food-saver' },
     { label: 'Details', path: '/details' },
     { label: 'GitHub', path: 'https://github.com/nathannavmoondi', external: true }
   ];
@@ -99,7 +98,7 @@ export const Navbar = () => {
               transition: 'color 0.2s ease',
             }}
           >
-            Rapid Training AI
+            Rapid Training AI - Nathan Nav Moondi
           </Typography>
         </Box>
 

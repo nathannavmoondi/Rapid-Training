@@ -14,8 +14,6 @@ import { QuizResults } from './pages/QuizResults'; // Import QuizResults
 import { QuizProvider } from './contexts/quizContext'; // Import QuizProvider
 import { PromptDB } from './pages/PromptDB';
 import { MarketingAI } from './pages/MarketingAI';
-import { FoodSaver } from './pages/FoodSaver';
-import ItemManager from './pages/Test';
 import './App.css';
 import './styles/prism-custom.css';  // Add this line
 
@@ -40,8 +38,6 @@ function App() {
                 <Route path="/skills/detail" element={<SkillsRefresherDetail />} />                <Route path="/quiz-results" element={<QuizResults />} />
                 <Route path="/prompt-db" element={<PromptDB />} />
                 <Route path="/marketing-ai" element={<MarketingAI />} />
-                <Route path="/food-saver" element={<FoodSaver />} />
-                <Route path="/test" element={<ItemManager />} />
               </Routes>
             </Container>
             <Footer />

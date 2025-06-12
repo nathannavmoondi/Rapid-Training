@@ -1,64 +1,26 @@
 import { getSkillTopics } from './skillsService';
 
-// Food Saver AI call
-export const getFoodSaverResults = async (foodItem: string, city: string): Promise<string> => {
+export const requestRefresher = async (level: string, skillDescription: string, skillCategory: string, startCourse?: number): Promise<string> => {
   try {
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
-    if (!apiKey) throw new Error('API key not found in environment variables!');
-    const prompt = `For this product: ${foodItem}, find me the stores with the lowest cost right now. Include walmart and costco. 
-    Give me the list only. Return at least 5.  Return results price per pound.  Format it nicely. Only include pound if it's applicable food item.
-    In round brackets, include the brand title and brand name.
-     I'm in ${city}.`;
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.0-flash-001:floor",
-        temperature: 0.7,
-        messages: [
-          {
-            role: "system",
-            content: "You are a helpful assistant that returns a pure HTML list of stores and prices. Do not use markdown. Do not include any explanations, just the formatted list."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ]
-      })
-    });
-    const data = await response.json();
-    let content = data.choices?.[0]?.message?.content;
-    if (content) {
-      content = content.replace(/^```html\s*/i, '');
-      content = content.replace(/```\s*$/, '');
-      content = content.trim();
-    }
-    return content || 'No results found.';
-  } catch (error) {
-    console.error('Error connecting to AI service (Food Saver):', error);
-    return 'There was an error processing your request. Please try again later.';
-  }
-};
-
-
- export const requestRefresher = async (level: string, skillDescription: string, skillCategory: string): Promise<string> => {
-  try {    // Try different environment variable formats since Vite and CRA handle them differently
-    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
     
-    // Get topics for the skill
-    //const { getSkillTopics } = require('./skillsService');
-    //const topics = getSkillTopics(skillDescription);
-
     const callOpenRouter = async () => {
       if (!apiKey) {
         throw new Error('API key not found in environment variables!');
       }
 
-      var prompt = `I'm creating a ${skillDescription} quiz for a job applicant.  
+      console.log('start course', startCourse);
+      // Get previous content to ensure continuity in course mode
+      let previousContent = '';
+      let currentSection = 1;
+      if (level === '') {
+        const storedContent = localStorage.getItem('previousContent');
+        const storedSection = localStorage.getItem('currentSection');
+        if (storedContent) previousContent = storedContent;
+        if (storedSection) currentSection = parseInt(storedSection, 10) + 1;
+      }           
+      
+        var prompt = `I'm creating a ${skillDescription} quiz for a job applicant.  
       Give me a completely new random ${level} difficulty ${skillDescription} question on a random topic.
 
 Do not include the word html and GRAVE ACCENT in the answer.
@@ -119,17 +81,27 @@ Supported language classes for <code class="language-xxx"> are: language-typescr
 8. The example structure for a code snippet within the question text is: \`<pre><code class="language-javascript">const snippet = "example";</code></pre>\`. Adhere to this, using an appropriate language class from the list in point 7.
 9. Indent code properly inside the <code> block.
 10. Put each explanation point in the answer section on a new line using <p> tags.
-11. Make code examples practical and focused.`;
+11. Make code examples practical and focused.`;     
 
-if (skillCategory === "non-technology"){
-  prompt = `Create a completely new ${level} difficulty for the topic of ${skillDescription} question for timestamp ${new Date().toISOString()}.
+if (startCourse === 1) {
+        // Course mode prompt
+        prompt = `Create section ${currentSection} of a comprehensive tutorial course for ${skillDescription}.
+        ${previousContent ? `Previous section covered: [begin section] ${previousContent} [end section]` : 'This is the first section.'} 
 
-Do not include the word html and GRAVE ACCENT in the answer.
-Format the response in this exact HTML structure:
-
-<div class="question-container">
+        Show one section only. Next section will be given in next prompt.  Each section should have headings in h3 tags.
+        Format each content section like:
+        <h3 style="color: #2196F3">Section Title</h3>        
+        [section content]
+        
+        At end show ONE multiple choice question on this section.
+        Do not include the word html and GRAVE ACCENT in the answer.
+  Include a practical code example with syntax highlighting in the answer section.  
+  style response nicely.  Only use h1 and h2's for headings. Use h3 for section titles.  
+  Format the response in this exact HTML structure:
+        
+  <div class="question-container">
     <div class="question">
-        [Your question text here. ]
+        [Your question text here. If the question includes a code snippet, format it like this: <pre><code class="language-javascript">const snippet = "example";</code></pre> within the question text. Ensure the class attribute is one of the supported languages listed below.]
     </div>
     <div class="options">
         <div class="option">A) [Option A]</div>
@@ -143,96 +115,137 @@ Format the response in this exact HTML structure:
             Correct Answer: [Letter]
         </div>
         <div class="explanation">
-            <p>[First line of explanation]</p>            
+            <p>[First line of explanation]</p>
+            <pre><code class="language-typescript">
+                [Your code example here with proper indentation]
+            </code></pre>
             <p>[Rest of the explanation with each point on a new line]</p>
         </div>
     </div>
-</div>
+</div>`
+        
+      
 
-Important:
-1. Put each explanation point in the answer section on a new line using <p> tags.
-2. Do not include any code examples, code snippets, or code-related sections.`;
-  }
+        // Store content for next section
+        localStorage.setItem('currentSection', currentSection.toString());
+        localStorage.setItem('previousContent', `Section ${currentSection}`);
+      } else if (level === 'slidedeck') {
+        // Slide deck mode prompt
+        prompt = `Create an educational slide deck about ${skillDescription} basics.
+        Format output as:
+        <div class="slide-container">
+            <div class="slide">
+                <h2>Introduction to ${skillDescription}</h2>
+                <ul>
+                    <li>[Overview point 1]</li>
+                    <li>[Overview point 2]</li>
+                    <li>[Overview point 3]</li>
+                </ul>
+            </div>
+            <div class="slide">
+                <h2>Key Concepts</h2>
+                [Main concepts explanation]
+            </div>
+            <div class="slide">
+                <h2>Code Example</h2>
+                <pre><code class="language-${skillCategory}">
+                [Basic example code]
+                </code></pre>
+            </div>
+            <div class="slide">
+                <h2>Best Practices</h2>
+                <ul>
+                    <li>[Best practice 1]</li>
+                    <li>[Best practice 2]</li>
+                    <li>[Best practice 3]</li>
+                </ul>
+            </div>
+            <div class="slide">
+                <h2>Summary</h2>
+                [Key takeaways and next steps]
+            </div>
+        </div>`;
+      }
 
-  // 1. The response should be pure HTML content, without any \`style\` tags or inline style attributes. All styling will be handled by the existing site's CSS.
-
-  if (level === "slidedeck"){
-    prompt = `Create a slidedeck introducing basic and intermediate concepts of ${skillDescription} for someone new to the topic. Timestamp: ${new Date().toISOString()}.
-
-The slidedeck's content MUST be structured into logical sections. 
-Each major section (e.g., Introduction, Basic Concepts, Intermediate Concepts, External Resources) MUST be wrapped 
-in its own separate \`<div class="content-block">\`.
-Within each \`<div class="content-block">\`, use appropriate HTML tags:
-- Use \`<h2>\` for the main title of that section.
-- Use \`<p>\` for all paragraphs of text.
-- Use \`<ul>\` or \`<ol>\` for lists, with \`<li>\` for list items.
-
-The slidedeck should be comprehensive and lengthy.
-It must NOT include any images.
-It must NOT include a \`<head>\` HTML element.
-It must NOT include any \`<style>\` tags or inline style attributes. All styling is handled by existing CSS.
-${(skillCategory === "non-technology") ? "It must NOT include any code examples, code snippets, or code-related sections" : ""}
-
-
-Important Content and Formatting Rules:
-1.  The entire response MUST be pure HTML.
-2.  Structure: Divide the slidedeck into distinct sections (Introduction, concepts, resources). Each of these sections MUST be enclosed in \`<div class="content-block">\`.
-3.  Section Titles: Use \`<h2>\` for the title of each section within its \`<div class="content-block">\`.
-4.  Text: All explanatory text and content points must be within \`<p>\` tags. Ensure clear separation of paragraphs.
-5.  External Resources Section: The final section MUST be dedicated to "External Resources". This section should include:
-    a.  Links to relevant external websites or articles for further learning.
-    b.  Recommendations for external courses.
-    c.  Recommendations for good YouTube course videos, including actual, valid YouTube links.
-`
-  }
-
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
+      const url = 'https://openrouter.ai/api/v1/chat/completions';
+      const response = await fetch(url, {
+        method: 'POST',
         headers: {
-           "Authorization": `Bearer ${apiKey}`,  // Replace with your actual API key
-          "Content-Type": "application/json"
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'HTTP-Referer': 'https://github.com/russelltchang/autodidactic', 
         },
         body: JSON.stringify({
-          ///works: deepseek/deepseek-prover-v2"
-          //:floor optimizes prices
-          model: "google/gemini-2.0-flash-001:floor", // Using GPT-3.5-Turbo for faster responses
-          //model: 'gpt-3.5-turbo',
+          'model': 'google/gemini-2.0-flash-001:floor',
+            //model: 'gpt-3.5-turbo',
           temperature: 0.9, // Increase randomness
-          messages: [            { 
-              role: "system", 
-              content: "You are a helpful assistant that creates programming quiz questions. IMPORTANT: Do not use markdown code blocks. Do not include ```html at the start or ``` at the end of your response. Just return the raw HTML structure as specified in the prompt." 
-            },
-            { 
-              role: "user", 
-              content: prompt
-            }
-          ]
+          'messages': [{"role": "user", "content": prompt}]
         })
-      });      const data = await response.json();
-      let content = data.choices?.[0]?.message?.content;
+      });
+
       
-      // Clean up any markdown code blocks and format them properly
-      if (content) {
-        // First clean up the outer wrapper if it exists
-        content = content.replace(/^```html\s*/i, '');
-        content = content.replace(/```\s*$/, '');
-        
-        // Convert any markdown code blocks within the content to proper HTML
-        content = content.replace(/```typescript\s*\n?([\s\S]*?)\n?```/g, (_: string, code: string): string => {
-          return `<pre><code class="language-typescript">${code.trim()}</code></pre>`;
-        });
-        
-        content = content.trim();
-      }
-      
+      const data = await response.json();
+    let content = data.choices?.[0]?.message?.content;
+    if (content) {
+      content = content.replace(/^```html\s*/i, '');
+      content = content.replace(/```\s*$/, '');
+      content = content.replace(/`/g, '');
+      content = content.replace(/html/g, '');
+
+      content = content.trim();
+    }
       return content;
     };
-  
-    var ret = await callOpenRouter();
-    return ret;
-  
+
+    const result = await callOpenRouter();
+    return result;
   } catch (error) {
-    console.error('Error connecting to AI service:', error);
+    console.error('Error making OpenRouter request:', error);
+    throw error;
+  }
+};
+
+
+// Food Saver AI call
+export const getFoodSaverResults = async (foodItem: string, city: string): Promise<string> => {
+  try {
+    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+    if (!apiKey) throw new Error('API key not found in environment variables!');
+    const prompt = `For this product: ${foodItem}, find me the stores with the lowest cost right now. Include walmart and costco. 
+    Give me the list only. Return at least 5.  Return results price per pound.  Format it nicely. Only include pound if it's applicable food item.
+    In round brackets, include the brand title and brand name.
+     I'm in ${city}.`;
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.0-flash-001:floor",
+        temperature: 0.7,
+        messages: [
+          {
+            role: "system",
+            content: "You are a helpful assistant that returns a pure HTML list of stores and prices. Do not use markdown. Do not include any explanations, just the formatted list."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ]
+      })
+    });
+    const data = await response.json();
+    let content = data.choices?.[0]?.message?.content;
+    if (content) {
+      content = content.replace(/^```html\s*/i, '');
+      content = content.replace(/```\s*$/, '');
+      content = content.trim();
+    }
+    return content || 'No results found.';
+  } catch (error) {
+    console.error('Error connecting to AI service (Food Saver):', error);
     return 'There was an error processing your request. Please try again later.';
   }
 };
@@ -241,7 +254,7 @@ export const getMarketingPlan = async (url: string): Promise<string> => {
   try {
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
     
-    
+    console.log('api key', apiKey);
     const callOpenRouter = async () => {
       if (!apiKey) {
         throw new Error('API key not found in environment variables!');
