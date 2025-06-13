@@ -59,10 +59,11 @@ export const Navbar = () => {
       backgroundColor: isActive(path) ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
     }
   });  const menuItems = [
-    { label: 'Rapid Training', path: '/skills' },
-    { label: 'Algorithms', path: '/algorithms' },
-    { label: 'Marketing AI', path: '/marketing-ai' },
-    { label: 'Food Saver', path: '/food-saver' }
+    { label: 'Rapid Training', path: '/skills',  external: false   },
+    { label: 'Algorithms', path: '/algorithms',  external: false   },
+    { label: 'Marketing AI', path: '/marketing-ai',  external: false   },
+    { label: 'Food Saver', path: '/food-saver',   external: false   },
+    { label: 'Github', path: 'https://github.com/nathannavmoondi', external: true }
   ];
 
   return (
@@ -94,7 +95,7 @@ export const Navbar = () => {
               transition: 'color 0.2s ease',
             }}
           >
-            Rapid Training AI
+            Rapid Training - AI Leveraged Training System
           </Typography>
         </Box>
 

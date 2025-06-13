@@ -81,7 +81,7 @@ export const SkillsRefresher = () => {  const navigate = useNavigate();
   return (
     <Container sx={{ py: 2 }}>      <Typography variant="h5" sx={{ mb: 0.5, color: 'primary.main', fontWeight: 'bold' }}>
       Rapid Training -&nbsp;
-        {currentTab === 'all' ? 'All Skills' :
+        {currentTab === 'all' ? 'All Topics' :
          currentTab === 'frontend' ? 'Frontend Development' :
          currentTab === 'backend' ? 'Backend Development' :
          currentTab === 'non-technology' ? 'Non-Technology' :
@@ -172,7 +172,7 @@ export const SkillsRefresher = () => {  const navigate = useNavigate();
       </Box>      {/* Add Your Skill section */}
       <Box sx={{ p: 3, backgroundColor: 'rgba(144, 202, 249, 0.1)', borderRadius: 2, mt: 4 }}>
         <Typography variant="h6" sx={{ mb: 2, color: 'primary.light', textAlign: 'center' }}>
-          Add Your Skill
+          Add Your Topic
         </Typography>
         <Stack spacing={2.5}>
           <RadioGroup
@@ -189,7 +189,7 @@ export const SkillsRefresher = () => {  const navigate = useNavigate();
           
           <TextField
             fullWidth
-            label="Skill Title"
+            label="Topic Name"
             value={newSkillTitle}
             onChange={(e) => setNewSkillTitle(e.target.value)}
             variant="outlined"
@@ -225,7 +225,7 @@ export const SkillsRefresher = () => {  const navigate = useNavigate();
               }
             }}
           >
-            Add Skill
+            Add Topic
           </Button>
         </Stack>
       </Box>
