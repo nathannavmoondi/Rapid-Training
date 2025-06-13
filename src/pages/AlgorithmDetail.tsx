@@ -123,7 +123,7 @@ export const AlgorithmDetail = () => {
               margin: 0,
               padding: '24px',
               background: '#1E1E1E',
-              fontSize: '14px',
+              fontSize: '17px',
               lineHeight: '1.5',
               borderRadius: '0 0 8px 8px',
               fontFamily: "'Fira Code', 'Consolas', monospace",
