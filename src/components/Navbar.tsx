@@ -62,9 +62,7 @@ export const Navbar = () => {
     { label: 'Rapid Training', path: '/skills' },
     { label: 'Algorithms', path: '/algorithms' },
     { label: 'Marketing AI', path: '/marketing-ai' },
-    { label: 'Food Saver', path: '/food-saver' },
-    { label: 'Details', path: '/details' },
-    { label: 'GitHub', path: 'https://github.com/nathannavmoondi', external: true }
+    { label: 'Food Saver', path: '/food-saver' }
   ];
 
   return (
