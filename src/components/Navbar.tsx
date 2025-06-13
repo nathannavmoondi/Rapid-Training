@@ -59,7 +59,7 @@ export const Navbar = () => {
       backgroundColor: isActive(path) ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
     }
   });  const menuItems = [
-    { label: 'Rapid Training', path: '/skills',  external: false   },
+    { label: 'Rapid Training AI', path: '/skills',  external: false   },
     { label: 'Algorithms', path: '/algorithms',  external: false   },
     { label: 'Marketing AI', path: '/marketing-ai',  external: false   },
     { label: 'Food Saver', path: '/food-saver',   external: false   },
