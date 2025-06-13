@@ -27,3 +27,4 @@ yarn-error.log*
 .env
 .env.production
 .env.production
+yarn.lock
