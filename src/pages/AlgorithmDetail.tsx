@@ -15,10 +15,16 @@
  */
 import { Box, Button, Container, Paper, Typography } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import  SyntaxHighlighter  from 'react-syntax-highlighter';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import csharp from 'react-syntax-highlighter/dist/esm/languages/prism/csharp';
+import javascript from 'react-syntax-highlighter/dist/esm/languages/prism/javascript';
 import { algorithms } from '../data/algorithms';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
+// Register the languages we need
+//SyntaxHighlighter.registerLanguage('csharp', csharp);
+//SyntaxHighlighter.registerLanguage('javascript', javascript);
 
 export const AlgorithmDetail = () => {
   // Get algorithm ID from URL parameters
@@ -39,6 +45,8 @@ export const AlgorithmDetail = () => {
       </Container>
     );
   }
+
+  console.log('LANGUAGE', algorithm.language);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -107,27 +115,24 @@ export const AlgorithmDetail = () => {
           </Typography>
         </Box>
         
-        <Box sx={{ p: 0 }}>
-          <SyntaxHighlighter
-            language={algorithm.language === 'csharp' ? 'csharp' : 'javascript'}
+        <Box sx={{ p: 0 }}>            <SyntaxHighlighter
+            language={algorithm.language}
             style={vscDarkPlus}
+            showLineNumbers
             customStyle={{
               margin: 0,
               padding: '24px',
               background: '#1E1E1E',
-              fontSize: '16px',
-              lineHeight: '1.3',
+              fontSize: '14px',
+              lineHeight: '1.5',
               borderRadius: '0 0 8px 8px',
-              fontFamily: "'Fira Code', 'Consolas', monospace"
+              fontFamily: "'Fira Code', 'Consolas', monospace",
             }}
             codeTagProps={{
               style: {
-                fontSize: '22px'
+                fontFamily: "'Fira Code', 'Consolas', monospace",
               }
             }}
-            showLineNumbers={true}
-            wrapLines={true}
-            wrapLongLines={false}
           >
             {algorithm.code}
           </SyntaxHighlighter>
