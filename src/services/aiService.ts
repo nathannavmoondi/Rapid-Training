@@ -3,7 +3,8 @@ import { getSkillTopics } from './skillsService';
 export const requestRefresher = async (level: string, skillDescription: string, skillCategory: string, startCourse?: number): Promise<string> => {
   try {
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
-    
+    console.log('skill category', skillCategory);
+
     const callOpenRouter = async () => {
       if (!apiKey) {
         throw new Error('API key not found in environment variables!');
@@ -82,6 +83,42 @@ Supported language classes for <code class="language-xxx"> are: language-typescr
 9. Indent code properly inside the <code> block.
 10. Put each explanation point in the answer section on a new line using <p> tags.
 11. Make code examples practical and focused.`;     
+
+if (skillCategory === 'non-technology'){
+  prompt = `I'm creating a ${skillDescription} quiz for a job applicant.  
+      Give me a completely new random ${level} difficulty ${skillDescription} question on a random topic.
+
+Do not include the word html and GRAVE ACCENT in the answer.
+
+Each question should be different topic from previous question.  Ask a random topic each time. 
+Format the response in this exact HTML structure:
+
+<div class="question-container">
+    <div class="question">
+        [Your question text here. If the question includes a code snippet, format it like this: <pre><code class="language-javascript">const snippet = "example";</code></pre> within the question text. Ensure the class attribute is one of the supported languages listed below.]
+    </div>
+    <div class="options">
+        <div class="option">A) [Option A]</div>
+        <div class="option">B) [Option B]</div>
+        <div class="option">C) [Option C]</div>
+        <div class="option">D) [Option D]</div>
+    </div>
+    <div class="quiz-status"></div>
+    <div class="answer-box">
+        <div class="correct-answer">
+            Correct Answer: [Letter]
+        </div>
+        <div class="explanation">
+            <p>[First line of explanation]</p>
+            <p>[Rest of the explanation with each point on a new line]</p>
+        </div>
+    </div>
+</div>
+
+Important:
+3. Put each explanation point on a new line using <p> tags.
+10. Put each explanation point in the answer section on a new line using <p> tags.`;     
+  }
 
 if (startCourse === 1) {
         // Course mode prompt
