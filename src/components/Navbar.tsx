@@ -95,7 +95,7 @@ export const Navbar = () => {
               transition: 'color 0.2s ease',
             }}
           >
-            Rapid Training - AI Leveraged Learning System
+            Rapid Training - AI Based Learning System
           </Typography>
         </Box>
 
