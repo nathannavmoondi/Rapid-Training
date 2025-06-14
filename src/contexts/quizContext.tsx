@@ -3,7 +3,7 @@ import React, { createContext, useState, useContext, ReactNode, useCallback } fr
 interface QuizContextType {
   score: number;
   quizzesTaken: number;
-  maxQuizzes: number;
+  maxQuizzes: number;  
   selectedAnswer: string | null;
   isQuizActive: boolean;
   previousPath: string | null;
@@ -12,6 +12,7 @@ interface QuizContextType {
   skillDescription: string;
   startCourse: number;
   setStartCourse: (value: number) => void;
+  setMaxQuizzes: (value: number) => void;
   startQuiz: () => void;
   selectAnswer: (answer: string) => void;
   submitAnswer: (correctAnswer: string) => void;
@@ -26,7 +27,7 @@ const QuizContext = createContext<QuizContextType | undefined>(undefined);
 export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [score, setScore] = useState(0);
   const [quizzesTaken, setQuizzesTaken] = useState(0);
-  const [maxQuizzes] = useState(3); // Added maxQuizzes as a constant state
+  const [maxQuizzes, setMaxQuizzes] = useState(3); // Make maxQuizzes stateful
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isQuizActive, setIsQuizActive] = useState(false);
   const [previousPath, setPreviousPath_internal] = useState<string | null>(null);
@@ -49,7 +50,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const correctAnswerLetter = correctAnswer.replace("Correct Answer: ", "").trim().charAt(0);
       const isCorrect = selectedAnswer.charAt(0).toUpperCase() === correctAnswerLetter.toUpperCase();
       
-      console.log(`Selected Answer: ${selectedAnswer}, Correct Answer: ${correctAnswer}, Is Correct: ${isCorrect}`);
+      console.log(`Selected Answer: ${selectedAnswer}, Correct Answer: ${correctAnswer}, Is Correct: ${isCorrect} score: ${score}, quizzesTaken: ${quizzesTaken}`);
 
       setLastAnswerCorrect(isCorrect);
         if (isCorrect) {
@@ -81,6 +82,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     score,
     quizzesTaken,
     maxQuizzes,
+    setMaxQuizzes,
     selectedAnswer,
     isQuizActive,
     previousPath,

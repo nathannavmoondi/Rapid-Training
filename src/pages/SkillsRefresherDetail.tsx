@@ -86,7 +86,7 @@ const getProcessedQuestionHtml = (html: string, answerVisible: boolean, showFeed
         <span style="margin-right: 8px; color: ${isCorrect ? 'green' : 'red !important'}; font-size: 24px;">
           ${isCorrect ? '✓' : '✕'}
         </span>
-        <span style="font-size: 20px; color: ${isCorrect ? 'white' : 'red !important'}">
+        <span style="font-size: 20px; color: ${isCorrect ? 'green' : 'red !important'}">
           ${isCorrect ? 'Correct!' : 'Incorrect!'}
         </span>
       </div>
@@ -113,6 +113,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     score, 
     quizzesTaken,
     maxQuizzes,
+    setMaxQuizzes,
     selectedAnswer, 
     isQuizActive, 
     level,
@@ -484,16 +485,51 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
               {/* First row of buttons */}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '7px' }}>
                 {/* Left-aligned: Start Quiz Button */}
-                <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   {!isSlideDeck && !isQuizActive && !showAnswer && quizzesTaken < maxQuizzes && startCourse !== 1 && (
-                    <Button
-                      variant="contained"
-                      onClick={handleStartThisQuestionAsQuiz}
-                      disabled={isLoading || !question}
-                      sx={{ backgroundColor: '#FFC107', color: 'black', '&:hover': { backgroundColor: '#FFA000'} }}
-                    >
-                      Start Quiz (This Q)
-                    </Button>
+                    <>
+                      <Button
+                        variant="contained"
+                        onClick={handleStartThisQuestionAsQuiz}
+                        disabled={isLoading || !question}
+                        sx={{ backgroundColor: '#FFC107', color: 'black', '&:hover': { backgroundColor: '#FFA000'}, height: 48, fontWeight: 700, fontSize: '1rem', boxShadow: 'none', borderRadius: '6px' }}
+                      >
+                        Start Quiz (This Q)
+                      </Button>
+                      <FormControl size="small" sx={{ minWidth: 160, ml: 0, height: 48 }}>
+                        <Select
+                          value={maxQuizzes}
+                          onChange={e => setMaxQuizzes(Number(e.target.value))}
+                          sx={{
+                            backgroundColor: '#FFC107',
+                            color: 'black',
+                            height: 48,
+                            fontWeight: 700,
+                            fontSize: '1rem',
+                            boxShadow: 'none',
+                            borderRadius: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            '& .MuiSelect-select': { display: 'flex', alignItems: 'center', height: 48, paddingTop: 0, paddingBottom: 0 },
+                            '& .MuiSelect-icon': { color: 'black' }
+                          }}
+                          MenuProps={{
+                            PaperProps: {
+                              sx: {
+                                backgroundColor: '#FFC107',
+                                color: 'black',
+                                fontWeight: 700,
+                                fontSize: '1rem',
+                              }
+                            }
+                          }}
+                        >
+                          {Array.from({ length: 18 }, (_, i) => i + 3).map(num => (
+                            <MenuItem key={num} value={num}>{num} Questions</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </>
                   )}
                 </Box>
 
