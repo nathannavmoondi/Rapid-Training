@@ -50,7 +50,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const correctAnswerLetter = correctAnswer.replace("Correct Answer: ", "").trim().charAt(0);
       const isCorrect = selectedAnswer.charAt(0).toUpperCase() === correctAnswerLetter.toUpperCase();
       
-      console.log(`Selected Answer: ${selectedAnswer}, Correct Answer: ${correctAnswer}, Is Correct: ${isCorrect} score: ${score}, quizzesTaken: ${quizzesTaken}`);
+      //console.log(`Selected Answer: ${selectedAnswer}, Correct Answer: ${correctAnswer}, Is Correct: ${isCorrect} score: ${score}, quizzesTaken: ${quizzesTaken}`);
 
       setLastAnswerCorrect(isCorrect);
         if (isCorrect) {
@@ -67,6 +67,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setQuizzesTaken(0);
     setSelectedAnswer(null);
     setIsQuizActive(false);
+    
     setLastAnswerCorrect(null);
     setSkillDescription(''); // Reset skill description when resetting quiz
     setPreviousPath_internal(null); // Reset previous path when resetting quiz

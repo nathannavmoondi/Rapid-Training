@@ -151,6 +151,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
 
   // Find skill immediately
   useEffect(() => {
+    console.log('running constructor of skills page');
     if (!skillTitle) {
       console.log('No skill title in URL');
       return;
@@ -250,13 +251,13 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
   // Cleanup effect to reset quiz if user navigates away while quiz is active
   useEffect(() => {
     return () => {
-      // Only reset if quiz was active at the point of unmount (or equivalent navigation)
-      if (isQuizActiveRef.current) {
-        // console.log("SkillsRefresherDetail unmounting with active quiz (checked via ref), resetting.");
+      // Only reset quiz if navigating away but NOT to the results page      
+      if (!isQuizActiveRef.current) {
+        console.log('Cleaning up: resetting quiz on unmount or navigation away');
         resetQuiz();
       }
     };
-  }, [resetQuiz]); // resetQuiz is stable due to useCallback in context
+  }, [resetQuiz, location.pathname]); // Add location.pathname to dependencies
 
   if (!currentSkill) {
     return (

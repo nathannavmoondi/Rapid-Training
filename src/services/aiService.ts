@@ -9,7 +9,7 @@ export const requestRefresher = async (level: string, skillDescription: string, 
         throw new Error('API key not found in environment variables!');
       }
 
-      console.log('start course', startCourse);
+      //console.log('start course', startCourse);
       // Get previous content to ensure continuity in course mode
       let previousContent = '';
       let currentSection = 1;
@@ -287,7 +287,7 @@ export const getMarketingPlan = async (url: string): Promise<string> => {
   try {
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
     
-    console.log('api key', apiKey);
+    //console.log('api key', apiKey);
     const callOpenRouter = async () => {
       if (!apiKey) {
         throw new Error('API key not found in environment variables!');

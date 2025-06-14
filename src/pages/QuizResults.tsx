@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useQuiz } from '../contexts/quizContext';
 import { Container, Typography, Button, Box, Paper } from '@mui/material';
 
-export const QuizResults: React.FC = () => {  const navigate = useNavigate();
+export const QuizResults: React.FC = () => {  
+  
+  const navigate = useNavigate();
   const { score, quizzesTaken, previousPath, maxQuizzes, resetQuiz, skillDescription } = useQuiz();
+  //console.log('QuizResults - score:', score, 'quizzesTaken:', quizzesTaken, 'previousPath:', previousPath, 'maxQuizzes:', maxQuizzes);
 
   const handleGoBack = () => {
     if (previousPath) {
@@ -16,7 +19,8 @@ export const QuizResults: React.FC = () => {  const navigate = useNavigate();
 
   return (
     <Container maxWidth="sm" sx={{ py: 4, textAlign: 'center' }}>
-      <Paper elevation={3} sx={{ p: 4, backgroundColor: 'rgba(45, 45, 45, 0.8)', borderRadius: 2 }}>        <Typography variant="h4" component="h1" gutterBottom color="primary.main">
+      <Paper elevation={3} sx={{ p: 4, backgroundColor: 'rgba(45, 45, 45, 0.8)', borderRadius: 2 }}>       
+         <Typography variant="h4" component="h1" gutterBottom color="primary.main">
           Quiz Results
         </Typography>
         <Typography 
@@ -40,7 +44,7 @@ export const QuizResults: React.FC = () => {  const navigate = useNavigate();
             Your final score is: {score} correct answers
           </Typography>
         </Box>
-        <Button variant="contained" color="primary" onClick={handleGoBack} sx={{ mt: 2 }}>
+        <Button variant="contained" color="primary" onClick={() => handleGoBack()} sx={{ mt: 2 }}>
           Go Back To Skill
         </Button>
       </Paper>
