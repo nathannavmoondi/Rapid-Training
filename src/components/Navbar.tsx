@@ -67,21 +67,24 @@ export const Navbar = () => {
   ];
 
   return (
-    <AppBar position="static" sx={{ 
-      borderBottom: '2px solid rgba(255, 255, 255, 0.2)'
+    <AppBar position="fixed" sx={{ 
+      borderBottom: '2px solid rgba(255, 255, 255, 0.2)',
+      zIndex: 1300,
+      height: 40 // Reduced from 48px
     }}>
       <Toolbar sx={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        minHeight: '48px !important',
-        py: 0.5,
+        minHeight: '40px !important', // Reduced from 48px
+        height: 40, // Added explicit height
+        py: 0,  // Removed padding
         px: { xs: 1, sm: 2 } 
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/')}>
-          <img src="/favicon.ico" alt="Favicon" style={{ marginRight: '8px', height: '24px', width: '24px' }} />
+          <img src="/favicon.ico" alt="Favicon" style={{ marginRight: '8px', height: '20px', width: '20px' }} />
           <Typography 
-            variant="subtitle1" 
+            variant="subtitle2" // Changed from subtitle1 to be more compact
             component="div" 
             sx={{ 
               fontWeight: 500,
@@ -93,6 +96,7 @@ export const Navbar = () => {
                 color: 'rgba(255, 255, 255, 0.8)'
               },
               transition: 'color 0.2s ease',
+              fontSize: '0.875rem' // Slightly smaller font
             }}
           >
             Rapid Training - AI Learning Platform
