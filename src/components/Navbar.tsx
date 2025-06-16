@@ -67,8 +67,9 @@ export const Navbar = () => {
   ];
 
   return (
-    <AppBar position="static" sx={{ 
-      borderBottom: '2px solid rgba(255, 255, 255, 0.2)'
+    <AppBar position="fixed" sx={{ 
+      borderBottom: '2px solid rgba(255, 255, 255, 0.2)',
+      zIndex: 1300
     }}>
       <Toolbar sx={{ 
         display: 'flex', 
