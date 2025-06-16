@@ -34,7 +34,7 @@ function App() {
             <Box sx={{ 
               display: 'flex', 
               flexDirection: 'row',
-              pt: '48px', // Height of navbar
+              pt: '40px', // Changed from 48px to match new navbar height
             }}>
               <Sidebar />
               <Box 

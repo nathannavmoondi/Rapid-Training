@@ -19,39 +19,79 @@ const menuItems = [
 
 const SIDEBAR_MIN_WIDTH = 60;
 const SIDEBAR_MAX_WIDTH = 220;
+const TEXT_VISIBILITY_THRESHOLD = 130; // Width below which text will be hidden
 const WIDTH_BREAKPOINT = 1100;
 
 export const Sidebar = () => {
   const navigate = useNavigate();
   const theme = useTheme();
-  const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < WIDTH_BREAKPOINT);
+  const [width, setWidth] = useState(window.innerWidth < WIDTH_BREAKPOINT ? SIDEBAR_MIN_WIDTH : SIDEBAR_MAX_WIDTH);
+  const [isResizing, setIsResizing] = useState(false);
   const [shouldShowHamburger, setShouldShowHamburger] = useState(window.innerWidth < WIDTH_BREAKPOINT);
+  const showText = width >= TEXT_VISIBILITY_THRESHOLD;
 
   useEffect(() => {
     const handleResize = () => {
       const shouldCollapse = window.innerWidth < WIDTH_BREAKPOINT;
       setShouldShowHamburger(shouldCollapse);
-      setIsCollapsed(shouldCollapse);
+      setWidth(shouldCollapse ? SIDEBAR_MIN_WIDTH : SIDEBAR_MAX_WIDTH);
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsResizing(true);
+    e.preventDefault();
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isResizing) return;
+    
+    const newWidth = Math.max(
+      SIDEBAR_MIN_WIDTH,
+      Math.min(SIDEBAR_MAX_WIDTH, e.clientX)
+    );
+    setWidth(newWidth);
+  };
+
+  const handleMouseUp = () => {
+    setIsResizing(false);
+    // Snap to min width if close to it
+    if (width < TEXT_VISIBILITY_THRESHOLD) {
+      setWidth(SIDEBAR_MIN_WIDTH);
+    }
+  };
+
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    } else {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
+
   return (
     <Box
       sx={{
-        width: isCollapsed ? SIDEBAR_MIN_WIDTH : SIDEBAR_MAX_WIDTH,
+        width: width,
         minWidth: SIDEBAR_MIN_WIDTH,
         maxWidth: SIDEBAR_MAX_WIDTH,
-        height: 'calc(100vh - 48px)',
+        height: 'calc(100vh - 40px)',
         bgcolor: '#005487',
         color: 'white',
         display: 'flex',
         flexDirection: 'column',
-        transition: 'all 0.2s',
+        transition: isResizing ? 'none' : 'all 0.2s',
         position: 'fixed',
-        top: 48,
+        top: 40,
         left: 0,
         zIndex: 1200,
         borderRight: '3px solid rgba(255, 255, 255, 0.05)',
@@ -78,7 +118,7 @@ export const Sidebar = () => {
           <IconButton 
             size="small" 
             sx={{ color: '#e3f2fd' }}
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={() => setWidth(width <= SIDEBAR_MIN_WIDTH ? SIDEBAR_MAX_WIDTH : SIDEBAR_MIN_WIDTH)}
           >
             <MenuIcon />
           </IconButton>
@@ -94,7 +134,7 @@ export const Sidebar = () => {
         mt: shouldShowHamburger ? 0 : 1
       }}>
         {menuItems.map((item) => (
-          <Tooltip title={isCollapsed ? item.label : ''} placement="right" key={item.label}>
+          <Tooltip title={!showText ? item.label : ''} placement="right" key={item.label}>
             <Box
               sx={{
                 display: 'flex',
@@ -109,6 +149,7 @@ export const Sidebar = () => {
                 transition: 'background 0.2s',
                 borderRadius: '4px',
                 mx: 0.5,
+                justifyContent: showText ? 'flex-start' : 'center'
               }}
               onClick={() => {
                 if (item.external) {
@@ -119,8 +160,16 @@ export const Sidebar = () => {
               }}
             >
               {item.icon}
-              {!isCollapsed && (
-                <Typography variant="body1" sx={{ color: '#e3f2fd', fontWeight: 500 }}>
+              {showText && (
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    color: '#e3f2fd', 
+                    fontWeight: 500,
+                    opacity: Math.min((width - TEXT_VISIBILITY_THRESHOLD) / 30, 1),
+                    whiteSpace: 'nowrap'
+                  }}
+                >
                   {item.label}
                 </Typography>
               )}
@@ -135,7 +184,7 @@ export const Sidebar = () => {
         py: 1,
         mt: 'auto'
       }}>
-        <Tooltip title={isCollapsed ? "Settings" : ""} placement="right">
+        <Tooltip title={!showText ? "Settings" : ""} placement="right">
           <Box
             sx={{
               display: 'flex',
@@ -150,17 +199,43 @@ export const Sidebar = () => {
               transition: 'background 0.2s',
               borderRadius: '4px',
               mx: 0.5,
+              justifyContent: showText ? 'flex-start' : 'center'
             }}
           >
             <SettingsIcon sx={{ color: '#e3f2fd' }} />
-            {!isCollapsed && (
-              <Typography variant="body1" sx={{ color: '#e3f2fd', fontWeight: 500 }}>
+            {showText && (
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  color: '#e3f2fd', 
+                  fontWeight: 500,
+                  opacity: Math.min((width - TEXT_VISIBILITY_THRESHOLD) / 30, 1),
+                  whiteSpace: 'nowrap'
+                }}
+              >
                 Settings
               </Typography>
             )}
           </Box>
         </Tooltip>
       </Box>
+
+      {/* Resizer */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          right: -3,
+          width: 6,
+          height: '100%',
+          cursor: 'ew-resize',
+          zIndex: 1300,
+          '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          },
+        }}
+        onMouseDown={handleMouseDown}
+      />
     </Box>
   );
 };
