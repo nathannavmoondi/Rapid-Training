@@ -57,6 +57,10 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
     return location.pathname === path;
   };
 
+  const isSkillDetailPage = () => {
+    return location.pathname === '/skills/detail';
+  };
+
   // Helper function to generate sx props for buttons to avoid repetition and type issues
   const getButtonSx = (path: string): SxProps<Theme> => ({
     backgroundColor: isActive(path) ? 'rgba(144, 202, 249, 0.2)' : 'transparent',
@@ -172,16 +176,19 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
             </Box>
           )}
 
-          <Tooltip title="Chat with Mr. Buddy">
-            <IconButton
-              onClick={onChatToggle}
-              sx={{ 
-                color: isChatOpen ? '#90CAF9' : 'white',
-                '&:hover': { color: '#90CAF9' }
-              }}
-            >
-              <ChatIcon />            </IconButton>
-          </Tooltip>
+          {isSkillDetailPage() && (
+            <Tooltip title="Chat with Mr. Buddy">
+              <IconButton
+                onClick={onChatToggle}
+                sx={{ 
+                  color: isChatOpen ? '#90CAF9' : 'white',
+                  '&:hover': { color: '#90CAF9' }
+                }}
+              >
+                <ChatIcon />
+              </IconButton>
+            </Tooltip>
+          )}
         </Box>
       </Toolbar>
     </AppBar>
