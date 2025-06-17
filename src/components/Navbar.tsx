@@ -17,17 +17,18 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChatIcon from '@mui/icons-material/Chat';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useChat } from '../contexts/chatContext';
 
 interface NavbarProps {
   onChatToggle: () => void;
   isChatOpen: boolean;
-  onCurrentSkillChange: (skill: string) => void;
 }
 
-export const Navbar = ({ onChatToggle, isChatOpen, onCurrentSkillChange }: NavbarProps) => {
+export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
+  const { setChatboxSkill } = useChat();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -59,29 +60,23 @@ export const Navbar = ({ onChatToggle, isChatOpen, onCurrentSkillChange }: Navba
   };
   const isSkillDetailPage = () => {
     return location.pathname === '/skills/detail';
-  };
-
-  // Get current skill name and notify parent component
+  };  // Set skill name when arriving at a skill detail page
   useEffect(() => {
     if (isSkillDetailPage()) {
       const params = new URLSearchParams(location.search);
       const skill = params.get('skill');
-      const decodedSkill = skill ? decodeURIComponent(skill) : '';
-      onCurrentSkillChange(decodedSkill);
-    } else {
-      onCurrentSkillChange('');
+      if (skill) {
+        const decodedSkill = decodeURIComponent(skill);
+        setChatboxSkill(decodedSkill);
+      }
     }
-  }, [location.search, onCurrentSkillChange]);
-
+  }, [location.search, setChatboxSkill]);
   const getCurrentSkill = () => {
     if (isSkillDetailPage()) {
       const params = new URLSearchParams(location.search);
       const skill = params.get('skill');
-      const decodedSkill = skill ? decodeURIComponent(skill) : '';
-      onCurrentSkillChange(decodedSkill);
-      return decodedSkill;
+      return skill ? decodeURIComponent(skill) : '';
     }
-    onCurrentSkillChange('');
     return '';
   };
 
@@ -133,7 +128,7 @@ export const Navbar = ({ onChatToggle, isChatOpen, onCurrentSkillChange }: Navba
               fontSize: '0.875rem'
             }}
           >
-            MoonDi
+            Rapid Training - AI Learning Platfoirm
           </Typography>
         </Box>
 

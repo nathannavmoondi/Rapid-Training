@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, TextField, IconButton, Typography, Avatar } from '@mui/material';
+import { useChat } from '../contexts/chatContext';
 import SendIcon from '@mui/icons-material/Send';
 import { SvgIcon } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -49,8 +50,8 @@ const TypewriterText: React.FC<TypewriterTextProps> = ({ text }) => {
 export const Chat: React.FC<{ 
   isOpen: boolean; 
   onClose: () => void;
-  currentSkill?: string;
-}> = ({ isOpen, onClose, currentSkill }) => {
+}> = ({ isOpen, onClose }) => {
+  const { chatboxSkill } = useChat();
   const [messages, setMessages] = useState<ChatMessage[]>([{
     id: '1',
     text: "Hi. I'm Mr. Buddy. What question do you have on this topic?",
@@ -140,7 +141,7 @@ export const Chat: React.FC<{
           <BuddyIcon sx={{ fontSize: 20 }} />
         </Avatar>        <Box sx={{ flex: 1 }}>
           <Typography sx={{ fontSize: '1rem', fontWeight: 600, color: '#fff' }}>
-            AI Assistant{currentSkill ? ` (${currentSkill})` : ''}
+            AI Assistant{chatboxSkill ? ` (${chatboxSkill})` : ''}
           </Typography>
         </Box>
         <IconButton
