@@ -11,15 +11,6 @@ import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-csharp';
 import 'prismjs/components/prism-graphql';
 
-// Remove jsx, tsx and other problematic languages for now
-// import 'prismjs/components/prism-jsx';
-// import 'prismjs/components/prism-tsx';
-// import 'prismjs/components/prism-cpp';
-// import 'prismjs/components/prism-rust';
-// import 'prismjs/components/prism-go';
-// import 'prismjs/components/prism-ruby';
-// import 'prismjs/components/prism-sql';
-
 // Initialize Prism
 if (typeof window !== 'undefined') {
   window.Prism = window.Prism || {};
@@ -29,12 +20,17 @@ if (typeof window !== 'undefined') {
 export function highlightCode(element: HTMLElement) {
   try {
     const codeBlocks = element.querySelectorAll('pre code');
+    console.log('Found code blocks to highlight:', codeBlocks.length);
+    
     codeBlocks.forEach((block) => {
       if (block instanceof HTMLElement) {
         const lang = Array.from(block.classList)
           .find(className => className.startsWith('language-'));
         
-        if (lang) {          // Only highlight if it's a supported language
+        console.log('Found language class:', lang);
+        
+        if (lang) {
+          // Only highlight if it's a supported language
           const supportedLangs = [
             'javascript', 'typescript',
             'markup', 'css', 'graphql', 'python',
@@ -42,12 +38,18 @@ export function highlightCode(element: HTMLElement) {
           ];
           
           const langName = lang.replace('language-', '');
+          console.log('Language name:', langName, 'Supported?', supportedLangs.includes(langName));
+          
           if (supportedLangs.includes(langName)) {
             try {
+              console.log('Attempting to highlight with Prism...');
               Prism.highlightElement(block);
+              console.log('Prism highlighting completed for:', langName);
             } catch (err) {
               console.warn(`Failed to highlight ${langName} code:`, err);
             }
+          } else {
+            console.warn(`Unsupported language: ${langName}`);
           }
         }
       }
