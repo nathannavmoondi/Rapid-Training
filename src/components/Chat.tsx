@@ -221,45 +221,42 @@ export const Chat: React.FC<{
           </Box>
         )}
         <div ref={messagesEndRef} />
-      </Box>
-
-      {/* Input area */}      <Box
+      </Box>      {/* Input area */}      <Box
         sx={{
           p: 2,
-          borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+          borderTop: '2px solid #D1D1D6',
           backgroundColor: '#fff',
         }}
       >
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Box sx={{          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          backgroundColor: '#F8F8FA',
+          border: '1px solid #D1D1D6',
+          borderRadius: '8px',
+          py: 1,
+          px: 2
+        }}>
           <TextField
             fullWidth
-            variant="outlined"
-            size="medium"
+            variant="standard"
+            size="small"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Message..."
-            multiline
-            maxRows={4}
-            sx={{              '& .MuiOutlinedInput-root': {
-                bgcolor: '#F1F2F6',
-                borderRadius: '24px',
+            placeholder="Type your message here..."
+            InputProps={{
+              disableUnderline: true,
+            }}
+            sx={{
+              '& .MuiInputBase-root': {
                 color: '#000000',
-                '& fieldset': {
-                  border: 'none',
-                },
-                '&:hover fieldset': {
-                  border: 'none',
-                },
-                '&.Mui-focused fieldset': {
-                  border: 'none',
-                },
+                fontSize: '0.9375rem',
               },
-              '& .MuiOutlinedInput-input': {
-                padding: '12px 20px',
-                color: '#000000',
+              '& .MuiInputBase-input': {
+                padding: '4px 0',
                 '&::placeholder': {
-                  color: 'rgba(0, 0, 0, 0.6)',
+                  color: '#8E8E93',
                   opacity: 1,
                 },
               },
@@ -269,13 +266,22 @@ export const Chat: React.FC<{
             onClick={handleSend}
             disabled={!input.trim()}
             sx={{ 
-              color: input.trim() ? '#fff' : 'rgba(255, 255, 255, 0.3)',
-              bgcolor: input.trim() ? '#0d47a1' : 'transparent',
+              padding: '8px',
+              bgcolor: '#0B93F6',
+              color: '#fff',
+              borderRadius: '50%',
+              width: 32,
+              height: 32,
+              ml: 1,
               '&:hover': {
-                bgcolor: input.trim() ? '#1565c0' : 'transparent',
+                bgcolor: '#0084E4',
               },
               '&.Mui-disabled': {
-                bgcolor: 'transparent',
+                bgcolor: '#E5E5EA',
+                color: '#fff',
+              },
+              '& .MuiSvgIcon-root': {
+                fontSize: '1.25rem',
               }
             }}
           >
