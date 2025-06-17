@@ -5,36 +5,7 @@ import SendIcon from '@mui/icons-material/Send';
 import { SvgIcon } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { chatService, ChatMessage } from '../services/chatService';
-
-// Core Prism import
-import Prism from 'prismjs';
-// Base languages (needed first)
-import 'prismjs/components/prism-core';
-import 'prismjs/components/prism-clike';
-// Theme
-import 'prismjs/themes/prism-tomorrow.css';
-// Languages
-import 'prismjs/components/prism-markup';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-tsx';
-import 'prismjs/components/prism-css';
-import 'prismjs/components/prism-graphql';
-import 'prismjs/components/prism-cpp';
-import 'prismjs/components/prism-python';
-import 'prismjs/components/prism-rust';
-import 'prismjs/components/prism-go';
-import 'prismjs/components/prism-ruby';
-import 'prismjs/components/prism-sql';
-import 'prismjs/components/prism-java';
-import 'prismjs/components/prism-csharp';
-
-// Initialize Prism
-if (typeof window !== 'undefined') {
-  window.Prism = window.Prism || {};
-  Prism.manual = true;
-}
+import { highlightCode } from '../utils/prismSetup';
 
 const BuddyIcon = (props: any) => (
   <SvgIcon {...props} viewBox="0 0 24 24">
@@ -180,48 +151,19 @@ export const Chat: React.FC<{
       event.preventDefault();
       handleSend();
     }
-  };
-  // Safe highlight function
-  const highlightCode = useCallback(() => {
-    try {
-      const codeBlocks = document.querySelectorAll('pre code');
-      if (codeBlocks.length > 0) {
-        codeBlocks.forEach((block) => {
-          if (block instanceof HTMLElement) {
-            // Ensure the language class is properly set
-            const langClass = Array.from(block.classList)
-              .find(className => className.startsWith('language-'));
-            
-            if (langClass) {
-              // Remove and re-add the class to trigger proper highlighting
-              block.classList.remove(langClass);
-              block.classList.add(langClass);
-              
-              // Highlight with error handling
-              try {
-                Prism.highlightElement(block);
-              } catch (err) {
-                console.warn('Prism highlighting error:', err);
-              }
-            }
-          }
-        });
-      }
-    } catch (err) {
-      console.warn('Code highlighting error:', err);
-    }
-  }, []);
-
-  // Effect to handle highlighting
+  };  // Effect to handle highlighting for all messages
   useEffect(() => {
-    if (messages.length > 0) {
-      // Wait for DOM to update
-      const timer = setTimeout(() => {
-        highlightCode();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [messages, highlightCode]);
+    const messageElements = document.querySelectorAll('.chat-message-content');
+    messageElements.forEach((element) => {
+      if (element instanceof HTMLElement) {
+        try {
+          highlightCode(element);
+        } catch (err) {
+          console.warn('Highlighting error:', err);
+        }
+      }
+    });
+  }, [messages]);
 
   if (!isOpen) return null;
 
@@ -283,10 +225,9 @@ export const Chat: React.FC<{
         <IconButton onClick={onClose} sx={{ color: 'white' }}>
           <CloseIcon />
         </IconButton>
-      </Box>
-
-      {/* Messages */}
+      </Box>      {/* Messages */}
       <Box
+        className="chat-messages"
         sx={{
           flex: 1,
           overflow: 'auto',
@@ -345,33 +286,9 @@ export const Chat: React.FC<{
                   '& .token.keyword': { color: '#569CD6' },
                   '& .token.function': { color: '#DCDCAA' },
                   '& .token.class-name': { color: '#4EC9B0' }
-                }}
+                }}                className="chat-message-content"
                 dangerouslySetInnerHTML={{ 
                   __html: message.text 
-                }}                ref={node => {
-                  if (node instanceof HTMLElement && !message.isUser) {
-                    try {
-                      const codeBlocks = node.querySelectorAll('code');
-                      codeBlocks.forEach(block => {
-                        if (block instanceof HTMLElement) {
-                          const langClass = Array.from(block.classList)
-                            .find(className => className.startsWith('language-'));
-                          
-                          if (langClass) {
-                            block.classList.remove(langClass);
-                            block.classList.add(langClass);
-                            try {
-                              Prism.highlightElement(block);
-                            } catch (err) {
-                              console.warn('Prism highlighting error:', err);
-                            }
-                          }
-                        }
-                      });
-                    } catch (err) {
-                      console.warn('Code block processing error:', err);
-                    }
-                  }
                 }}
               />
             </Box>

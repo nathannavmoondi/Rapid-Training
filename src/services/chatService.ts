@@ -29,7 +29,7 @@ class ChatService {
 
 When providing code examples or explanations:
 1. All code snippets MUST be wrapped in <pre><code class="language-xxx">...code here...</code></pre> tags.
-2. For "language-xxx", use one of these supported languages:
+2. For "language-xxx", use ONLY these supported languages:
    - language-typescript
    - language-javascript
    - language-jsx
@@ -37,12 +37,7 @@ When providing code examples or explanations:
    - language-markup
    - language-css
    - language-graphql
-   - language-cpp
    - language-python
-   - language-rust
-   - language-go
-   - language-ruby
-   - language-sql
    - language-java
    - language-csharp
 3. Indent code properly inside the code block.
