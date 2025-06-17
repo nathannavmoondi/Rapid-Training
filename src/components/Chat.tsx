@@ -122,13 +122,16 @@ export const Chat: React.FC<{
     };
 
     setMessages(prev => [...prev, userMessage, loadingMessage]);
-    setInput('');
-
-    try {
+    setInput('');    try {
       const response = await chatService.respondChat(input, chatboxSkill || 'general');
+      // Process the AI response for better formatting
+      const processedResponse = {
+        ...response,
+        text: processAIResponse(response.text)
+      };
       setMessages(prev => 
         prev.map(msg => 
-          msg.id === loadingMessage.id ? response : msg
+          msg.id === loadingMessage.id ? processedResponse : msg
         )
       );
     } catch (error) {
@@ -151,7 +154,45 @@ export const Chat: React.FC<{
       event.preventDefault();
       handleSend();
     }
-  };  // Effect to handle highlighting for all messages
+  };  // Function to process AI response text for better formatting
+  const processAIResponse = (text: string): string => {
+    let processed = text;
+    
+    // Convert newlines to proper HTML breaks, but preserve code blocks
+    const codeBlockRegex = /<pre><code[^>]*>[\s\S]*?<\/code><\/pre>/g;
+    const codeBlocks: string[] = [];
+    
+    // Extract code blocks temporarily
+    processed = processed.replace(codeBlockRegex, (match) => {
+      const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+      codeBlocks.push(match);
+      return placeholder;
+    });
+    
+    // Process the text outside code blocks
+    processed = processed
+      // Convert double newlines to paragraph breaks
+      .replace(/\n\n/g, '</p><p>')
+      // Convert single newlines to line breaks
+      .replace(/\n/g, '<br>')
+      // Handle markdown-style bold text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Handle markdown-style bullet points
+      .replace(/^\*\s+/gm, '• ')
+      // Wrap in paragraph tags if not already wrapped
+      .replace(/^(?!<p>)/, '<p>')
+      .replace(/(?!<\/p>)$/, '</p>')
+      // Clean up empty paragraphs
+      .replace(/<p><\/p>/g, '')
+      .replace(/<p><br><\/p>/g, '<br>');
+    
+    // Restore code blocks
+    codeBlocks.forEach((block, index) => {
+      processed = processed.replace(`__CODE_BLOCK_${index}__`, block);
+    });
+    
+    return processed;
+  }; // Effect to handle highlighting for all messages
   useEffect(() => {
     const messageElements = document.querySelectorAll('.chat-message-content');
     messageElements.forEach((element) => {
@@ -261,24 +302,36 @@ export const Chat: React.FC<{
                 maxWidth: '85%'
               }}
             >              <Box
-                component="div"
-                sx={{
+                component="div"                sx={{
                   fontStyle: message.text === "Thinking..." ? 'italic' : 'normal',
                   opacity: message.text === "Thinking..." ? 0.7 : 1,
+                  '& p': {
+                    margin: '0 0 8px 0',
+                    lineHeight: '1.5',
+                    '&:last-child': { marginBottom: 0 }
+                  },
+                  '& strong': {
+                    fontWeight: 'bold'
+                  },
+                  '& br': {
+                    display: 'block',
+                    marginBottom: '4px'
+                  },
                   '& pre': {
-                    margin: '8px 0',
-                    borderRadius: '4px',
+                    margin: '12px 0',
+                    borderRadius: '8px',
                     overflow: 'auto'
                   },
                   '& code': {
                     fontFamily: '"Fira Code", "Consolas", monospace',
                     backgroundColor: '#1e1e1e !important',
                     color: '#d4d4d4',
-                    padding: '12px',
+                    padding: '16px',
                     display: 'block',
                     overflowX: 'auto',
                     fontSize: '14px',
-                    lineHeight: '1.4'
+                    lineHeight: '1.4',
+                    borderRadius: '6px'
                   },
                   '& .token.comment': { color: '#6A9955' },
                   '& .token.string': { color: '#CE9178' },
@@ -286,9 +339,9 @@ export const Chat: React.FC<{
                   '& .token.keyword': { color: '#569CD6' },
                   '& .token.function': { color: '#DCDCAA' },
                   '& .token.class-name': { color: '#4EC9B0' }
-                }}                className="chat-message-content"
+                }}className="chat-message-content"
                 dangerouslySetInnerHTML={{ 
-                  __html: message.text 
+                  __html: processAIResponse(message.text) 
                 }}
               />
             </Box>
