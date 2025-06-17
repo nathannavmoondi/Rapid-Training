@@ -16,18 +16,7 @@ import type { Skill } from '../data/skills';
 import { requestRefresher } from '../services/aiService';
 import { Chat } from '../components/Chat';
 import { useChat } from '../contexts/chatContext';
-import Prism from 'prismjs';
-import 'prismjs/themes/prism-tomorrow.css';
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-tsx';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-markup';
-import 'prismjs/components/prism-css';
-import 'prismjs/components/prism-c'; // Added for C-like language dependency
-import 'prismjs/components/prism-graphql'; // Added for GraphQL support
-import 'prismjs/components/prism-cpp'; // Added for C++ support
-import 'prismjs/components/prism-python'; // Added for Python support
+import { highlightCode } from '../utils/prismSetup';
 import 'prismjs/components/prism-rust'; // Added for Rust support
 import 'prismjs/components/prism-go'; // Added for Go support
 import 'prismjs/components/prism-ruby'; // Added for Ruby support
@@ -46,13 +35,15 @@ const debounce = <T extends (...args: any[]) => void>(func: T, wait: number) => 
   };
 };
 
-const highlightCode = debounce(() => {
-  const codeBlocks = document.querySelectorAll('pre code');
-  codeBlocks.forEach((block) => {
-    if (block instanceof HTMLElement) {
-      Prism.highlightElement(block);
+const highlightCodeLocal = debounce(() => {
+  const contentElement = document.querySelector('.question-content');
+  if (contentElement instanceof HTMLElement) {
+    try {
+      highlightCode(contentElement);
+    } catch (err) {
+      console.warn('Highlighting error:', err);
     }
-  });
+  }
 }, 100);
 
 // Helper function to process HTML for answer visibility and quiz status
@@ -245,11 +236,11 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
   }, [currentSkill, handleRequestNewQuestion, question, isLoading, isQuizActive]); // Added isQuizActive
 
   // Syntax highlighting effect
-  useEffect(() => {
-    if (!isLoading && question) {
-      Promise.resolve().then(() => { // Microtask delay
-        highlightCode();
-      });
+  useEffect(() => {    if (!isLoading && question) {
+      // Use setTimeout to ensure DOM is fully updated after HTML processing
+      setTimeout(() => {
+        highlightCodeLocal();
+      }, 100);
     }
   }, [question, isLoading, showAnswer, isQuizActive]); // Added isQuizActive to dependency array
 
@@ -272,9 +263,22 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
         </Typography>
         <Button onClick={() => navigate('/skills')} sx={{ mt: 2 }}>Back to Skills</Button>
       </Container>
-    );
-  }  const htmlToRender = getProcessedQuestionHtml(
-    question, 
+    );  }
+
+  // Function to process raw HTML from AI response
+  const processRawHtml = (rawHtml: string): string => {
+    if (!rawHtml) return '';
+    
+    // Convert \n to actual line breaks and clean up escaped characters
+    return rawHtml
+      .replace(/\\n/g, '\n')
+      .replace(/\\"/g, '"')
+      .replace(/\\'/g, "'")
+      .replace(/\\t/g, '\t');
+  };
+
+  const htmlToRender = getProcessedQuestionHtml(
+    processRawHtml(question), 
     showAnswer,
     showAnswer && !isSlideDeck, // Only show feedback when answer is shown and not in slidedeck
     lastAnswerCorrect,  // Pass the correct/incorrect state
