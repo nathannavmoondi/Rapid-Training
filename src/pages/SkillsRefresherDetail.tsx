@@ -9,11 +9,13 @@
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'; // Added useLocation
-import { Container, Typography, Paper, Box, Button, Stack, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Select, MenuItem, InputLabel } from '@mui/material'; // Added Select, MenuItem, InputLabel
-import { CheckCircleOutline, HighlightOff } from '@mui/icons-material'; // Added icons for feedback
+import { Container, Typography, Paper, Box, Button, Stack, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Select, MenuItem, InputLabel, IconButton, Tooltip } from '@mui/material'; // Added Select, MenuItem, InputLabel
+import { CheckCircleOutline, HighlightOff, Chat as ChatIcon } from '@mui/icons-material'; // Added icons for feedback
 import { skills } from '../data/skills';
 import type { Skill } from '../data/skills';
 import { requestRefresher } from '../services/aiService';
+import { Chat } from '../components/Chat';
+import { useChat } from '../contexts/chatContext';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-typescript';
@@ -142,10 +144,13 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
   const skillTitle = searchParams.get('skill');  const skillCategory = searchParams.get('category');
   const contentRef = useRef<HTMLDivElement>(null);
   const quizContentRef = useRef<HTMLDivElement>(null);// Add ref for quiz content section
-  
-  const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
   const [question, setQuestion] = useState('');
   const [currentSkill, setCurrentSkill] = useState<Skill | undefined>();
+  
+  // Chat functionality
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const { setChatboxSkill } = useChat();
   const [showAnswer, setShowAnswer] = useState(false); // Added state for answer visibility
   const [isSlideDeck, setIsSlideDeck] = useState(false); // Added state for slide deck
 
@@ -167,9 +172,9 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
       const foundSkill = allSkills.find(s => 
         s.title.trim().toLowerCase() === normalizedTitle.toLowerCase()
       );
-      
-      if (foundSkill) {
+        if (foundSkill) {
         setCurrentSkill(foundSkill);
+        setChatboxSkill(foundSkill.title); // Update chat context with current skill
       } else {
         console.log('Skill not found:', normalizedTitle);
       }
@@ -397,11 +402,30 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
              startCourse === 1 ? 'Loading Course...' : 'Loading question...'}
           </Typography>
         ) : (
-          <>
-            <Typography variant="h6" gutterBottom sx={{ color: 'primary.light' }}>
-              {isSlideDeck ? 'Slide Deck (basics of ' + currentSkill?.title + ')' : 
-               startCourse === 1 ? currentSkill?.title + ' Rapid Course' : 'Practice Question'}
-            </Typography>
+          <>            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+              <Typography variant="h6" sx={{ color: 'primary.light' }}>
+                {isSlideDeck ? 'Slide Deck (basics of ' + currentSkill?.title + ')' : 
+                 startCourse === 1 ? currentSkill?.title + ' Rapid Course' : 'Practice Question'}
+              </Typography>
+              
+              {/* Chat button - only show for Practice Question */}
+              {!isSlideDeck && startCourse !== 1 && (
+                <Tooltip title={`Ask questions about ${currentSkill?.title || 'this topic'}`}>
+                  <IconButton
+                    onClick={() => setIsChatOpen(!isChatOpen)}
+                    sx={{
+                      color: 'primary.light',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)'
+                      }
+                    }}
+                  >
+                    <ChatIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
             
             <Box
               ref={contentRef}
@@ -732,10 +756,15 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
               A new concept designed by Nathan Moondi to give the student
               little snippets of information, quiz them, then go to next part. And can do over and over again until they mastered it.
               Learn by snippet rather than by entire chapter or course. Easier on the brain and quick dopamine hits.
-            </Typography>
-          </Box>
+            </Typography>          </Box>
         </>
       )}
+      
+      {/* Chat Component */}
+      <Chat 
+        isOpen={isChatOpen} 
+        onClose={() => setIsChatOpen(false)} 
+      />
     </Container>
   );
 };

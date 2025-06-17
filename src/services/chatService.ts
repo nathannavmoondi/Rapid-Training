@@ -6,13 +6,27 @@ export interface ChatMessage {
 }
 
 class ChatService {
-  async respondChat(message: string, skill: string): Promise<ChatMessage> {
+  async respondChat(message: string, skill: string, conversationHistory: ChatMessage[] = []): Promise<ChatMessage> {
     try {
       const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
       
       if (!apiKey) {
         throw new Error('API key not found in environment variables!');
       }
+
+      // Convert conversation history to AI format
+      const conversationMessages = conversationHistory
+        .filter(msg => msg.text !== "Thinking...") // Exclude loading messages
+        .map(msg => ({
+          role: msg.isUser ? "user" : "assistant",
+          content: msg.text
+        }));
+
+      // Add the current message
+      conversationMessages.push({
+        role: "user",
+        content: message
+      });
 
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
@@ -46,10 +60,7 @@ When providing code examples or explanations:
 5. Never use markdown code blocks, always use the HTML structure above.
 6. Choose the most appropriate language class for the code being shown.`
             },
-            {
-              role: "user",
-              content: message
-            }
+            ...conversationMessages // Include conversation history
           ]
         })
       });

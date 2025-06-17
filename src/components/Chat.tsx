@@ -131,11 +131,13 @@ export const Chat: React.FC<{
       text: "Thinking...",
       isUser: false,
       timestamp: new Date()
-    };
+    };    setMessages(prev => [...prev, userMessage, loadingMessage]);
+    setInput('');
 
-    setMessages(prev => [...prev, userMessage, loadingMessage]);
-    setInput('');    try {
-      const response = await chatService.respondChat(input, chatboxSkill || 'general');
+    try {
+      // Get conversation history (excluding the current loading message)
+      const conversationHistory = messages.filter(msg => msg.text !== "Thinking...");
+      const response = await chatService.respondChat(input, chatboxSkill || 'general', conversationHistory);
       setMessages(prev => 
         prev.map(msg => 
           msg.id === loadingMessage.id ? response : msg
