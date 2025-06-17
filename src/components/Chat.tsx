@@ -46,7 +46,11 @@ const TypewriterText: React.FC<TypewriterTextProps> = ({ text }) => {
   return <>{displayedText}</>;
 };
 
-export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+export const Chat: React.FC<{ 
+  isOpen: boolean; 
+  onClose: () => void;
+  currentSkill?: string;
+}> = ({ isOpen, onClose, currentSkill }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([{
     id: '1',
     text: "Hi. I'm Mr. Buddy. What question do you have on this topic?",
@@ -136,7 +140,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
           <BuddyIcon sx={{ fontSize: 20 }} />
         </Avatar>        <Box sx={{ flex: 1 }}>
           <Typography sx={{ fontSize: '1rem', fontWeight: 600, color: '#fff' }}>
-            AI Learning Assistant
+            AI Assistant{currentSkill ? ` (${currentSkill})` : ''}
           </Typography>
         </Box>
         <IconButton

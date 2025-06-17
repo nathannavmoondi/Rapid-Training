@@ -16,14 +16,15 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import ChatIcon from '@mui/icons-material/Chat';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface NavbarProps {
   onChatToggle: () => void;
   isChatOpen: boolean;
+  onCurrentSkillChange: (skill: string) => void;
 }
 
-export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
+export const Navbar = ({ onChatToggle, isChatOpen, onCurrentSkillChange }: NavbarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -56,9 +57,32 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
     // For other pages
     return location.pathname === path;
   };
-
   const isSkillDetailPage = () => {
     return location.pathname === '/skills/detail';
+  };
+
+  // Get current skill name and notify parent component
+  useEffect(() => {
+    if (isSkillDetailPage()) {
+      const params = new URLSearchParams(location.search);
+      const skill = params.get('skill');
+      const decodedSkill = skill ? decodeURIComponent(skill) : '';
+      onCurrentSkillChange(decodedSkill);
+    } else {
+      onCurrentSkillChange('');
+    }
+  }, [location.search, onCurrentSkillChange]);
+
+  const getCurrentSkill = () => {
+    if (isSkillDetailPage()) {
+      const params = new URLSearchParams(location.search);
+      const skill = params.get('skill');
+      const decodedSkill = skill ? decodeURIComponent(skill) : '';
+      onCurrentSkillChange(decodedSkill);
+      return decodedSkill;
+    }
+    onCurrentSkillChange('');
+    return '';
   };
 
   // Helper function to generate sx props for buttons to avoid repetition and type issues
@@ -177,7 +201,7 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
           )}
 
           {isSkillDetailPage() && (
-            <Tooltip title="Chat with Mr. Buddy">
+            <Tooltip title={`AI Assistant (${getCurrentSkill()})`}>
               <IconButton
                 onClick={onChatToggle}
                 sx={{ 

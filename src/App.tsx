@@ -22,9 +22,14 @@ import './styles/prism-custom.css';
 
 function App() {
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [currentSkill, setCurrentSkill] = useState('');
 
   const handleChatToggle = () => {
     setIsChatOpen(!isChatOpen);
+  };
+
+  const handleCurrentSkillChange = (skill: string) => {
+    setCurrentSkill(skill);
   };
 
   return (
@@ -33,7 +38,11 @@ function App() {
       <QuizProvider>
         <BrowserRouter>
           <Box sx={{ display: 'flex', minHeight: '100vh', position: 'relative' }}>
-            <Navbar onChatToggle={handleChatToggle} isChatOpen={isChatOpen} />
+            <Navbar 
+              onChatToggle={handleChatToggle} 
+              isChatOpen={isChatOpen} 
+              onCurrentSkillChange={handleCurrentSkillChange}
+            />
             <Sidebar />
             <Box 
               sx={{ 
@@ -58,9 +67,8 @@ function App() {
                   <Route path="/food-saver" element={<FoodSaver />} />
                 </Routes>
               </Container>
-              <Footer />
             </Box>
-            <Chat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+            <Chat isOpen={isChatOpen} onClose={handleChatToggle} currentSkill={currentSkill} />
           </Box>
         </BrowserRouter>
       </QuizProvider>
