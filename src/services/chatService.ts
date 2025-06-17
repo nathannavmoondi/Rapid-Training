@@ -32,8 +32,6 @@ When providing code examples or explanations:
 2. For "language-xxx", use ONLY these supported languages:
    - language-typescript
    - language-javascript
-   - language-jsx
-   - language-tsx
    - language-markup
    - language-css
    - language-graphql
