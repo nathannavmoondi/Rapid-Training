@@ -324,12 +324,11 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
           key={`code-${parts.length}`}
           language={language}
           style={vscDarkPlus}
-          showLineNumbers={false}
-          customStyle={{
+          showLineNumbers={false}          customStyle={{
             margin: '12px 0',
             padding: '16px',
             background: '#1E1E1E',
-            fontSize: '14px',
+            fontSize: '16px',
             lineHeight: '1.4',
             borderRadius: '6px',
             fontFamily: "'Fira Code', 'Consolas', monospace",

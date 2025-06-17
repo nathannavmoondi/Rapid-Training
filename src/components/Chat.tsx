@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Box, TextField, IconButton, Typography, Avatar } from '@mui/material';
+import { Box, TextField, IconButton, Typography, Avatar, Tooltip } from '@mui/material';
 import { useChat } from '../contexts/chatContext';
 import SendIcon from '@mui/icons-material/Send';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { SvgIcon } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { chatService, ChatMessage } from '../services/chatService';
@@ -61,11 +62,35 @@ export const Chat: React.FC<{
     isUser: false,
     timestamp: new Date()
   });
-  
-  const [messages, setMessages] = useState<ChatMessage[]>([getInitialMessage()]);
+    const [messages, setMessages] = useState<ChatMessage[]>([getInitialMessage()]);
   const [input, setInput] = useState('');
   const [width, setWidth] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  
+  // Copy to clipboard function
+  const handleCopyToClipboard = async (text: string, messageId: string) => {
+    try {
+      // Remove HTML tags and decode entities for plain text copy
+      const plainText = text
+        .replace(/<[^>]*>/g, '') // Remove HTML tags
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
+      
+      await navigator.clipboard.writeText(plainText);
+      setCopiedMessageId(messageId);
+      
+      // Reset tooltip after 2 seconds
+      setTimeout(() => {
+        setCopiedMessageId(null);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
   
   // Reset messages when chatbox opens
   useEffect(() => {
@@ -298,8 +323,7 @@ export const Chat: React.FC<{
           flexDirection: 'column',
           gap: 2
         }}
-      >
-        {messages.map((message) => (
+      >        {messages.map((message) => (
           <Box
             key={message.id}
             sx={{
@@ -314,6 +338,7 @@ export const Chat: React.FC<{
                 <BuddyIcon />
               </Avatar>
             )}
+            
             <Box
               sx={{
                 backgroundColor: message.isUser ? '#007AFF' : '#F1F2F6',
@@ -322,8 +347,10 @@ export const Chat: React.FC<{
                 p: 2,
                 maxWidth: '85%'
               }}
-            >              <Box
-                component="div"                sx={{
+            >
+              <Box
+                component="div"
+                sx={{
                   fontStyle: message.text === "Thinking..." ? 'italic' : 'normal',
                   opacity: message.text === "Thinking..." ? 0.7 : 1,
                   '& p': {
@@ -369,13 +396,39 @@ export const Chat: React.FC<{
                   '& .token.constant': { color: '#4FC1FF' },
                   '& .token.boolean': { color: '#569CD6' },
                   '& .token.null': { color: '#569CD6' },
-                  '& .token.important': { color: '#FF6B6B', fontWeight: 'bold' }
-                }}                className="chat-message-content"
+                  '& .token.important': { color: '#FF6B6B', fontWeight: 'bold' }                }}
+                className="chat-message-content"
                 dangerouslySetInnerHTML={{ 
                   __html: message.isUser ? message.text : processAIResponse(message.text)
                 }}
               />
             </Box>
+            
+            {/* Copy button for AI messages positioned outside and to the right of bubble */}
+            {!message.isUser && message.text !== "Thinking..." && (
+              <Tooltip 
+                title={copiedMessageId === message.id ? "Copied to clipboard!" : "Copy to clipboard"}
+                open={copiedMessageId === message.id || undefined}
+                arrow
+              >
+                <IconButton
+                  onClick={() => handleCopyToClipboard(message.text, message.id)}
+                  sx={{
+                    width: '28px',
+                    height: '28px',
+                    marginLeft: '8px',
+                    alignSelf: 'flex-start',
+                    marginTop: '8px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(0, 0, 0, 0.1)'
+                    }
+                  }}
+                >
+                  <ContentCopyIcon sx={{ fontSize: '16px', color: '#666' }} />
+                </IconButton>
+              </Tooltip>
+            )}
           </Box>
         ))}
         <div ref={messagesEndRef} />
