@@ -53,15 +53,27 @@ export const Chat: React.FC<{
   onClose: () => void;
 }> = ({ isOpen, onClose }) => {
   const { chatboxSkill } = useChat();
-  const [messages, setMessages] = useState<ChatMessage[]>([{
+  
+  // Function to get initial message
+  const getInitialMessage = () => ({
     id: '1',
     text: "Hi. I'm Mr. Buddy. What question do you have about " + (chatboxSkill || 'this topic') + "?",
     isUser: false,
     timestamp: new Date()
-  }]);
+  });
+  
+  const [messages, setMessages] = useState<ChatMessage[]>([getInitialMessage()]);
   const [input, setInput] = useState('');
   const [width, setWidth] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
+  
+  // Reset messages when chatbox opens
+  useEffect(() => {
+    if (isOpen) {
+      setMessages([getInitialMessage()]);
+      setInput('');
+    }
+  }, [isOpen, chatboxSkill]);
   
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const initialX = useRef(0);
