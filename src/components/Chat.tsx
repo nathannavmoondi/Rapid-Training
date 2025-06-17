@@ -192,18 +192,29 @@ export const Chat: React.FC<{
     });
     
     return processed;
-  }; // Effect to handle highlighting for all messages
+  };  // Effect to handle highlighting for all messages
   useEffect(() => {
-    const messageElements = document.querySelectorAll('.chat-message-content');
-    messageElements.forEach((element) => {
-      if (element instanceof HTMLElement) {
-        try {
-          highlightCode(element);
-        } catch (err) {
-          console.warn('Highlighting error:', err);
+    // Use a small delay to ensure DOM has been updated
+    const timer = setTimeout(() => {
+      const messageElements = document.querySelectorAll('.chat-message-content');
+      console.log('Found message elements:', messageElements.length);
+      
+      messageElements.forEach((element) => {
+        if (element instanceof HTMLElement) {
+          const codeBlocks = element.querySelectorAll('pre code');
+          console.log('Found code blocks:', codeBlocks.length);
+          
+          try {
+            highlightCode(element);
+            console.log('Highlighting completed for element');
+          } catch (err) {
+            console.warn('Highlighting error:', err);
+          }
         }
-      }
-    });
+      });
+    }, 50); // Small delay to ensure DOM update
+    
+    return () => clearTimeout(timer);
   }, [messages]);
 
   if (!isOpen) return null;
@@ -332,13 +343,23 @@ export const Chat: React.FC<{
                     fontSize: '14px',
                     lineHeight: '1.4',
                     borderRadius: '6px'
-                  },
-                  '& .token.comment': { color: '#6A9955' },
+                  },                  '& .token.comment': { color: '#6A9955' },
                   '& .token.string': { color: '#CE9178' },
                   '& .token.number': { color: '#B5CEA8' },
                   '& .token.keyword': { color: '#569CD6' },
                   '& .token.function': { color: '#DCDCAA' },
-                  '& .token.class-name': { color: '#4EC9B0' }
+                  '& .token.class-name': { color: '#4EC9B0' },
+                  '& .token.punctuation': { color: '#D4D4D4' },
+                  '& .token.operator': { color: '#D4D4D4' },
+                  '& .token.property': { color: '#9CDCFE' },
+                  '& .token.tag': { color: '#569CD6' },
+                  '& .token.attr-name': { color: '#9CDCFE' },
+                  '& .token.attr-value': { color: '#CE9178' },
+                  '& .token.variable': { color: '#9CDCFE' },
+                  '& .token.constant': { color: '#4FC1FF' },
+                  '& .token.boolean': { color: '#569CD6' },
+                  '& .token.null': { color: '#569CD6' },
+                  '& .token.important': { color: '#FF6B6B', fontWeight: 'bold' }
                 }}className="chat-message-content"
                 dangerouslySetInnerHTML={{ 
                   __html: processAIResponse(message.text) 
