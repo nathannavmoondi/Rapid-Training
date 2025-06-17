@@ -5,15 +5,24 @@ import SendIcon from '@mui/icons-material/Send';
 import { SvgIcon } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { chatService, ChatMessage } from '../services/chatService';
+
+// Import Prism core
 import Prism from 'prismjs';
 // Import Prism theme
 import 'prismjs/themes/prism-tomorrow.css';
-// Import language support
-import 'prismjs/components/prism-typescript';
+
+// Define languages for Prism
+window.Prism = window.Prism || {};
+Prism.manual = true;
+
+// Import languages after Prism is defined
+import 'prismjs/components/prism-core';
+import 'prismjs/components/prism-markup';
+import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-jsx';
 import 'prismjs/components/prism-tsx';
-import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-graphql';
 import 'prismjs/components/prism-cpp';
@@ -170,18 +179,47 @@ export const Chat: React.FC<{
       handleSend();
     }
   };
-
-  useEffect(() => {
-    if (messages.length > 0) {
-      setTimeout(() => {
-        document.querySelectorAll('pre code').forEach((block) => {
+  // Safe highlight function
+  const highlightCode = useCallback(() => {
+    try {
+      const codeBlocks = document.querySelectorAll('pre code');
+      if (codeBlocks.length > 0) {
+        codeBlocks.forEach((block) => {
           if (block instanceof HTMLElement) {
-            Prism.highlightElement(block);
+            // Ensure the language class is properly set
+            const langClass = Array.from(block.classList)
+              .find(className => className.startsWith('language-'));
+            
+            if (langClass) {
+              // Remove and re-add the class to trigger proper highlighting
+              block.classList.remove(langClass);
+              block.classList.add(langClass);
+              
+              // Highlight with error handling
+              try {
+                Prism.highlightElement(block);
+              } catch (err) {
+                console.warn('Prism highlighting error:', err);
+              }
+            }
           }
         });
-      }, 100);
+      }
+    } catch (err) {
+      console.warn('Code highlighting error:', err);
     }
-  }, [messages]);
+  }, []);
+
+  // Effect to handle highlighting
+  useEffect(() => {
+    if (messages.length > 0) {
+      // Wait for DOM to update
+      const timer = setTimeout(() => {
+        highlightCode();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [messages, highlightCode]);
 
   if (!isOpen) return null;
 
@@ -308,13 +346,29 @@ export const Chat: React.FC<{
                 }}
                 dangerouslySetInnerHTML={{ 
                   __html: message.text 
-                }}
-                ref={node => {
+                }}                ref={node => {
                   if (node instanceof HTMLElement && !message.isUser) {
-                    const codeBlocks = node.querySelectorAll('code');
-                    codeBlocks.forEach(block => {
-                      Prism.highlightElement(block);
-                    });
+                    try {
+                      const codeBlocks = node.querySelectorAll('code');
+                      codeBlocks.forEach(block => {
+                        if (block instanceof HTMLElement) {
+                          const langClass = Array.from(block.classList)
+                            .find(className => className.startsWith('language-'));
+                          
+                          if (langClass) {
+                            block.classList.remove(langClass);
+                            block.classList.add(langClass);
+                            try {
+                              Prism.highlightElement(block);
+                            } catch (err) {
+                              console.warn('Prism highlighting error:', err);
+                            }
+                          }
+                        }
+                      });
+                    } catch (err) {
+                      console.warn('Code block processing error:', err);
+                    }
                   }
                 }}
               />
