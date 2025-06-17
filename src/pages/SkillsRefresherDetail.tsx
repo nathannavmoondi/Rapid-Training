@@ -16,7 +16,8 @@ import type { Skill } from '../data/skills';
 import { requestRefresher } from '../services/aiService';
 import { Chat } from '../components/Chat';
 import { useChat } from '../contexts/chatContext';
-import { highlightCode } from '../utils/prismSetup';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import 'prismjs/components/prism-rust'; // Added for Rust support
 import 'prismjs/components/prism-go'; // Added for Go support
 import 'prismjs/components/prism-ruby'; // Added for Ruby support
@@ -31,20 +32,8 @@ const debounce = <T extends (...args: any[]) => void>(func: T, wait: number) => 
   let timeout: NodeJS.Timeout;
   return (...args: Parameters<T>) => {
     clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
+    timeout = setTimeout(() => func(...args), wait);  };
 };
-
-const highlightCodeLocal = debounce(() => {
-  const contentElement = document.querySelector('.question-content');
-  if (contentElement instanceof HTMLElement) {
-    try {
-      highlightCode(contentElement);
-    } catch (err) {
-      console.warn('Highlighting error:', err);
-    }
-  }
-}, 100);
 
 // Helper function to process HTML for answer visibility and quiz status
 const getProcessedQuestionHtml = (html: string, answerVisible: boolean, showFeedback: boolean = false, isCorrect: boolean | null = null, maxQuizzes?: number, quizzesTaken?: number): string => {
@@ -232,17 +221,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
       if (!question && !isLoading && !isQuizActive) { // Fetch initial question if none exists, not loading, AND not in a quiz
         handleRequestNewQuestion(false); 
       }
-    }
-  }, [currentSkill, handleRequestNewQuestion, question, isLoading, isQuizActive]); // Added isQuizActive
-
-  // Syntax highlighting effect
-  useEffect(() => {    if (!isLoading && question) {
-      // Use setTimeout to ensure DOM is fully updated after HTML processing
-      setTimeout(() => {
-        highlightCodeLocal();
-      }, 100);
-    }
-  }, [question, isLoading, showAnswer, isQuizActive]); // Added isQuizActive to dependency array
+    }  }, [currentSkill, handleRequestNewQuestion, question, isLoading, isQuizActive]); // Added isQuizActive
 
   // Cleanup effect to reset quiz if user navigates away while quiz is active
   useEffect(() => {
@@ -264,7 +243,6 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
         <Button onClick={() => navigate('/skills')} sx={{ mt: 2 }}>Back to Skills</Button>
       </Container>
     );  }
-
   // Function to process raw HTML from AI response
   const processRawHtml = (rawHtml: string): string => {
     if (!rawHtml) return '';
@@ -277,14 +255,106 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
       .replace(/\\t/g, '\t');
   };
 
-  const htmlToRender = getProcessedQuestionHtml(
+  // Function to process HTML and render with syntax highlighting
+  const processHtmlWithSyntaxHighlighting = (html: string) => {
+    if (!html) return { __html: '' };
+
+    // Extract code blocks and replace with placeholders
+    const codeBlockRegex = /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g;
+    const codeBlocks: Array<{ language: string; code: string }> = [];
+    
+    let processedHtml = html.replace(codeBlockRegex, (match, language, code) => {
+      // Decode HTML entities in code
+      const decodedCode = code
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
+      
+      const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+      codeBlocks.push({ language, code: decodedCode.trim() });
+      return placeholder;
+    });
+
+    // Store code blocks for later rendering
+    (processedHtml as any).codeBlocks = codeBlocks;
+    
+    return { __html: processedHtml };
+  };  const htmlToRender = getProcessedQuestionHtml(
     processRawHtml(question), 
     showAnswer,
-    showAnswer && !isSlideDeck, // Only show feedback when answer is shown and not in slidedeck
+    showAnswer && !isSlideDeck && isQuizActive, // Only show feedback when answer is shown, not in slidedeck, AND in quiz mode
     lastAnswerCorrect,  // Pass the correct/incorrect state
     maxQuizzes,
     quizzesTaken
   );
+
+  // Simple function to render content with syntax highlighting
+  const renderContentWithSyntaxHighlighting = (html: string) => {
+    // Extract code blocks and their info
+    const codeBlockRegex = /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = codeBlockRegex.exec(html)) !== null) {
+      // Add text before code block
+      if (match.index > lastIndex) {
+        const textPart = html.slice(lastIndex, match.index);
+        parts.push(
+          <div 
+            key={`text-${parts.length}`}
+            dangerouslySetInnerHTML={{ __html: textPart }}
+          />
+        );
+      }
+
+      // Add syntax highlighted code block
+      const language = match[1];
+      const code = match[2]
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .trim();
+
+      parts.push(        <SyntaxHighlighter
+          key={`code-${parts.length}`}
+          language={language}
+          style={vscDarkPlus}
+          showLineNumbers={false}
+          customStyle={{
+            margin: '12px 0',
+            padding: '16px',
+            background: '#1E1E1E',
+            fontSize: '14px',
+            lineHeight: '1.4',
+            borderRadius: '6px',
+            fontFamily: "'Fira Code', 'Consolas', monospace",
+          }}
+        >
+          {code}
+        </SyntaxHighlighter>
+      );
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Add remaining text after last code block
+    if (lastIndex < html.length) {
+      const remainingText = html.slice(lastIndex);
+      parts.push(
+        <div 
+          key={`text-${parts.length}`}
+          dangerouslySetInnerHTML={{ __html: remainingText }}
+        />
+      );
+    }
+
+    return parts;
+  };
 
   const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     selectQuizAnswer(event.target.value);
@@ -475,8 +545,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                   '&.function': { color: '#dcdcaa' }, 
                   '&.class-name': { color: '#4ec9b0' }, 
                   '&.operator': { color: '#d4d4d4' }, 
-                  '&.punctuation': { color: '#d4d4d4' } 
-                },
+                  '&.punctuation': { color: '#d4d4d4' }                },
                 '& a': { // Style for anchor tags
                   color: 'primary.main',
                   textDecoration: 'underline',
@@ -485,8 +554,9 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                   },
                 },
               }}
-              dangerouslySetInnerHTML={{ __html: htmlToRender }}
-            />
+            >
+              {renderContentWithSyntaxHighlighting(htmlToRender)}
+            </Box>
 
             {!isSlideDeck && (isQuizActive || startCourse === 1) && !showAnswer && (
               <FormControl component="fieldset" sx={{ my: 2, p:2, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1 }}>
