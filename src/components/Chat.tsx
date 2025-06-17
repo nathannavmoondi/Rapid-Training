@@ -5,6 +5,25 @@ import SendIcon from '@mui/icons-material/Send';
 import { SvgIcon } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { chatService, ChatMessage } from '../services/chatService';
+import Prism from 'prismjs';
+// Import Prism theme
+import 'prismjs/themes/prism-tomorrow.css';
+// Import language support
+import 'prismjs/components/prism-typescript';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-jsx';
+import 'prismjs/components/prism-tsx';
+import 'prismjs/components/prism-markup';
+import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-graphql';
+import 'prismjs/components/prism-cpp';
+import 'prismjs/components/prism-python';
+import 'prismjs/components/prism-rust';
+import 'prismjs/components/prism-go';
+import 'prismjs/components/prism-ruby';
+import 'prismjs/components/prism-sql';
+import 'prismjs/components/prism-java';
+import 'prismjs/components/prism-csharp';
 
 const BuddyIcon = (props: any) => (
   <SvgIcon {...props} viewBox="0 0 24 24">
@@ -152,6 +171,18 @@ export const Chat: React.FC<{
     }
   };
 
+  useEffect(() => {
+    if (messages.length > 0) {
+      setTimeout(() => {
+        document.querySelectorAll('pre code').forEach((block) => {
+          if (block instanceof HTMLElement) {
+            Prism.highlightElement(block);
+          }
+        });
+      }, 100);
+    }
+  }, [messages]);
+
   if (!isOpen) return null;
 
   return (
@@ -248,15 +279,45 @@ export const Chat: React.FC<{
                 p: 2,
                 maxWidth: '85%'
               }}
-            >
-              <Typography
+            >              <Box
+                component="div"
                 sx={{
                   fontStyle: message.text === "Thinking..." ? 'italic' : 'normal',
-                  opacity: message.text === "Thinking..." ? 0.7 : 1
+                  opacity: message.text === "Thinking..." ? 0.7 : 1,
+                  '& pre': {
+                    margin: '8px 0',
+                    borderRadius: '4px',
+                    overflow: 'auto'
+                  },
+                  '& code': {
+                    fontFamily: '"Fira Code", "Consolas", monospace',
+                    backgroundColor: '#1e1e1e !important',
+                    color: '#d4d4d4',
+                    padding: '12px',
+                    display: 'block',
+                    overflowX: 'auto',
+                    fontSize: '14px',
+                    lineHeight: '1.4'
+                  },
+                  '& .token.comment': { color: '#6A9955' },
+                  '& .token.string': { color: '#CE9178' },
+                  '& .token.number': { color: '#B5CEA8' },
+                  '& .token.keyword': { color: '#569CD6' },
+                  '& .token.function': { color: '#DCDCAA' },
+                  '& .token.class-name': { color: '#4EC9B0' }
                 }}
-              >
-                {message.text}
-              </Typography>
+                dangerouslySetInnerHTML={{ 
+                  __html: message.text 
+                }}
+                ref={node => {
+                  if (node instanceof HTMLElement && !message.isUser) {
+                    const codeBlocks = node.querySelectorAll('code');
+                    codeBlocks.forEach(block => {
+                      Prism.highlightElement(block);
+                    });
+                  }
+                }}
+              />
             </Box>
           </Box>
         ))}
