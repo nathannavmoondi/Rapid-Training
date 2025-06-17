@@ -124,14 +124,9 @@ export const Chat: React.FC<{
     setMessages(prev => [...prev, userMessage, loadingMessage]);
     setInput('');    try {
       const response = await chatService.respondChat(input, chatboxSkill || 'general');
-      // Process the AI response for better formatting
-      const processedResponse = {
-        ...response,
-        text: processAIResponse(response.text)
-      };
       setMessages(prev => 
         prev.map(msg => 
-          msg.id === loadingMessage.id ? processedResponse : msg
+          msg.id === loadingMessage.id ? response : msg
         )
       );
     } catch (error) {
@@ -168,9 +163,13 @@ export const Chat: React.FC<{
       codeBlocks.push(match);
       return placeholder;
     });
-    
-    // Process the text outside code blocks
+      // Process the text outside code blocks
     processed = processed
+      // Remove all backtick characters
+      .replace(/`/g, '')
+      // Remove standalone triple backticks (markdown artifacts)
+      .replace(/^```[\w]*\s*$/gm, '')
+      .replace(/```$/gm, '')
       // Convert double newlines to paragraph breaks
       .replace(/\n\n/g, '</p><p>')
       // Convert single newlines to line breaks
@@ -184,7 +183,9 @@ export const Chat: React.FC<{
       .replace(/(?!<\/p>)$/, '</p>')
       // Clean up empty paragraphs
       .replace(/<p><\/p>/g, '')
-      .replace(/<p><br><\/p>/g, '<br>');
+      .replace(/<p><br><\/p>/g, '<br>')
+      // Clean up orphaned paragraph tags
+      .replace(/<p>\s*<\/p>/g, '');
     
     // Restore code blocks
     codeBlocks.forEach((block, index) => {
@@ -194,8 +195,8 @@ export const Chat: React.FC<{
     return processed;
   };  // Effect to handle highlighting for all messages
   useEffect(() => {
-    // Use a small delay to ensure DOM has been updated
-    const timer = setTimeout(() => {
+    // Use requestAnimationFrame to ensure DOM has been fully updated
+    const highlightTimer = requestAnimationFrame(() => {
       const messageElements = document.querySelectorAll('.chat-message-content');
       
       messageElements.forEach((element) => {
@@ -207,9 +208,9 @@ export const Chat: React.FC<{
           }
         }
       });
-    }, 50); // Small delay to ensure DOM update
+    });
     
-    return () => clearTimeout(timer);
+    return () => cancelAnimationFrame(highlightTimer);
   }, [messages, width]); // Added width dependency to re-highlight on resize
 
   if (!isOpen) return null;
@@ -357,7 +358,7 @@ export const Chat: React.FC<{
                   '& .token.important': { color: '#FF6B6B', fontWeight: 'bold' }
                 }}                className="chat-message-content"
                 dangerouslySetInnerHTML={{ 
-                  __html: message.text 
+                  __html: message.isUser ? message.text : processAIResponse(message.text)
                 }}
               />
             </Box>
