@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Box, TextField, IconButton, Typography, Avatar } from '@mui/material';
 import { useChat } from '../contexts/chatContext';
 import SendIcon from '@mui/icons-material/Send';
@@ -54,61 +54,54 @@ export const Chat: React.FC<{
   const { chatboxSkill } = useChat();
   const [messages, setMessages] = useState<ChatMessage[]>([{
     id: '1',
-    text: "Hi. I'm Mr. Buddy. What question do you have on this topic?",
+    text: "Hi. I'm Mr. Buddy. What question do you have about " + (chatboxSkill || 'this topic') + "?",
     isUser: false,
     timestamp: new Date()
   }]);
   const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<null | HTMLDivElement>(null);
-
-  // Simple resize state
   const [width, setWidth] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
-  const startPosition = useRef({ x: 0, width: 400 });
-
+  
+  const messagesEndRef = useRef<null | HTMLDivElement>(null);
+  const initialX = useRef(0);
+  const initialWidth = useRef(0);
   const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
     setIsResizing(true);
-    startPosition.current = {
-      x: e.pageX,
-      width: width
-    };
-  };
-
-  const handleMouseUp = () => {
-    setIsResizing(false);
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isResizing) return;
-    
-    const dx = startPosition.current.x - e.pageX;
-    const newWidth = Math.min(
-      Math.max(startPosition.current.width + dx, 400),
-      window.innerWidth * 0.8
-    );
-    setWidth(newWidth);
+    initialX.current = e.clientX;
+    initialWidth.current = width;
   };
 
   useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+      const deltaX = e.clientX - initialX.current;
+      const newWidth = Math.min(Math.max(initialWidth.current - deltaX, 400), window.innerWidth * 0.8);
+      setWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
     if (isResizing) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
     }
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isResizing, width]);
+  }, [isResizing]);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -120,17 +113,35 @@ export const Chat: React.FC<{
       timestamp: new Date()
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    const loadingMessage: ChatMessage = {
+      id: Math.random().toString(36).substring(7),
+      text: "Thinking...",
+      isUser: false,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage, loadingMessage]);
     setInput('');
-    setIsTyping(true);
 
     try {
-      const response = await chatService.sendMessage(input);
-      setIsTyping(false);
-      setMessages(prev => [...prev, response]);
+      const response = await chatService.respondChat(input, chatboxSkill || 'general');
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === loadingMessage.id ? response : msg
+        )
+      );
     } catch (error) {
-      setIsTyping(false);
       console.error('Failed to send message:', error);
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === loadingMessage.id ? {
+            id: Math.random().toString(36).substring(7),
+            text: "Sorry, I encountered an error. Please try again.",
+            isUser: false,
+            timestamp: new Date()
+          } : msg
+        )
+      );
     }
   };
 
@@ -159,27 +170,23 @@ export const Chat: React.FC<{
         borderRadius: '12px',
         boxShadow: '0 2px 24px rgba(0, 0, 0, 0.15)',
         transform: isOpen ? 'translateX(0)' : 'translateX(calc(100% + 20px))',
-        transition: isResizing ? 'none' : 'transform 0.3s ease-in-out',
-        overflow: 'hidden'
+        transition: isResizing ? 'none' : 'transform 0.3s ease-in-out'
       }}
     >
-      {/* Simple resize handle */}
-      <Box
+      {/* Resize Handle */}      <Box
         onMouseDown={handleMouseDown}
         sx={{
           position: 'absolute',
-          left: -2,
+          left: -4,
           top: 0,
           bottom: 0,
-          width: '10px',
+          width: '8px',
           cursor: 'ew-resize',
-          backgroundColor: isResizing ? '#0053A7' : '#ddd',
-          opacity: isResizing ? 0.5 : 0.2,
+          zIndex: 2000,
+          backgroundColor: isResizing ? 'rgba(0, 83, 167, 0.2)' : 'transparent',
           '&:hover': {
-            opacity: 0.5,
-            backgroundColor: '#0053A7'
-          },
-          zIndex: 2000
+            backgroundColor: 'rgba(0, 83, 167, 0.1)'
+          }
         }}
       />
 
@@ -189,41 +196,33 @@ export const Chat: React.FC<{
           p: 2,
           display: 'flex',
           alignItems: 'center',
-          gap: 2,
-          height: '48px',
+          justifyContent: 'space-between',
           bgcolor: '#0053A7',
-          color: '#fff'
+          color: '#fff',
+          borderTopLeftRadius: '12px',
+          borderTopRightRadius: '12px'
         }}
       >
-        <Avatar sx={{ width: 32, height: 32, bgcolor: '#0053A7' }}>
-          <BuddyIcon sx={{ fontSize: 20 }} />
-        </Avatar>        <Box sx={{ flex: 1 }}>
-          <Typography sx={{ fontSize: '1rem', fontWeight: 600, color: '#fff' }}>
-            AI Assistant{chatboxSkill ? ` (${chatboxSkill})` : ''}
-          </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Avatar sx={{ bgcolor: '#0053A7' }}>
+            <BuddyIcon />
+          </Avatar>
+          <Typography>AI Assistant {chatboxSkill ? `(${chatboxSkill})` : ''}</Typography>
         </Box>
-        <IconButton
-          onClick={onClose}
-          size="small"
-          sx={{ 
-            color: '#fff',
-            padding: '4px',
-            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
-          }}
-        >
-          <CloseIcon sx={{ fontSize: 20 }} />
+        <IconButton onClick={onClose} sx={{ color: 'white' }}>
+          <CloseIcon />
         </IconButton>
       </Box>
 
-      {/* Messages area */}      <Box
+      {/* Messages */}
+      <Box
         sx={{
           flex: 1,
-          overflowY: 'auto',
-          p: 3,
+          overflow: 'auto',
+          p: 2,
           display: 'flex',
           flexDirection: 'column',
-          gap: 2,
-          bgcolor: '#fff'
+          gap: 2
         }}
       >
         {messages.map((message) => (
@@ -233,113 +232,100 @@ export const Chat: React.FC<{
               display: 'flex',
               gap: 1,
               alignItems: 'flex-start',
-              flexDirection: message.isUser ? 'row-reverse' : 'row',
+              flexDirection: message.isUser ? 'row-reverse' : 'row'
             }}
           >
             {!message.isUser && (
-              <Avatar sx={{ bgcolor: '#1976d2' }}>
+              <Avatar sx={{ bgcolor: message.text === "Thinking..." ? '#999' : '#0053A7' }}>
                 <BuddyIcon />
               </Avatar>
             )}
             <Box
               sx={{
                 backgroundColor: message.isUser ? '#007AFF' : '#F1F2F6',
-                borderRadius: '16px',
-                p: 2,
-                px: 2.5,
-                maxWidth: '85%',
                 color: message.isUser ? '#fff' : '#000',
+                borderRadius: '12px',
+                p: 2,
+                maxWidth: '85%'
               }}
             >
-              <Typography>
-                {message.isUser ? (
-                  message.text
-                ) : (
-                  <TypewriterText text={message.text} />
-                )}
+              <Typography
+                sx={{
+                  fontStyle: message.text === "Thinking..." ? 'italic' : 'normal',
+                  opacity: message.text === "Thinking..." ? 0.7 : 1
+                }}
+              >
+                {message.text}
               </Typography>
             </Box>
           </Box>
         ))}
-        {isTyping && (
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
-            <Avatar sx={{ bgcolor: '#1976d2' }}>
-              <BuddyIcon />
-            </Avatar>
-            <Box
-              sx={{
-                backgroundColor: '#f5f5f5',
-                borderRadius: 2,
-                p: 2,
-                maxWidth: '70%',
-              }}
-            >
-              <Typography>...</Typography>
-            </Box>
-          </Box>
-        )}
         <div ref={messagesEndRef} />
-      </Box>      {/* Input area */}      <Box
+      </Box>
+
+      {/* Input */}
+      <Box
         sx={{
           p: 2,
-          borderTop: '2px solid #D1D1D6',
-          backgroundColor: '#fff',
+          borderTop: '2px solid #D1D1D1',
+          backgroundColor: '#F8F9FA'
         }}
       >
-        <Box sx={{          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          backgroundColor: '#F8F8FA',
-          border: '1px solid #D1D1D6',
-          borderRadius: '8px',
-          py: 1,
-          px: 2
-        }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 1,
+            alignItems: 'center'
+          }}
+        >
           <TextField
             fullWidth
-            variant="standard"
-            size="small"
+            multiline
+            maxRows={4}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Type your message here..."
-            InputProps={{
-              disableUnderline: true,
-            }}
+            placeholder={`Ask me about ${chatboxSkill || 'anything'}...`}
             sx={{
-              '& .MuiInputBase-root': {
-                color: '#000000',
-                fontSize: '0.9375rem',
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: '#F1F2F6',
+                color: '#000',
+                borderColor: '#D1D1D1',
+                '& fieldset': {
+                  borderColor: '#999',
+                  borderWidth: '1px'
+                },
+                '&:hover fieldset': {
+                  borderColor: '#666'
+                },
+                '&.Mui-focused': {
+                  '& > fieldset': {
+                    borderColor: '#0053A7',
+                    borderWidth: '1px'
+                  }
+                }
               },
               '& .MuiInputBase-input': {
-                padding: '4px 0',
-                '&::placeholder': {
-                  color: '#8E8E93',
-                  opacity: 1,
-                },
+                color: '#000'
               },
+              '& .MuiOutlinedInput-input::placeholder': {
+                color: '#666',
+                opacity: 1
+              }
             }}
           />
-          <IconButton 
+          <IconButton
             onClick={handleSend}
             disabled={!input.trim()}
-            sx={{ 
-              padding: '8px',
-              bgcolor: '#0B93F6',
+            sx={{
+              bgcolor: '#0053A7',
               color: '#fff',
-              borderRadius: '50%',
-              width: 32,
-              height: 32,
-              ml: 1,
               '&:hover': {
-                bgcolor: '#0084E4',
+                bgcolor: '#003E7D'
               },
               '&.Mui-disabled': {
-                bgcolor: '#E5E5EA',
-                color: '#fff',
-              },
-              '& .MuiSvgIcon-root': {
-                fontSize: '1.25rem',
+                bgcolor: '#E5E5E5',
+                color: '#999'
               }
             }}
           >

@@ -6,8 +6,62 @@ export interface ChatMessage {
 }
 
 class ChatService {
+  async respondChat(message: string, skill: string): Promise<ChatMessage> {
+    try {
+      const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+      
+      if (!apiKey) {
+        throw new Error('API key not found in environment variables!');
+      }
+
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.0-flash-001:floor",
+          temperature: 0.7,
+          messages: [
+            {
+              role: "system",
+              content: `You are a helpful assistant focused on ${skill}. Only answer questions related to ${skill}. If the question is not related to ${skill}, politely redirect the user to ask about ${skill} instead.`
+            },
+            {
+              role: "user",
+              content: message
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('API request failed');
+      }
+
+      const data = await response.json();
+      const aiResponse = data.choices?.[0]?.message?.content || 'No response received';
+
+      return {
+        id: Math.random().toString(36).substring(7),
+        text: aiResponse.trim(),
+        isUser: false,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Error in chat response:', error);
+      return {
+        id: Math.random().toString(36).substring(7),
+        text: "I apologize, but I encountered an error processing your request. Please try again.",
+        isUser: false,
+        timestamp: new Date()
+      };
+    }
+  }
+
   async sendMessage(message: string): Promise<ChatMessage> {
-    // Simulate response delay
+    // This method can be removed or kept as a fallback
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     return {
