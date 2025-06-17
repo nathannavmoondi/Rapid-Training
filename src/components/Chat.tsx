@@ -6,19 +6,15 @@ import { SvgIcon } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { chatService, ChatMessage } from '../services/chatService';
 
-// Import Prism core
+// Core Prism import
 import Prism from 'prismjs';
-// Import Prism theme
-import 'prismjs/themes/prism-tomorrow.css';
-
-// Define languages for Prism
-window.Prism = window.Prism || {};
-Prism.manual = true;
-
-// Import languages after Prism is defined
+// Base languages (needed first)
 import 'prismjs/components/prism-core';
-import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-clike';
+// Theme
+import 'prismjs/themes/prism-tomorrow.css';
+// Languages
+import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-jsx';
@@ -33,6 +29,12 @@ import 'prismjs/components/prism-ruby';
 import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-csharp';
+
+// Initialize Prism
+if (typeof window !== 'undefined') {
+  window.Prism = window.Prism || {};
+  Prism.manual = true;
+}
 
 const BuddyIcon = (props: any) => (
   <SvgIcon {...props} viewBox="0 0 24 24">
