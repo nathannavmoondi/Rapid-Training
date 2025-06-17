@@ -62,6 +62,46 @@ export const Chat: React.FC<{
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
+  // Simple resize state
+  const [width, setWidth] = useState(400);
+  const [isResizing, setIsResizing] = useState(false);
+  const startPosition = useRef({ x: 0, width: 400 });
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsResizing(true);
+    startPosition.current = {
+      x: e.pageX,
+      width: width
+    };
+  };
+
+  const handleMouseUp = () => {
+    setIsResizing(false);
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isResizing) return;
+    
+    const dx = startPosition.current.x - e.pageX;
+    const newWidth = Math.min(
+      Math.max(startPosition.current.width + dx, 400),
+      window.innerWidth * 0.8
+    );
+    setWidth(newWidth);
+  };
+
+  useEffect(() => {
+    if (isResizing) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing, width]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -103,12 +143,14 @@ export const Chat: React.FC<{
 
   if (!isOpen) return null;
 
-  return (    <Box
-      sx={{        position: 'fixed',
+  return (
+    <Box
+      sx={{
+        position: 'fixed',
         right: 20,
-        top: 60, // Below navbar (40px height + 20px margin)
+        top: 60,
         bottom: 20,
-        width: '400px',
+        width: `${width}px`,
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: '#ffffff',
@@ -117,10 +159,32 @@ export const Chat: React.FC<{
         borderRadius: '12px',
         boxShadow: '0 2px 24px rgba(0, 0, 0, 0.15)',
         transform: isOpen ? 'translateX(0)' : 'translateX(calc(100% + 20px))',
-        transition: 'transform 0.3s ease-in-out',
+        transition: isResizing ? 'none' : 'transform 0.3s ease-in-out',
         overflow: 'hidden'
-      }}    >
-      {/* Header */}      <Box
+      }}
+    >
+      {/* Simple resize handle */}
+      <Box
+        onMouseDown={handleMouseDown}
+        sx={{
+          position: 'absolute',
+          left: -2,
+          top: 0,
+          bottom: 0,
+          width: '10px',
+          cursor: 'ew-resize',
+          backgroundColor: isResizing ? '#0053A7' : '#ddd',
+          opacity: isResizing ? 0.5 : 0.2,
+          '&:hover': {
+            opacity: 0.5,
+            backgroundColor: '#0053A7'
+          },
+          zIndex: 2000
+        }}
+      />
+
+      {/* Header */}
+      <Box
         sx={{
           p: 2,
           display: 'flex',
@@ -131,13 +195,7 @@ export const Chat: React.FC<{
           color: '#fff'
         }}
       >
-        <Avatar 
-          sx={{ 
-            width: 32,
-            height: 32,
-            bgcolor: '#0053A7'
-          }}
-        >
+        <Avatar sx={{ width: 32, height: 32, bgcolor: '#0053A7' }}>
           <BuddyIcon sx={{ fontSize: 20 }} />
         </Avatar>        <Box sx={{ flex: 1 }}>
           <Typography sx={{ fontSize: '1rem', fontWeight: 600, color: '#fff' }}>
