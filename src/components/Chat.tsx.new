@@ -1,0 +1,275 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Box, TextField, IconButton, Typography, Avatar, SvgIcon } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
+import CloseIcon from '@mui/icons-material/Close';
+import { chatService, ChatMessage } from '../services/chatService';
+
+const BuddyIcon = (props: any) => (
+  <SvgIcon {...props}>
+    <path d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 1c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 2c1.1 0 2 .9 2 2v1c0 1.1-.9 2-2 2s-2-.9-2-2V7c0-1.1.9-2 2-2zm0 7c3.31 0 6 2.69 6 6v2c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-2c0-3.31 2.69-6 6-6zm0 1c-2.76 0-5 2.24-5 5v1h10v-1c0-2.76-2.24-5-5-5zm4.5 2c.28 0 .5.22.5.5s-.22.5-.5.5-.5-.22-.5-.5.22-.5.5-.5zm-9 0c.28 0 .5.22.5.5s-.22.5-.5.5-.5-.22-.5-.5.22-.5.5-.5z"/>
+  </SvgIcon>
+);
+
+interface TypewriterTextProps {
+  text: string;
+}
+
+const TypewriterText: React.FC<TypewriterTextProps> = ({ text }) => {
+  const [displayedText, setDisplayedText] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (currentIndex < text.length) {
+      const timer = setTimeout(() => {
+        setDisplayedText(prev => prev + text[currentIndex]);
+        setCurrentIndex(c => c + 1);
+      }, 30);
+
+      return () => clearTimeout(timer);
+    }
+  }, [currentIndex, text]);
+
+  return <>{displayedText}</>;
+};
+
+export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+  const [messages, setMessages] = useState<ChatMessage[]>([{
+    id: '1',
+    text: "Hi. I'm Mr. Buddy. What question do you have on this topic?",
+    isUser: false,
+    timestamp: new Date()
+  }]);
+  const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<null | HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSend = async () => {
+    if (!input.trim()) return;
+
+    const userMessage: ChatMessage = {
+      id: Math.random().toString(36).substring(7),
+      text: input,
+      isUser: true,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsTyping(true);
+
+    try {
+      const response = await chatService.sendMessage(input);
+      setIsTyping(false);
+      setMessages(prev => [...prev, response]);
+    } catch (error) {
+      setIsTyping(false);
+      console.error('Failed to send message:', error);
+    }
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      handleSend();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <Box
+      sx={{
+        position: 'fixed',
+        right: 20,
+        top: 60,
+        bottom: 20,
+        width: '400px',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: '#ffffff',
+        color: '#000000',
+        zIndex: 1400,
+        borderRadius: '12px',
+        boxShadow: '0 2px 24px rgba(0, 0, 0, 0.15)',
+        transform: isOpen ? 'translateX(0)' : 'translateX(calc(100% + 20px))',
+        transition: 'transform 0.3s ease-in-out',
+        overflow: 'hidden'
+      }}
+    >
+      <Box
+        sx={{
+          p: 2,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          height: '48px',
+          bgcolor: '#0053A7',
+          color: '#fff'
+        }}
+      >
+        <Avatar 
+          sx={{ 
+            width: 32,
+            height: 32,
+            bgcolor: 'transparent'
+          }}
+        >
+          <BuddyIcon sx={{ fontSize: 24, color: '#fff' }} />
+        </Avatar>
+        <Box sx={{ flex: 1 }}>
+          <Typography sx={{ fontSize: '1rem', fontWeight: 600, color: '#fff' }}>
+            AI Learning Assistant
+          </Typography>
+        </Box>
+        <IconButton
+          onClick={onClose}
+          size="small"
+          sx={{ 
+            color: '#fff',
+            padding: '4px',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+          }}
+        >
+          <CloseIcon sx={{ fontSize: 20 }} />
+        </IconButton>
+      </Box>
+
+      <Box
+        sx={{
+          flex: 1,
+          overflowY: 'auto',
+          p: 3,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          bgcolor: '#fff'
+        }}
+      >
+        {messages.map((message) => (
+          <Box
+            key={message.id}
+            sx={{
+              display: 'flex',
+              gap: 1,
+              alignItems: 'flex-start',
+              flexDirection: message.isUser ? 'row-reverse' : 'row',
+            }}
+          >
+            {!message.isUser && (
+              <Avatar sx={{ bgcolor: '#0053A7' }}>
+                <BuddyIcon sx={{ color: '#fff' }} />
+              </Avatar>
+            )}
+            <Box
+              sx={{
+                backgroundColor: message.isUser ? '#007AFF' : '#F1F2F6',
+                borderRadius: '16px',
+                p: 2,
+                px: 2.5,
+                maxWidth: '85%',
+                color: message.isUser ? '#fff' : '#000',
+              }}
+            >
+              <Typography>
+                {message.isUser ? (
+                  message.text
+                ) : (
+                  <TypewriterText text={message.text} />
+                )}
+              </Typography>
+            </Box>
+          </Box>
+        ))}
+        {isTyping && (
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+            <Avatar sx={{ bgcolor: '#0053A7' }}>
+              <BuddyIcon sx={{ color: '#fff' }} />
+            </Avatar>
+            <Box
+              sx={{
+                backgroundColor: '#F1F2F6',
+                borderRadius: '16px',
+                p: 2,
+                px: 2.5,
+                maxWidth: '85%',
+              }}
+            >
+              <Typography>...</Typography>
+            </Box>
+          </Box>
+        )}
+        <div ref={messagesEndRef} />
+      </Box>
+
+      <Box
+        sx={{
+          p: 2,
+          borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+          backgroundColor: '#fff',
+        }}
+      >
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            size="medium"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Message..."
+            multiline
+            maxRows={4}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                bgcolor: '#F1F2F6',
+                borderRadius: '24px',
+                color: '#000000',
+                '& fieldset': {
+                  border: 'none',
+                },
+                '&:hover fieldset': {
+                  border: 'none',
+                },
+                '&.Mui-focused fieldset': {
+                  border: 'none',
+                },
+              },
+              '& .MuiOutlinedInput-input': {
+                padding: '12px 20px',
+                color: '#000000',
+                '&::placeholder': {
+                  color: 'rgba(0, 0, 0, 0.6)',
+                  opacity: 1,
+                },
+              },
+            }}
+          />
+          <IconButton 
+            onClick={handleSend}
+            disabled={!input.trim()}
+            sx={{ 
+              color: input.trim() ? '#fff' : 'rgba(255, 255, 255, 0.3)',
+              bgcolor: input.trim() ? '#0053A7' : 'transparent',
+              '&:hover': {
+                bgcolor: input.trim() ? '#0062cc' : 'transparent',
+              },
+              '&.Mui-disabled': {
+                bgcolor: 'transparent',
+              }
+            }}
+          >
+            <SendIcon />
+          </IconButton>
+        </Box>
+      </Box>
+    </Box>
+  );
+};

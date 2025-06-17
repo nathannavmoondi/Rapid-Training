@@ -23,27 +23,26 @@ import './styles/prism-custom.css';
 function App() {
   const [isChatOpen, setIsChatOpen] = useState(false);
 
-  const handleChatToggle = () => {
-    setIsChatOpen(!isChatOpen);
-  };
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <QuizProvider>
         <BrowserRouter>
-          <Box sx={{ display: 'flex', minHeight: '100vh', position: 'relative' }}>
-            <Navbar onChatToggle={handleChatToggle} isChatOpen={isChatOpen} />
+          <Box sx={{ 
+            display: 'flex',
+            minHeight: '100vh',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <Navbar onChatToggle={() => setIsChatOpen(!isChatOpen)} isChatOpen={isChatOpen} />
             <Sidebar />
-            <Box 
-              sx={{ 
-                flex: 1,
-                marginLeft: '60px',
-                marginTop: '40px',
-                display: 'flex',
-                flexDirection: 'column'
-              }}
-            >
+            <Box sx={{ 
+              flex: 1,
+              marginLeft: '60px',
+              marginTop: '40px',
+              position: 'relative',
+              zIndex: 1
+            }}>
               <Container>
                 <Routes>
                   <Route path="/" element={<Navigate to="/skills" replace />} />
