@@ -3,10 +3,13 @@ import { Box, TextField, IconButton, Typography, Avatar, Tooltip } from '@mui/ma
 import { useChat } from '../contexts/chatContext';
 import SendIcon from '@mui/icons-material/Send';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import MicIcon from '@mui/icons-material/Mic';
+import MicOffIcon from '@mui/icons-material/MicOff';
 import { SvgIcon } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { chatService, ChatMessage } from '../services/chatService';
 import { highlightCode } from '../utils/prismSetup';
+import { useSpeechToText } from '../hooks/useSpeechToText';
 
 const BuddyIcon = (props: any) => (
   <SvgIcon {...props} viewBox="0 0 24 24">
@@ -62,11 +65,23 @@ export const Chat: React.FC<{
     isUser: false,
     timestamp: new Date()
   });
-    const [messages, setMessages] = useState<ChatMessage[]>([getInitialMessage()]);
+  const [messages, setMessages] = useState<ChatMessage[]>([getInitialMessage()]);
   const [input, setInput] = useState('');
   const [width, setWidth] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  
+  // Speech-to-text functionality
+  const { isListening, isSupported, toggleListening } = useSpeechToText({
+    onTranscript: (transcript, isFinal) => {
+      if (isFinal) {
+        setInput(prev => prev + transcript + ' ');
+      }
+    },
+    onError: (error) => {
+      console.error('Speech recognition error:', error);
+    }
+  });
   
   // Copy to clipboard function
   const handleCopyToClipboard = async (text: string, messageId: string) => {
@@ -526,9 +541,28 @@ export const Chat: React.FC<{
               '& .MuiOutlinedInput-input::placeholder': {
                 color: '#666',
                 opacity: 1
-              }
-            }}
+              }            }}
           />
+          
+          {/* Microphone button for speech-to-text */}
+          {isSupported && (
+            <Tooltip title={isListening ? "Stop recording" : "Start voice input"}>
+              <IconButton
+                onClick={toggleListening}
+                sx={{
+                  bgcolor: isListening ? '#ff4444' : '#f0f0f0',
+                  color: isListening ? 'white' : '#666',
+                  '&:hover': {
+                    bgcolor: isListening ? '#ff6666' : '#e0e0e0'
+                  },
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {isListening ? <MicOffIcon /> : <MicIcon />}
+              </IconButton>
+            </Tooltip>
+          )}
+          
           <IconButton
             onClick={handleSend}
             disabled={!input.trim()}
