@@ -323,7 +323,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
             margin: '12px 0',
             padding: '16px',
             background: '#1E1E1E',
-            fontSize: '16px',
+            fontSize: '18px',
             lineHeight: '1.4',
             borderRadius: '6px',
             fontFamily: "'Fira Code', 'Consolas', monospace",
