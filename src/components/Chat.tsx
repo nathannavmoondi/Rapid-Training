@@ -8,7 +8,8 @@ import MicOffIcon from '@mui/icons-material/MicOff';
 import { SvgIcon } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { chatService, ChatMessage } from '../services/chatService';
-import { highlightCode } from '../utils/prismSetup';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useSpeechToText } from '../hooks/useSpeechToText';
 
 const BuddyIcon = (props: any) => (
@@ -50,6 +51,96 @@ const TypewriterText: React.FC<TypewriterTextProps> = ({ text }) => {
   }, [currentIndex, text]);
 
   return <>{displayedText}</>;
+};
+
+// Component to render AI message content with syntax highlighting
+const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isUser }) => {
+  if (isUser) {
+    return <Typography component="div">{text}</Typography>;
+  }
+
+  // Handle "Thinking..." message
+  if (text === "Thinking...") {
+    return (
+      <Typography 
+        component="div" 
+        sx={{ 
+          fontStyle: 'italic', 
+          opacity: 0.7 
+        }}
+      >
+        {text}
+      </Typography>
+    );
+  }
+
+  // Parse the message to identify code blocks
+  const renderContentWithSyntaxHighlighting = (content: string) => {
+    // Split content by code blocks (```language...```)
+    const parts = content.split(/(```[\w]*\n[\s\S]*?\n```)/g);
+    
+    return parts.map((part, index) => {
+      // Check if this part is a code block
+      const codeMatch = part.match(/^```(\w*)\n([\s\S]*?)\n```$/);
+      
+      if (codeMatch) {
+        const [, language, code] = codeMatch;
+        const lang = language || 'javascript';
+        
+        return (
+          <Box key={index} sx={{ my: 2 }}>
+            <SyntaxHighlighter
+              language={lang}
+              style={vscDarkPlus}
+              showLineNumbers={false}
+              customStyle={{
+                margin: 0,
+                padding: '16px',
+                background: '#1E1E1E',
+                fontSize: '14px',
+                lineHeight: '1.4',
+                borderRadius: '6px',
+                fontFamily: "'Fira Code', 'Consolas', monospace",
+              }}
+            >
+              {code.trim()}
+            </SyntaxHighlighter>
+          </Box>
+        );
+      } else {
+        // Regular text content
+        return (
+          <Typography
+            key={index}
+            component="div"
+            sx={{
+              '& p': {
+                margin: '0 0 8px 0',
+                lineHeight: '1.5',
+                '&:last-child': { marginBottom: 0 }
+              },
+              '& strong': {
+                fontWeight: 'bold'
+              }
+            }}
+            dangerouslySetInnerHTML={{
+              __html: part
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>')
+                .replace(/^(?!<p>)/, '<p>')
+                .replace(/(?!<\/p>)$/, '</p>')
+                .replace(/<p><\/p>/g, '')
+                .replace(/<p><br><\/p>/g, '<br>')
+                .replace(/<p>\s*<\/p>/g, '')
+            }}
+          />
+        );
+      }
+    });
+  };
+
+  return <Box>{renderContentWithSyntaxHighlighting(text)}</Box>;
 };
 
 export const Chat: React.FC<{ 
@@ -156,42 +247,6 @@ export const Chat: React.FC<{
       document.removeEventListener('mouseup', handleMouseUp);
     };
   }, [isResizing]);
-
-  // Additional effect to re-highlight code when resizing stops
-  useEffect(() => {
-    if (!isResizing) {
-      // Re-highlight after resize is complete
-      const rehighlightTimer = setTimeout(() => {
-        const messageElements = document.querySelectorAll('.chat-message-content');
-        
-        messageElements.forEach((element) => {
-          if (element instanceof HTMLElement) {
-            // Clear any existing Prism classes to allow re-highlighting
-            const codeBlocks = element.querySelectorAll('pre code');
-            codeBlocks.forEach((block) => {
-              if (block instanceof HTMLElement) {
-                // Remove Prism-added classes to allow fresh highlighting
-                block.classList.forEach(className => {
-                  if (className.startsWith('token-') || className === 'token') {
-                    block.classList.remove(className);
-                  }
-                });
-              }
-            });
-            
-            try {
-              highlightCode(element);
-            } catch (err) {
-              console.warn('Re-highlighting error after resize:', err);
-            }
-          }
-        });
-      }, 150); // Slightly longer delay after resize
-      
-      return () => clearTimeout(rehighlightTimer);
-    }
-  }, [isResizing]);
-
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
@@ -246,70 +301,7 @@ export const Chat: React.FC<{
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       handleSend();
-    }
-  };  // Function to process AI response text for better formatting
-  const processAIResponse = (text: string): string => {
-    let processed = text;
-    
-    // Convert newlines to proper HTML breaks, but preserve code blocks
-    const codeBlockRegex = /<pre><code[^>]*>[\s\S]*?<\/code><\/pre>/g;
-    const codeBlocks: string[] = [];
-    
-    // Extract code blocks temporarily
-    processed = processed.replace(codeBlockRegex, (match) => {
-      const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
-      codeBlocks.push(match);
-      return placeholder;
-    });
-      // Process the text outside code blocks
-    processed = processed
-      // Remove all backtick characters
-      .replace(/`/g, '')
-      // Remove standalone triple backticks (markdown artifacts)
-      .replace(/^```[\w]*\s*$/gm, '')
-      .replace(/```$/gm, '')
-      // Convert double newlines to paragraph breaks
-      .replace(/\n\n/g, '</p><p>')
-      // Convert single newlines to line breaks
-      .replace(/\n/g, '<br>')
-      // Handle markdown-style bold text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      // Handle markdown-style bullet points
-      .replace(/^\*\s+/gm, '• ')
-      // Wrap in paragraph tags if not already wrapped
-      .replace(/^(?!<p>)/, '<p>')
-      .replace(/(?!<\/p>)$/, '</p>')
-      // Clean up empty paragraphs
-      .replace(/<p><\/p>/g, '')
-      .replace(/<p><br><\/p>/g, '<br>')
-      // Clean up orphaned paragraph tags
-      .replace(/<p>\s*<\/p>/g, '');
-    
-    // Restore code blocks
-    codeBlocks.forEach((block, index) => {
-      processed = processed.replace(`__CODE_BLOCK_${index}__`, block);
-    });
-    
-    return processed;
-  };  // Effect to handle highlighting for all messages
-  useEffect(() => {
-    // Use setTimeout to ensure DOM has been fully updated after resize
-    const highlightTimer = setTimeout(() => {
-      const messageElements = document.querySelectorAll('.chat-message-content');
-      
-      messageElements.forEach((element) => {
-        if (element instanceof HTMLElement) {
-          try {
-            highlightCode(element);
-          } catch (err) {
-            console.warn('Highlighting error:', err);
-          }
-        }
-      });
-    }, 100); // Small delay to ensure DOM is ready
-    
-    return () => clearTimeout(highlightTimer);
-  }, [messages, width]); // Added width dependency to re-highlight on resize
+    }  };
 
   if (!isOpen) return null;
 
@@ -406,61 +398,7 @@ export const Chat: React.FC<{
                 p: 2,
                 maxWidth: '85%'
               }}
-            >
-              <Box
-                component="div"
-                sx={{
-                  fontStyle: message.text === "Thinking..." ? 'italic' : 'normal',
-                  opacity: message.text === "Thinking..." ? 0.7 : 1,
-                  '& p': {
-                    margin: '0 0 8px 0',
-                    lineHeight: '1.5',
-                    '&:last-child': { marginBottom: 0 }
-                  },
-                  '& strong': {
-                    fontWeight: 'bold'
-                  },
-                  '& br': {
-                    display: 'block',
-                    marginBottom: '4px'
-                  },
-                  '& pre': {
-                    margin: '12px 0',
-                    borderRadius: '8px',
-                    overflow: 'auto'
-                  },
-                  '& code': {
-                    fontFamily: '"Fira Code", "Consolas", monospace',
-                    backgroundColor: '#1e1e1e !important',
-                    color: '#d4d4d4',
-                    padding: '16px',
-                    display: 'block',
-                    overflowX: 'auto',
-                    fontSize: '14px',
-                    lineHeight: '1.4',
-                    borderRadius: '6px'
-                  },                  '& .token.comment': { color: '#6A9955' },
-                  '& .token.string': { color: '#CE9178' },
-                  '& .token.number': { color: '#B5CEA8' },
-                  '& .token.keyword': { color: '#569CD6' },
-                  '& .token.function': { color: '#DCDCAA' },
-                  '& .token.class-name': { color: '#4EC9B0' },
-                  '& .token.punctuation': { color: '#D4D4D4' },
-                  '& .token.operator': { color: '#D4D4D4' },
-                  '& .token.property': { color: '#9CDCFE' },
-                  '& .token.tag': { color: '#569CD6' },
-                  '& .token.attr-name': { color: '#9CDCFE' },
-                  '& .token.attr-value': { color: '#CE9178' },
-                  '& .token.variable': { color: '#9CDCFE' },
-                  '& .token.constant': { color: '#4FC1FF' },
-                  '& .token.boolean': { color: '#569CD6' },
-                  '& .token.null': { color: '#569CD6' },
-                  '& .token.important': { color: '#FF6B6B', fontWeight: 'bold' }                }}
-                className="chat-message-content"
-                dangerouslySetInnerHTML={{ 
-                  __html: message.isUser ? message.text : processAIResponse(message.text)
-                }}
-              />
+            >            <MessageContent text={message.text} isUser={message.isUser} />
             </Box>
             
             {/* Copy button for AI messages positioned outside and to the right of bubble */}
