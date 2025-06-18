@@ -91,16 +91,25 @@ export const Chat: React.FC<{
       console.error('Failed to copy text: ', err);
     }
   };
-  
-  // Reset messages when chatbox opens
+    // Reset messages when chatbox opens
   useEffect(() => {
     if (isOpen) {
       setMessages([getInitialMessage()]);
       setInput('');
     }
   }, [isOpen, chatboxSkill]);
-  
-  const messagesEndRef = useRef<null | HTMLDivElement>(null);
+
+  // Focus input when chat opens
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      // Small delay to ensure the component is fully rendered
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [isOpen]);
+    const messagesEndRef = useRef<null | HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const initialX = useRef(0);
   const initialWidth = useRef(0);
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -131,6 +140,41 @@ export const Chat: React.FC<{
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
+  }, [isResizing]);
+
+  // Additional effect to re-highlight code when resizing stops
+  useEffect(() => {
+    if (!isResizing) {
+      // Re-highlight after resize is complete
+      const rehighlightTimer = setTimeout(() => {
+        const messageElements = document.querySelectorAll('.chat-message-content');
+        
+        messageElements.forEach((element) => {
+          if (element instanceof HTMLElement) {
+            // Clear any existing Prism classes to allow re-highlighting
+            const codeBlocks = element.querySelectorAll('pre code');
+            codeBlocks.forEach((block) => {
+              if (block instanceof HTMLElement) {
+                // Remove Prism-added classes to allow fresh highlighting
+                block.classList.forEach(className => {
+                  if (className.startsWith('token-') || className === 'token') {
+                    block.classList.remove(className);
+                  }
+                });
+              }
+            });
+            
+            try {
+              highlightCode(element);
+            } catch (err) {
+              console.warn('Re-highlighting error after resize:', err);
+            }
+          }
+        });
+      }, 150); // Slightly longer delay after resize
+      
+      return () => clearTimeout(rehighlightTimer);
+    }
   }, [isResizing]);
 
   const scrollToBottom = useCallback(() => {
@@ -234,8 +278,8 @@ export const Chat: React.FC<{
     return processed;
   };  // Effect to handle highlighting for all messages
   useEffect(() => {
-    // Use requestAnimationFrame to ensure DOM has been fully updated
-    const highlightTimer = requestAnimationFrame(() => {
+    // Use setTimeout to ensure DOM has been fully updated after resize
+    const highlightTimer = setTimeout(() => {
       const messageElements = document.querySelectorAll('.chat-message-content');
       
       messageElements.forEach((element) => {
@@ -247,9 +291,9 @@ export const Chat: React.FC<{
           }
         }
       });
-    });
+    }, 100); // Small delay to ensure DOM is ready
     
-    return () => cancelAnimationFrame(highlightTimer);
+    return () => clearTimeout(highlightTimer);
   }, [messages, width]); // Added width dependency to re-highlight on resize
 
   if (!isOpen) return null;
@@ -448,8 +492,8 @@ export const Chat: React.FC<{
             gap: 1,
             alignItems: 'center'
           }}
-        >
-          <TextField
+        >          <TextField
+            inputRef={inputRef}
             fullWidth
             multiline
             maxRows={4}
