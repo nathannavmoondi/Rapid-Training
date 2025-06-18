@@ -72,12 +72,83 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
         {text}
       </Typography>
     );
-  }
-
-  // Parse the message to identify code blocks
+  }  // Parse the message to identify code blocks
   const renderContentWithSyntaxHighlighting = (content: string) => {
+    // First, handle HTML code blocks (<pre><code class="language-xxx">)
+    let processedContent = content.replace(
+      /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g,
+      (match, language, code) => {
+        // Decode HTML entities and convert to markdown format
+        const decodedCode = code
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&amp;/g, '&')
+          .replace(/&quot;/g, '"')
+          .replace(/&#x27;/g, "'");
+        return `\`\`\`${language}\n${decodedCode}\n\`\`\``;
+      }
+    );
+
+    // Also handle plain <pre><code> without language class
+    processedContent = processedContent.replace(
+      /<pre><code>([\s\S]*?)<\/code><\/pre>/g,
+      (match, code) => {
+        const decodedCode = code
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&amp;/g, '&')
+          .replace(/&quot;/g, '"')
+          .replace(/&#x27;/g, "'");
+        return `\`\`\`javascript\n${decodedCode}\n\`\`\``;
+      }
+    );
+
     // Split content by code blocks (```language...```)
-    const parts = content.split(/(```[\w]*\n[\s\S]*?\n```)/g);
+    const parts = processedContent.split(/(```[\w]*\n[\s\S]*?\n```)/g);
+    
+    // Language mapping for better syntax highlighting
+    const mapLanguage = (lang: string): string => {
+      const languageMap: { [key: string]: string } = {
+        'language-jsx': 'jsx',
+        'language-tsx': 'tsx',
+        'language-javascript': 'javascript',
+        'language-typescript': 'typescript',
+        'language-html': 'markup',
+        'language-xml': 'markup',
+        'language-markup': 'markup',
+        'jsx': 'jsx',
+        'tsx': 'tsx',
+        'js': 'javascript',
+        'ts': 'typescript',
+        'html': 'markup',
+        'xml': 'markup',
+        'py': 'python',
+        'cs': 'csharp',
+        'cpp': 'cpp',
+        'c++': 'cpp',
+        'java': 'java',
+        'php': 'php',
+        'ruby': 'ruby',
+        'go': 'go',
+        'rust': 'rust',
+        'swift': 'swift',
+        'kotlin': 'kotlin',
+        'scala': 'scala',
+        'sql': 'sql',
+        'json': 'json',
+        'yaml': 'yaml',
+        'yml': 'yaml',
+        'toml': 'toml',
+        'ini': 'ini',
+        'bash': 'bash',
+        'sh': 'bash',
+        'shell': 'bash',
+        'powershell': 'powershell',
+        'ps1': 'powershell'
+      };
+      
+      return languageMap[lang.toLowerCase()] || lang || 'javascript';
+    };
     
     return parts.map((part, index) => {
       // Check if this part is a code block
@@ -85,12 +156,12 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
       
       if (codeMatch) {
         const [, language, code] = codeMatch;
-        const lang = language || 'javascript';
+        const mappedLang = mapLanguage(language);
         
         return (
           <Box key={index} sx={{ my: 2 }}>
             <SyntaxHighlighter
-              language={lang}
+              language={mappedLang}
               style={vscDarkPlus}
               showLineNumbers={false}
               customStyle={{
@@ -101,6 +172,11 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
                 lineHeight: '1.4',
                 borderRadius: '6px',
                 fontFamily: "'Fira Code', 'Consolas', monospace",
+              }}
+              codeTagProps={{
+                style: {
+                  fontFamily: "'Fira Code', 'Consolas', monospace",
+                }
               }}
             >
               {code.trim()}
