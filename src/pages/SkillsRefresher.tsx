@@ -11,6 +11,7 @@ import { Close as CloseIcon } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { skills } from '../data/skills';
+import { useQuiz } from '../contexts/quizContext';
 
 type SkillCategory = 'all' | 'frontend' | 'backend' | 'general' | 'non-technology';
 type CustomSkillCategory = Exclude<SkillCategory, 'all'>;
@@ -22,11 +23,18 @@ interface CustomSkill {
   topics: string[];
 }
 
-export const SkillsRefresher = () => {  const navigate = useNavigate();
+export const SkillsRefresher = () => {
+  const navigate = useNavigate();
+  const { setStartCourse } = useQuiz();
   const [currentTab, setCurrentTab] = useState<SkillCategory>('all');
   const [newSkillCategory, setNewSkillCategory] = useState<SkillCategory>('general');
   const [newSkillTitle, setNewSkillTitle] = useState('');
   const [customSkills, setCustomSkills] = useState<CustomSkill[]>([]);
+
+  // Turn off course mode when entering homepage/skills page
+  useEffect(() => {
+    setStartCourse(0);
+  }, [setStartCourse]);
 
   // Load custom skills from localStorage on component mount
   useEffect(() => {

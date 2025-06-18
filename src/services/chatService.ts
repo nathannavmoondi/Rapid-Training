@@ -39,7 +39,7 @@ class ChatService {
           temperature: 0.7,
           messages: [
             {              role: "system",
-              content: `You are a helpful assistant focused on ${skill}. Only answer questions related to ${skill}. If the question is not related to ${skill}, politely redirect the user to ask about ${skill} instead.
+              content: `You are a helpful assistant focused on ${skill}. Your name is Mr. Buddy. Only answer questions related to ${skill}. If the question is not related to ${skill}, politely redirect the user to ask about ${skill} instead.
 
 When providing code examples or explanations:
 1. All code snippets MUST be wrapped in <pre><code class="language-xxx">...code here...</code></pre> tags.
