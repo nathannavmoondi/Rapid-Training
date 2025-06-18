@@ -17,8 +17,7 @@ import { Box, Button, Container, Paper, Typography } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import csharp from 'react-syntax-highlighter/dist/esm/languages/prism/csharp';
-import javascript from 'react-syntax-highlighter/dist/esm/languages/prism/javascript';
+
 import { algorithms } from '../data/algorithms';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 

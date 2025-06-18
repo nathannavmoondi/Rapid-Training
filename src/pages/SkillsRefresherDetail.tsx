@@ -18,12 +18,7 @@ import { Chat } from '../components/Chat';
 import { useChat } from '../contexts/chatContext';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import 'prismjs/components/prism-rust'; // Added for Rust support
-import 'prismjs/components/prism-go'; // Added for Go support
-import 'prismjs/components/prism-ruby'; // Added for Ruby support
-import 'prismjs/components/prism-sql'; // Added for SQL support
-import 'prismjs/components/prism-java'; // Added for Java support
-import 'prismjs/components/prism-csharp'; // Added for C# support
+
 import '../styles/answer-section.css';
 import { useQuiz } from '../contexts/quizContext'; // Import useQuiz
 
