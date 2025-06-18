@@ -19,6 +19,7 @@ import { MarketingAI } from './pages/MarketingAI';
 import { FoodSaver } from './pages/FoodSaver';
 import { Sidebar } from './components/Sidebar';
 import './App.css';
+import './styles/prism-custom.css';
 
 
 function App() {
