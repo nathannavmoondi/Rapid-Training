@@ -10,10 +10,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'; // Added useLocation
 import { Container, Typography, Paper, Box, Button, Stack, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Select, MenuItem, InputLabel, IconButton, Tooltip } from '@mui/material'; // Added Select, MenuItem, InputLabel
-import { CheckCircleOutline, HighlightOff, Chat as ChatIcon } from '@mui/icons-material'; // Added icons for feedback
+import { CheckCircleOutline, HighlightOff, Chat as ChatIcon, YouTube } from '@mui/icons-material'; // Added icons for feedback
 import { skills } from '../data/skills';
 import type { Skill } from '../data/skills';
 import { requestRefresher } from '../services/aiService';
+import { getYoutubeResources } from '../services/resourceService';
 import { Chat } from '../components/Chat';
 import { useChat } from '../contexts/chatContext';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -91,10 +92,10 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     quizzesTaken,
     maxQuizzes,
     setMaxQuizzes,
-    selectedAnswer, 
-    isQuizActive, 
+    selectedAnswer,    isQuizActive, 
     level,
     lastAnswerCorrect,
+    showYoutubeResources,
     startQuiz, 
     selectAnswer: selectQuizAnswer,
     submitAnswer: submitQuizAnswer,
@@ -104,6 +105,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     setLevel,
     setSkillDescription,
     setStartCourse,
+    setShowYoutubeResources,
     startCourse
   } = useQuiz();
 
@@ -122,12 +124,13 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     const [isLoading, setIsLoading] = useState(false);
   const [question, setQuestion] = useState('');
   const [currentSkill, setCurrentSkill] = useState<Skill | undefined>();
-  
-  // Chat functionality
+    // Chat functionality
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { setChatboxSkill } = useChat();
   const [showAnswer, setShowAnswer] = useState(false); // Added state for answer visibility
   const [isSlideDeck, setIsSlideDeck] = useState(false); // Added state for slide deck
+  const [youtubeContent, setYoutubeContent] = useState(''); // Added state for YouTube resources content
+  const [isLoadingYoutube, setIsLoadingYoutube] = useState(false); // Added loading state for YouTube
 
   // Find skill immediately
   useEffect(() => {
@@ -157,7 +160,6 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
       console.error('Error finding skill:', error);
     }
   }, [skillTitle]);
-
   const handleSlideDeck = useCallback(async () => {
     if (isQuizActive) {
       resetQuiz();
@@ -167,6 +169,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     setIsLoading(true);
     setShowAnswer(false); // Reset answer visibility for new question
     setIsSlideDeck(true);
+    setShowYoutubeResources(false);
     setQuestion(''); // Clear previous question while loading new one
     try {
       const response = await requestRefresher('slidedeck', currentSkill.title, currentSkill.category, startCourse);
@@ -174,16 +177,36 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     } catch (error) {
       console.error('Error fetching slidedeck:', error);
       setQuestion('Failed to load slidedeck. Please try again.');
-    }
-    setIsLoading(false);
+    }    setIsLoading(false);
   }, [currentSkill?.title, currentSkill?.category, isQuizActive, resetQuiz]);
 
+  const handleYoutubeResources = useCallback(async () => {
+    if (isQuizActive) {
+      resetQuiz();
+    }
+    setShowYoutubeResources(true);
+    setIsSlideDeck(false);
+    setShowAnswer(false);
+    
+    if (!currentSkill?.title) return;
+    
+    setIsLoadingYoutube(true);
+    try {
+      const response = await getYoutubeResources(currentSkill.title);
+      setYoutubeContent(response || 'Failed to load YouTube resources. Please try again.');
+    } catch (error) {
+      console.error('Error fetching YouTube resources:', error);
+      setYoutubeContent('Failed to load YouTube resources. Please try again.');
+    }
+    setIsLoadingYoutube(false);
+  }, [currentSkill?.title, isQuizActive, resetQuiz, setShowYoutubeResources]);
   const handleRequestNewQuestion = useCallback(async (intendsNewQuizRound: boolean) => {
     if (!currentSkill?.title) return;
 
     setIsLoading(true);
     setShowAnswer(false);
     setIsSlideDeck(false);
+    setShowYoutubeResources(false);
     setQuestion('');
       if (intendsNewQuizRound && quizzesTaken < maxQuizzes) {
       if (!previousPath) { // Set previous path only if not already set (e.g. by "Start Quiz with this Q")
@@ -410,10 +433,10 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     });
 
     setShowAnswer(true);
-  };
-  const handleStartCourse = async () => {    
+  };  const handleStartCourse = async () => {    
     setIsLoading(true);
     setShowAnswer(false); // Reset answer visibility for new question    
+    setShowYoutubeResources(false);
     setQuestion(''); // Clear previous question while loading new one
     try {
       if (startCourse === 0) {
@@ -445,16 +468,42 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
   const quizOptions = ['A', 'B', 'C', 'D'];
   const difficultyLevels = ['basic', 'intermediate', 'advanced'];
 
+
+  const getTitle = () => {
+
+    if (isSlideDeck) {
+     return 'Slide Deck (basics of ' + currentSkill?.title + ')'
+    }
+
+     if (isQuizActive) {
+      return `Quiz Question ${quizzesTaken + 1} of ${maxQuizzes}: `;
+    }
+
+    if (showYoutubeResources) {
+    return 'Youtube Resources for ' + currentSkill?.title;
+    }
+   
+    return 'Practice Quiz'
+
+   
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom color="primary.main">
-          {currentSkill.title} Rapid Training AI
+      {!currentSkill ? (
+        <Typography variant="h6" color="text.secondary" align="center">
+          Loading skill details...
         </Typography>
-        <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-          Topic areas: {currentSkill.topics.join(', ')}
-        </Typography>
-      </Box>
+      ) : (
+        <>
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h4" component="h1" gutterBottom color="primary.main">
+              {currentSkill.title} Rapid Training AI
+            </Typography>
+            <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+              Topic areas: {currentSkill.topics.join(', ')}
+            </Typography>
+          </Box>
 
       <Paper 
         elevation={3} 
@@ -463,17 +512,17 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
           backgroundColor: 'rgba(45, 45, 45, 0.7)', 
           borderRadius: 2 
         }}
-      >
-        {isLoading && !question ? ( 
+      >        {isLoading && !question ? ( 
           <Typography>
             {isSlideDeck ? 'Loading Slidedeck... ' : 
              startCourse === 1 ? 'Loading Course...' : 'Loading question...'}
           </Typography>
-        ) : (
-          <>            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+        ) : null}
+        
+        <>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
               <Typography variant="h6" sx={{ color: 'primary.light' }}>
-                {isSlideDeck ? 'Slide Deck (basics of ' + currentSkill?.title + ')' : 
-                 startCourse === 1 ? currentSkill?.title + ' Rapid Course' : 'Practice Question'}
+                {getTitle()}                
               </Typography>
               
               {/* Chat button - only show for Practice Question */}
@@ -547,12 +596,49 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                     color: 'primary.light',
                   },
                 },
-              }}
-            >
-              {renderContentWithSyntaxHighlighting(htmlToRender)}
+              }}            >
+              {showYoutubeResources ? (
+                <Box>
+                  <Typography variant="h5" component="h2" sx={{ color: 'primary.main', mb: 3 }}>
+                    YouTube Learning Resources for {currentSkill?.title}
+                  </Typography>
+                  {isLoadingYoutube ? (
+                    <Typography>Loading YouTube resources...</Typography>
+                  ) : (
+                    <Box 
+                      dangerouslySetInnerHTML={{ __html: youtubeContent }}
+                      sx={{
+                        '& iframe': {
+                          maxWidth: '100%',
+                          height: 'auto',
+                          aspectRatio: '16/9',
+                        },
+                        '& .resource-item': {
+                          marginBottom: 4,
+                          padding: 2,
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          borderRadius: 2,
+                          backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                        },
+                        '& .video-info h3': {
+                          color: 'primary.light',
+                          marginTop: 2,
+                          marginBottom: 1,
+                        },
+                        '& .video-info p': {
+                          color: 'text.secondary',
+                          lineHeight: 1.6,
+                        }
+                      }}
+                    />
+                  )}
+                </Box>
+              ) : (
+                renderContentWithSyntaxHighlighting(htmlToRender)
+              )}
             </Box>
 
-            {!isSlideDeck && (isQuizActive || startCourse === 1) && !showAnswer && (
+            {!isSlideDeck && !showYoutubeResources && (isQuizActive || startCourse === 1) && !showAnswer && (
               <FormControl component="fieldset" sx={{ my: 2, p:2, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1 }}>
                 <FormLabel component="legend" sx={{ color: 'primary.light', mb: 1 }}>Choose an answer:</FormLabel>
                 <RadioGroup 
@@ -572,8 +658,8 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                     />
                   ))}
                 </RadioGroup>
-              </FormControl>
-            )}            {/* Button Container: Adjusted for new layout */}
+              </FormControl>            )}            {/* Button Container: Adjusted for new layout */}
+            {!showYoutubeResources && !isLoading && !isLoadingYoutube && (
             <Box sx={{ mt: 3 }}>
               {/* First row of buttons */}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '7px' }}>
@@ -687,7 +773,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
               
               {/* Second row for buttons */}
               <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '7px' }}>
-                {startCourse === 1 ? (
+                {startCourse === 1 && !isLoading && !isLoadingYoutube ? (
                   <>
                     <Button
                       variant="contained"
@@ -757,6 +843,22 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                     </Box>
                     <Button
                       variant="contained"
+                      onClick={handleYoutubeResources}
+                      disabled={isLoading || isLoadingYoutube}
+                      sx={{ 
+                        backgroundColor: '#FF4444', 
+                        color: 'white',
+                        '&:hover': { backgroundColor: '#CC0000' },
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                      }}
+                    >
+                      <YouTube />
+                      Resources
+                    </Button>
+                    <Button
+                      variant="contained"
                       onClick={handleStartCourse}
                       disabled={isLoading || isQuizActive}
                       sx={{ backgroundColor: '#2196F3', '&:hover': { backgroundColor: '#1976D2'} }}
@@ -768,15 +870,30 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                       onClick={handleSlideDeck}
                       disabled={isLoading || isQuizActive}
                       sx={{ backgroundColor: '#FFC107', color: 'black', '&:hover': { backgroundColor: '#FFA000' } }}
-                    >
-                      Slide Deck (the basics)
+                    >                      Slide Deck (the basics)
                     </Button>
                   </Box>
                 )}
               </Box>
-            </Box>          </>
-        )}
-      </Paper>      {startCourse === 1 && (
+            </Box>
+            )}            {showYoutubeResources && !isLoading && !isLoadingYoutube && (
+              <Box sx={{ display: 'flex', gap: '7px', mt: 2 }}>
+                <Button                  variant="contained"
+                  onClick={() => handleRequestNewQuestion(false)}
+                  sx={{ 
+                    backgroundColor: 'blue', 
+                    color: 'white',
+                    '&:hover': { backgroundColor: 'darkblue' }
+                  }}
+                >
+                  Go Back
+                </Button>
+              </Box>
+            )}
+          </>
+      </Paper>
+      
+      {startCourse === 1 && (
         <>
           <Typography 
             variant="h6" 
@@ -828,11 +945,12 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
         </>
       )}
       
-      {/* Chat Component */}
-      <Chat 
+      {/* Chat Component */}      <Chat 
         isOpen={isChatOpen} 
         onClose={() => setIsChatOpen(false)} 
       />
+        </>
+      )}
     </Container>
   );
 };
