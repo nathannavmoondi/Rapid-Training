@@ -11,6 +11,7 @@ interface QuizContextType {
   lastAnswerCorrect: boolean | null;
   skillDescription: string;
   startCourse: number;
+  showYoutubeResources: boolean;
   setStartCourse: (value: number) => void;
   setMaxQuizzes: (value: number) => void;
   startQuiz: () => void;
@@ -20,6 +21,7 @@ interface QuizContextType {
   setPreviousPath: (path: string) => void;
   setLevel: (level: string) => void;
   setSkillDescription: (description: string) => void;
+  setShowYoutubeResources: (show: boolean) => void;
 }
 
 const QuizContext = createContext<QuizContextType | undefined>(undefined);
@@ -30,10 +32,11 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [maxQuizzes, setMaxQuizzes] = useState(3); // Make maxQuizzes stateful
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isQuizActive, setIsQuizActive] = useState(false);
-  const [previousPath, setPreviousPath_internal] = useState<string | null>(null);
-  const [startCourse, setStartCourse] = useState(0);const [level, setLevelState] = useState<string>('intermediate');
+  const [previousPath, setPreviousPath_internal] = useState<string | null>(null);  const [startCourse, setStartCourse] = useState(0);
+  const [level, setLevelState] = useState<string>('intermediate');
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null);
   const [skillDescription, setSkillDescription] = useState<string>('');
+  const [showYoutubeResources, setShowYoutubeResources] = useState<boolean>(false);
 
   const startQuiz = useCallback(() => {
     setIsQuizActive(true);
@@ -90,6 +93,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     level,
     lastAnswerCorrect,
     skillDescription,
+    showYoutubeResources,
     startQuiz,
     selectAnswer,
     submitAnswer,
@@ -97,6 +101,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setPreviousPath,
     setLevel,
     setSkillDescription,
+    setShowYoutubeResources,
     startCourse,
     setStartCourse,
   };
