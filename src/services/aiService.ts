@@ -1,9 +1,21 @@
 import { getSkillTopics } from './skillsService';
 
-export const requestRefresher = async (level: string, skillDescription: string, skillCategory: string, startCourse?: number): Promise<string> => {
+export const requestRefresher = async (
+  level: string,
+  skillDescription: string,
+  skillCategory: string,
+  startCourse?: number,
+  previousQuizzes?: string[]
+): Promise<string> => {
   try {
-    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
-    console.log('skill category', skillCategory);
+    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;        
+    //print out previous quizzes
+    previousQuizzes?.forEach((quiz, index) => {
+      console.log(`Previous quiz ${index + 1}:`, quiz);
+    });
+    //console log size of previous quizzes
+
+    console.log('Previous quizzes size:', previousQuizzes?.length || 0);
 
     const callOpenRouter = async () => {
       if (!apiKey) {
@@ -34,16 +46,17 @@ Format the response in this exact HTML structure:
         [Your question text here. If the question includes a code snippet, format it like this: <pre><code class="language-javascript">const snippet = "example";</code></pre> within the question text. Ensure the class attribute is one of the supported languages listed below.]
     </div>
     <div class="options">
-        <div class="option">A) [Option A]</div>
-        <div class="option">B) [Option B]</div>
-        <div class="option">C) [Option C]</div>
-        <div class="option">D) [Option D]</div>
+        <div class="option"><span class="option-prefix">A)</span> [Option A]</div>
+        <div class="option"><span class="option-prefix">B)</span> [Option B]</div>
+        <div class="option"><span class="option-prefix">C)</span> [Option C]</div>
+        <div class="option"><span class="option-prefix">D)</span> [Option D]</div>
     </div>
     <div class="quiz-status"></div>
     <div class="answer-box">
         <div class="correct-answer">
             Correct Answer: [Letter]
         </div>
+        <br/>
         <div class="explanation">
             <p>[First line of explanation]</p>
             <pre><code class="language-typescript">
@@ -82,7 +95,10 @@ Supported language classes for <code class="language-xxx"> are: language-typescr
 8. The example structure for a code snippet within the question text is: \`<pre><code class="language-javascript">const snippet = "example";</code></pre>\`. Adhere to this, using an appropriate language class from the list in point 7.
 9. Indent code properly inside the <code> block.
 10. Put each explanation point in the answer section on a new line using <p> tags.
-11. Make code examples practical and focused.`;     
+11. Make code examples practical and focused.
+12. Format each multiple choice Letter in a different color`;     
+
+prompt += `  Also, quiz can't be similar to these previous ${previousQuizzes?.length} quizzes: ${previousQuizzes ? previousQuizzes.join(', Next Quiz:  ') : 'none'}.`;
 
 if (skillCategory === 'non-technology'){
   prompt = `I'm creating a ${skillDescription} quiz for a job applicant.  
@@ -97,11 +113,12 @@ Format the response in this exact HTML structure:
     <div class="question">
         [Your question text here. If the question includes a code snippet, format it like this: <pre><code class="language-javascript">const snippet = "example";</code></pre> within the question text. Ensure the class attribute is one of the supported languages listed below.]
     </div>
+    <br/>  <br/>
     <div class="options">
-        <div class="option">A) [Option A]</div>
-        <div class="option">B) [Option B]</div>
-        <div class="option">C) [Option C]</div>
-        <div class="option">D) [Option D]</div>
+        <div class="option"><span class="option-prefix">A)</span> [Option A]</div>
+        <div class="option"><span class="option-prefix">B)</span> [Option B]</div>
+        <div class="option"><span class="option-prefix">C)</span> [Option C]</div>
+        <div class="option"><span class="option-prefix">D)</span> [Option D]</div>
     </div>
     <div class="quiz-status"></div>
     <div class="answer-box">
@@ -117,7 +134,8 @@ Format the response in this exact HTML structure:
 
 Important:
 3. Put each explanation point on a new line using <p> tags.
-10. Put each explanation point in the answer section on a new line using <p> tags.`;     
+10. Put each explanation point in the answer section on a new line using <p> tags.
+11. no line break between correct answer and explanation divs`;     
   }
 
 if (startCourse === 1) {
@@ -174,10 +192,10 @@ if (startCourse === 1) {
         [Your question text here. If the question includes a code snippet, format it like this: <pre><code class="language-javascript">const snippet = "example";</code></pre> within the question text. Ensure the class attribute is one of the supported languages listed below.]
     </div>
     <div class="options">
-        <div class="option">A) [Option A]</div>
-        <div class="option">B) [Option B]</div>
-        <div class="option">C) [Option C]</div>
-        <div class="option">D) [Option D]</div>
+        <div class="option"><span class="option-prefix">A)</span> [Option A]</div>
+        <div class="option"><span class="option-prefix">B)</span> [Option B]</div>
+        <div class="option"><span class="option-prefix">C)</span> [Option C]</div>
+        <div class="option"><span class="option-prefix">D)</span> [Option D]</div>
     </div>
     <div class="quiz-status"></div>
     <div class="answer-box">
@@ -268,7 +286,7 @@ if (startCourse === 1) {
       return content;
     };
 
-    const result = await callOpenRouter();
+    const result = await callOpenRouter();    
     return result;
   } catch (error) {
     console.error('Error making OpenRouter request:', error);

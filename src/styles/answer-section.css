@@ -10,9 +10,9 @@
 .correct-answer {
   color: #4caf50 !important;
   font-weight: bold !important;
-  margin-bottom: 16px !important;
+  margin-bottom: 0 !important;
   font-size: 1.1rem !important;
-  padding-bottom: 12px !important;
+  padding-bottom: 0 !important;
   border-bottom: 1px solid #333 !important;
 }
 
@@ -114,4 +114,30 @@
 /* Ensure code inside pre maintains pre background, not overridden by inline code style */
 .content-block pre code {
     background-color: #000000 !important; 
+}
+
+
+.option-prefix {
+  color: cyan !important;
+}
+
+.options {
+  padding-top: 0.3125rem !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  display: block;
+}
+
+.quiz-status {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.question-content{
+      padding-bottom: 0px;
+}
+
+.correct-answer{
+   margin-top: 0 !important;
+  padding-top: 0 !important;
 }

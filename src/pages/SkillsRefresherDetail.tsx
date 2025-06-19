@@ -106,7 +106,9 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     setSkillDescription,
     setStartCourse,
     setShowYoutubeResources,
-    startCourse
+    startCourse,
+    previousQuizzes,
+    setPreviousQuizzes
   } = useQuiz();
 
   // Ref to track the latest isQuizActive state for unmount cleanup
@@ -130,11 +132,10 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
   const [showAnswer, setShowAnswer] = useState(false); // Added state for answer visibility
   const [isSlideDeck, setIsSlideDeck] = useState(false); // Added state for slide deck
   const [youtubeContent, setYoutubeContent] = useState(''); // Added state for YouTube resources content
-  const [isLoadingYoutube, setIsLoadingYoutube] = useState(false); // Added loading state for YouTube
+  const [isLoadingYoutube, setIsLoadingYoutube] = useState(false); // Added loading state for YouTube  
 
   // Find skill immediately
-  useEffect(() => {
-    console.log('running constructor of skills page');
+  useEffect(() => {    
     if (!skillTitle) {
       console.log('No skill title in URL');
       return;
@@ -160,6 +161,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
       console.error('Error finding skill:', error);
     }
   }, [skillTitle]);
+
   const handleSlideDeck = useCallback(async () => {
     if (isQuizActive) {
       resetQuiz();
@@ -200,6 +202,11 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     }
     setIsLoadingYoutube(false);
   }, [currentSkill?.title, isQuizActive, resetQuiz, setShowYoutubeResources]);
+
+  useEffect(() => {
+  console.log('Previous quizzes updated:', previousQuizzes);
+}, [previousQuizzes]);
+
   const handleRequestNewQuestion = useCallback(async (intendsNewQuizRound: boolean) => {
     if (!currentSkill?.title) return;
 
@@ -225,7 +232,12 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
 
 
     try {
-      const response = await requestRefresher(level, currentSkill.title, currentSkill.category, startCourse); // Use level from context
+      const response = await requestRefresher(level, currentSkill.title, currentSkill.category, startCourse, previousQuizzes); // Use level from context
+      if (!isSlideDeck && !showYoutubeResources && startCourse !== 1) {
+       
+        setPreviousQuizzes(prevQuizzes => [...prevQuizzes, response]);  // Store previous question if not in slidedeck or youtube mode
+        
+      }
       setQuestion(response || 'Failed to load question. Please try again.');
     } catch (error) {
       console.error('Error fetching question:', error);
@@ -245,8 +257,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
   useEffect(() => {
     return () => {
       // Only reset quiz if navigating away but NOT to the results page      
-      if (!isQuizActiveRef.current) {
-        console.log('Cleaning up: resetting quiz on unmount or navigation away');
+      if (!isQuizActiveRef.current) {        
         resetQuiz();
       }
     };

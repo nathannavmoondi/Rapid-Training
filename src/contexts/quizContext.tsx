@@ -12,6 +12,7 @@ interface QuizContextType {
   skillDescription: string;
   startCourse: number;
   showYoutubeResources: boolean;
+  previousQuizzes: string[];
   setStartCourse: (value: number) => void;
   setMaxQuizzes: (value: number) => void;
   startQuiz: () => void;
@@ -22,6 +23,7 @@ interface QuizContextType {
   setLevel: (level: string) => void;
   setSkillDescription: (description: string) => void;
   setShowYoutubeResources: (show: boolean) => void;
+  setPreviousQuizzes: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const QuizContext = createContext<QuizContextType | undefined>(undefined);
@@ -37,6 +39,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null);
   const [skillDescription, setSkillDescription] = useState<string>('');
   const [showYoutubeResources, setShowYoutubeResources] = useState<boolean>(false);
+  const [previousQuizzes, setPreviousQuizzes] = useState<string[]>([]);
 
   const startQuiz = useCallback(() => {
     setIsQuizActive(true);
@@ -104,6 +107,8 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setShowYoutubeResources,
     startCourse,
     setStartCourse,
+    previousQuizzes,
+    setPreviousQuizzes,
   };
 
   return <QuizContext.Provider value={contextValue}>{children}</QuizContext.Provider>;
