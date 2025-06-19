@@ -95,8 +95,7 @@ Supported language classes for <code class="language-xxx"> are: language-typescr
 8. The example structure for a code snippet within the question text is: \`<pre><code class="language-javascript">const snippet = "example";</code></pre>\`. Adhere to this, using an appropriate language class from the list in point 7.
 9. Indent code properly inside the <code> block.
 10. Put each explanation point in the answer section on a new line using <p> tags.
-11. Make code examples practical and focused.
-12. Format each multiple choice Letter in a different color`;     
+11. Make code examples practical and focused.`;     
 
 prompt += `  Also, quiz can't be similar to these previous ${previousQuizzes?.length} quizzes: ${previousQuizzes ? previousQuizzes.join(', Next Quiz:  ') : 'none'}.`;
 
