@@ -6,8 +6,8 @@
  * Each card shows the skill title, description, and key topics to learn.
  */
 import { Box, Card, CardContent, Container, Tab, Tabs, Typography, Chip, Stack, 
-  Radio, RadioGroup, FormControlLabel, FormControl, TextField, Button, IconButton } from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
+  Radio, RadioGroup, FormControlLabel, FormControl, TextField, Button, IconButton, InputAdornment } from '@mui/material';
+import { Close as CloseIcon, Search as SearchIcon, Clear as ClearIcon } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { skills } from '../data/skills';
@@ -24,12 +24,12 @@ interface CustomSkill {
 }
 
 export const SkillsRefresher = () => {
-  const navigate = useNavigate();
-  const { setStartCourse } = useQuiz();
+  const navigate = useNavigate();  const { setStartCourse } = useQuiz();
   const [currentTab, setCurrentTab] = useState<SkillCategory>('all');
   const [newSkillCategory, setNewSkillCategory] = useState<SkillCategory>('general');
   const [newSkillTitle, setNewSkillTitle] = useState('');
   const [customSkills, setCustomSkills] = useState<CustomSkill[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Turn off course mode when entering homepage/skills page
   useEffect(() => {
@@ -43,10 +43,18 @@ export const SkillsRefresher = () => {
       setCustomSkills(JSON.parse(savedSkills));
     }
   }, []);
-
   // Combine built-in skills with custom skills and filter based on category
   const allSkills = [...skills, ...customSkills];
-  const filteredSkills = currentTab === 'all' ? allSkills : allSkills.filter(skill => skill.category === currentTab);
+  const categoryFilteredSkills = currentTab === 'all' ? allSkills : allSkills.filter(skill => skill.category === currentTab);
+  
+  // Apply search filter
+  const filteredSkills = searchTerm 
+    ? categoryFilteredSkills.filter(skill => 
+        skill.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        skill.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        skill.topics.some(topic => topic.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+    : categoryFilteredSkills;
 
   const handleAddSkill = () => {
     if (!newSkillTitle.trim()) return;
@@ -76,7 +84,6 @@ export const SkillsRefresher = () => {
     localStorage.setItem('customSkills', JSON.stringify(updatedSkills));
     setNewSkillTitle('');
   };
-
   const handleDeleteSkill = (skillId: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent card click navigation
     const updatedSkills = customSkills.filter(skill => skill.id !== skillId);
@@ -84,17 +91,84 @@ export const SkillsRefresher = () => {
     localStorage.setItem('customSkills', JSON.stringify(updatedSkills));
   };
 
-  const isCustomSkill = (skillId: string) => skillId.startsWith('custom-');
+  const handleClearSearch = () => {
+    setSearchTerm('');
+  };
 
+  const isCustomSkill = (skillId: string) => skillId.startsWith('custom-');
   return (
-    <Container sx={{ py: 2 }}>      <Typography variant="h5" sx={{ mb: 0.5, color: 'primary.main', fontWeight: 'bold' }}>
-      Rapid Training -&nbsp;
-        {currentTab === 'all' ? 'All Topics' :
-         currentTab === 'frontend' ? 'Frontend Development' :
-         currentTab === 'backend' ? 'Backend Development' :
-         currentTab === 'non-technology' ? 'Non-Technology' :
-         'General Concepts'}
-      </Typography>
+    <Container sx={{ py: 2 }}>      
+      {/* Header with Search */}
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        mb: 2,
+        flexWrap: 'wrap',
+        gap: 2
+      }}>
+        <Typography variant="h5" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+          Rapid Training -&nbsp;
+          {currentTab === 'all' ? 'All Topics' :
+           currentTab === 'frontend' ? 'Frontend Development' :
+           currentTab === 'backend' ? 'Backend Development' :
+           currentTab === 'non-technology' ? 'Non-Technology' :
+           'General Concepts'}
+        </Typography>
+
+        <TextField
+          size="small"
+          placeholder="Search topics..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{
+            minWidth: 250,
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: 2,
+              '& fieldset': {
+                borderColor: 'rgba(144, 202, 249, 0.3)',
+              },
+              '&:hover fieldset': {
+                borderColor: 'rgba(144, 202, 249, 0.5)',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: 'primary.main',
+              },
+            },
+            '& .MuiInputBase-input': {
+              color: 'white',
+              '&::placeholder': {
+                color: 'rgba(255, 255, 255, 0.7)',
+              },
+            },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.7)' }} />
+              </InputAdornment>
+            ),
+            endAdornment: searchTerm && (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={handleClearSearch}
+                  size="small"
+                  sx={{
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    '&:hover': {
+                      color: 'white',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  <ClearIcon fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
         <Tabs 
