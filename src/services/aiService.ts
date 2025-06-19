@@ -201,7 +201,8 @@ if (startCourse === 1) {
         localStorage.setItem('previousContent', `Section ${currentSection}`);
       } else if (level === 'slidedeck') {
         // Slide deck mode prompt
-        prompt = `Create an educational slide deck about ${skillDescription} basics.
+        prompt = `Create a detailed thorough educational slide deck about ${skillDescription} basics and intermediate.  At the end include a section on steps needed to get proficient in this skill.
+        For text that is bold, format them with lightcyan color.  Dont use ** to wrap aroudn important text, instead make it bold with color.
         Format output as:
         <div class="slide-container">
             <div class="slide">
