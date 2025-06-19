@@ -279,6 +279,7 @@ if (startCourse === 1) {
       content = content.replace(/```\s*$/, '');
       content = content.replace(/`/g, '');
       content = content.replace(/html/g, '');
+      content = content.replace(/xml/g, '');
 
       content = content.trim();
     }
