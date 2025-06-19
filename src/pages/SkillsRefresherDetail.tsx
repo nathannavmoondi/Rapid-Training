@@ -777,7 +777,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                     onClick={() => { resetQuiz(); navigate('/skills'); }}
                     sx={{ borderColor: 'primary.main', color: 'primary.main', '&:hover': { borderColor: 'primary.light', backgroundColor: 'rgba(255, 255, 255, 0.08)'} }}
                   >
-                    Done (Back to Skills)
+                    Done (Back to Topics)
                   </Button>
                 </Stack>
               </Box>
