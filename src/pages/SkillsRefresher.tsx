@@ -271,7 +271,7 @@ export const SkillsRefresher = () => {
           
           <TextField
             fullWidth
-            label="Topic Name"
+            label="What would you like to learn?"
             value={newSkillTitle}
             onChange={(e) => setNewSkillTitle(e.target.value)}
             variant="outlined"
