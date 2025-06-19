@@ -112,8 +112,7 @@ Format the response in this exact HTML structure:
 <div class="question-container">
     <div class="question">
         [Your question text here. If the question includes a code snippet, format it like this: <pre><code class="language-javascript">const snippet = "example";</code></pre> within the question text. Ensure the class attribute is one of the supported languages listed below.]
-    </div>
-    <br/>  <br/>
+    </div>    
     <div class="options">
         <div class="option"><span class="option-prefix">A)</span> [Option A]</div>
         <div class="option"><span class="option-prefix">B)</span> [Option B]</div>
