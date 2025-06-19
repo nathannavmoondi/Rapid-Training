@@ -134,7 +134,10 @@ Format the response in this exact HTML structure:
 Important:
 3. Put each explanation point on a new line using <p> tags.
 10. Put each explanation point in the answer section on a new line using <p> tags.
-11. no line break between correct answer and explanation divs`;     
+11. no line break between correct answer and explanation divs`;    
+
+prompt += `  Also, quiz can't be similar to these previous ${previousQuizzes?.length} quizzes: ${previousQuizzes ? previousQuizzes.join(', Next Quiz:  ') : 'none'}.`;
+
   }
 
 if (startCourse === 1) {
