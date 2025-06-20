@@ -9,13 +9,9 @@ export const requestRefresher = async (
 ): Promise<string> => {
   try {
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;        
-    //print out previous quizzes
-    previousQuizzes?.forEach((quiz, index) => {
-      console.log(`Previous quiz ${index + 1}:`, quiz);
-    });
-    //console log size of previous quizzes
-
+    
     console.log('Previous quizzes size:', previousQuizzes?.length || 0);
+    console.log('previous quizzes sent by compponent', previousQuizzes);
 
     const callOpenRouter = async () => {
       if (!apiKey) {
@@ -97,7 +93,7 @@ Supported language classes for <code class="language-xxx"> are: language-typescr
 10. Put each explanation point in the answer section on a new line using <p> tags.
 11. Make code examples practical and focused.`;     
 
-prompt += `  Also, quiz can't be similar to these previous ${previousQuizzes?.length} quizzes: ${previousQuizzes ? previousQuizzes.join(', Next Quiz:  ') : 'none'}.`;
+prompt += `  Also!, quiz can't be similar to these previous ${previousQuizzes?.length} quizzes: ${previousQuizzes ? previousQuizzes.join(', Next Quiz:  ') : 'none'}.`;
 
 if (skillCategory === 'non-technology'){
   prompt = `I'm creating a ${skillDescription} quiz for a job applicant.  

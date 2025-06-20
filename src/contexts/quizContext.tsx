@@ -77,6 +77,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setLastAnswerCorrect(null);
     setSkillDescription(''); // Reset skill description when resetting quiz
     setPreviousPath_internal(null); // Reset previous path when resetting quiz
+    setPreviousQuizzes([]); // Reset previous quizzes when resetting quiz
   }, []);
 
   const setPreviousPath = useCallback((path: string) => {

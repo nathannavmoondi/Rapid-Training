@@ -127,7 +127,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
   const [question, setQuestion] = useState('');
   const [currentSkill, setCurrentSkill] = useState<Skill | undefined>();
     // Chat functionality
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(true);
   const { setChatboxSkill } = useChat();
   const [showAnswer, setShowAnswer] = useState(false); // Added state for answer visibility
   const [isSlideDeck, setIsSlideDeck] = useState(false); // Added state for slide deck
@@ -234,7 +234,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     try {
       const response = await requestRefresher(level, currentSkill.title, currentSkill.category, startCourse, previousQuizzes); // Use level from context
       if (!isSlideDeck && !showYoutubeResources && startCourse !== 1) {
-       
+        console.log('adding to previous quizzes:', response);
         setPreviousQuizzes(prevQuizzes => [...prevQuizzes, response]);  // Store previous question if not in slidedeck or youtube mode
         
       }
