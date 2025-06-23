@@ -17,6 +17,16 @@ export const QuizResults: React.FC = () => {
     navigate('/skills'); // Navigate to skills page
   };
 
+  const handleFailedQuestionsPrimer = () => {
+    // Navigate to a page that shows explanations for questions the user got wrong 
+    if (score < maxQuizzes) {
+      navigate('/failed-questions-primer');
+    } else {
+      // If they got all questions right, show a message or redirect
+      navigate('/skills');
+    }
+  };
+
   return (
     <Container maxWidth="sm" sx={{ py: 4, textAlign: 'center' }}>
       <Paper elevation={3} sx={{ p: 4, backgroundColor: 'rgba(45, 45, 45, 0.8)', borderRadius: 2 }}>       
@@ -46,6 +56,10 @@ export const QuizResults: React.FC = () => {
         </Box>
         <Button variant="contained" color="primary" onClick={() => handleGoBack()} sx={{ mt: 2 }}>
           Go Back To Skill
+        </Button>
+        <br />Need Help?<br/>
+          <Button variant="contained" color="primary" onClick={() => handleFailedQuestionsPrimer()} sx={{ mt: 2 }}>
+          Failed Questions Primer
         </Button>
       </Paper>
     </Container>

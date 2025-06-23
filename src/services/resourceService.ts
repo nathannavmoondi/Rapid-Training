@@ -66,3 +66,5 @@ Make sure to use real YouTube video IDs for ${skillDescription} tutorials and pr
     return 'There was an error loading YouTube resources. Please try again later.';
   }
 };
+
+

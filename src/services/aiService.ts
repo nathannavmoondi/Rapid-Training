@@ -337,6 +337,63 @@ export const getFoodSaverResults = async (foodItem: string, city: string): Promi
   }
 };
 
+export const getFailedQuestionsPrimer = async (skillDescription :string, failedQuestions: string[]): Promise<string> => {
+  try {
+    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+
+    if (!apiKey) {
+      throw new Error('API key not found in environment variables!');
+    }
+
+    const prompt = `Create me a primer or tutorial that will help a student who failed these quizzes for this topic "${skillDescription}
+    Format the response in clean HTML.
+    Failed questions: ${failedQuestions.join(', Next Failed Quizk: ')}.`
+
+
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': window.location.origin,
+        'X-Title': 'Algo Demo - YouTube Resources'
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-3.5-sonnet',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 2000
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    let content = data.choices?.[0]?.message?.content;
+
+    if (content) {
+      // Clean up any markdown code blocks
+      content = content.replace(/^```html\s*/i, '');
+      content = content.replace('```', '');
+      content = content.trim();
+    }
+
+    return content || 'No YouTube resources found. Please try again.';
+
+  } catch (error) {
+    console.error('Error generating YouTube resources:', error);
+    return 'There was an error loading YouTube resources. Please try again later.';
+  }
+};
+
 export const getMarketingPlan = async (url: string): Promise<string> => {
   try {
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;

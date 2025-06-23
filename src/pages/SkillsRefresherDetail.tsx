@@ -395,7 +395,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
       const doc = parser.parseFromString(question, 'text/html');
       const correctAnswerElement = doc.querySelector('.correct-answer');
       if (correctAnswerElement?.textContent) {
-        submitQuizAnswer(correctAnswerElement.textContent);
+        submitQuizAnswer(correctAnswerElement.textContent, question);
       } else {
         // Fallback or error if correct answer can't be parsed
         console.warn("Could not parse correct answer from question HTML.");
