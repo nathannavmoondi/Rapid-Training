@@ -56,41 +56,18 @@ const processHtmlWithSyntaxHighlighting = (html: string) => {
   return parts;
 };
 
-// TypewriterText for typewriter effect
-const TypewriterText: React.FC<{ text: string }> = ({ text }) => {
-  const [displayedText, setDisplayedText] = React.useState('');
-  const [currentIndex, setCurrentIndex] = React.useState(0);
-
-  React.useEffect(() => {
-    if (currentIndex < text.length) {
-      const timer = setTimeout(() => {
-        setDisplayedText(prev => prev + text[currentIndex]);
-        setCurrentIndex(c => c + 1);
-      }, 18); // Fast typewriter
-      return () => clearTimeout(timer);
-    }
-  }, [currentIndex, text]);
-
-  return <span>{displayedText}</span>;
-};
-
 const FailedQuestionsPrimer: React.FC = () => {
-  const { skillDescription, failedQuizzes, previousQuizzes } = useQuiz();
+  const { skillDescription, failedQuizzes } = useQuiz();
   const [primerHtml, setPrimerHtml] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPrimer, setShowPrimer] = useState(false);
-
 
   const handleGetPrimer = async () => {
     setLoading(true);
     setError(null);
-    setShowPrimer(false);
     try {
-        console.log('failed quizzes:', failedQuizzes);
       const html = await getFailedQuestionsPrimer(skillDescription, failedQuizzes);
       setPrimerHtml(html);
-      setShowPrimer(true);
     } catch (err) {
       setError('Failed to load primer.');
     } finally {
@@ -105,16 +82,22 @@ const FailedQuestionsPrimer: React.FC = () => {
           Failed Questions Primer
         </Typography>
         <Typography variant="h6" color="primary.light" gutterBottom>
-          {skillDescription}
-        </Typography>
-        <Button variant="contained" color="primary" onClick={handleGetPrimer} disabled={loading} sx={{ mb: 3 }}>
+          Skill: {skillDescription}
+        </Typography>        {!primerHtml && <Button variant="contained" color="primary" onClick={handleGetPrimer} disabled={loading} sx={{ mb: 3 }}>
           {loading ? <CircularProgress size={24} color="inherit" /> : 'Get Primer'}
-        </Button>
+        </Button>}
         {error && <Typography color="error">{error}</Typography>}
-        {showPrimer && (
-          <Box sx={{ mt: 3, p: 3, background: '#181818', borderRadius: 2, minHeight: 200 }}>
-            <TypewriterText text={primerHtml} />
-            <Box mt={2}>{processHtmlWithSyntaxHighlighting(primerHtml)}</Box>
+        {primerHtml && (          <Box sx={{ 
+            mt: 3, 
+            p: 3, 
+            background: '#181818', 
+            borderRadius: 2, 
+            minHeight: 200,
+            '& h1, & h2, & h3': {
+              color: 'lightcyan'
+            }
+          }}>
+            {processHtmlWithSyntaxHighlighting(primerHtml)}
           </Box>
         )}
       </Paper>

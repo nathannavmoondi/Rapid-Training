@@ -649,7 +649,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
               )}
             </Box>
 
-            {!isSlideDeck && !showYoutubeResources && (isQuizActive || startCourse === 1) && !showAnswer && (
+            {!isSlideDeck && !showYoutubeResources && (isQuizActive || startCourse === 1) && !showAnswer && !isLoading && (
               <FormControl component="fieldset" sx={{ my: 2, p:2, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1 }}>
                 <FormLabel component="legend" sx={{ color: 'primary.light', mb: 1 }}>Choose an answer:</FormLabel>
                 <RadioGroup 
