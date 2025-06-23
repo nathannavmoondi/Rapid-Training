@@ -11,13 +11,16 @@ const processHtmlWithSyntaxHighlighting = (html: string) => {
   let lastIndex = 0;
   let match;
 
+  console.log('Processing HTML for syntax highlighting:', html);
   while ((match = codeBlockRegex.exec(html)) !== null) {
+    console.log('Found code block:', match[0]);
     if (match.index > lastIndex) {
       const textPart = html.slice(lastIndex, match.index);
       parts.push(
         <div key={`text-${parts.length}`} dangerouslySetInnerHTML={{ __html: textPart }} />
       );
     }
+    console.log('language', match[1], 'code', match[2]);
     const language = match[1];
     const code = match[2]
       .replace(/&lt;/g, '<')
@@ -86,15 +89,30 @@ const FailedQuestionsPrimer: React.FC = () => {
         </Typography>        {!primerHtml && <Button variant="contained" color="primary" onClick={handleGetPrimer} disabled={loading} sx={{ mb: 3 }}>
           {loading ? <CircularProgress size={24} color="inherit" /> : 'Get Primer'}
         </Button>}
-        {error && <Typography color="error">{error}</Typography>}
-        {primerHtml && (          <Box sx={{ 
+        {error && <Typography color="error">{error}</Typography>}    
+
+        {primerHtml && (        
+           <Box sx={{ 
             mt: 3, 
             p: 3, 
-            background: '#181818', 
+            background: '#000000', 
             borderRadius: 2, 
             minHeight: 200,
-            '& h1, & h2, & h3': {
-              color: 'lightcyan'
+            color: '#ffffff',
+            '& h1': {
+              color: 'lightcyan !important',
+              fontSize: '2em',
+              marginBottom: '0.5em'
+            },
+            '& h2': {
+              color: 'lightcyan !important',
+              fontSize: '1.5em',
+              marginBottom: '0.5em'
+            },
+            '& h3': {
+              color: 'lightcyan !important',
+              fontSize: '1.25em',
+              marginBottom: '0.5em'
             }
           }}>
             {processHtmlWithSyntaxHighlighting(primerHtml)}

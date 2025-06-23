@@ -58,12 +58,12 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (selectedAnswer) {
       const correctAnswerLetter = correctAnswer.replace("Correct Answer: ", "").trim().charAt(0);
       const isCorrect = selectedAnswer.charAt(0).toUpperCase() === correctAnswerLetter.toUpperCase();
-      console.log('Submitting answer:', selectedAnswer, 'Correct answer:', correctAnswer, 'Is correct:', isCorrect);
+      //console.log('Submitting answer:', selectedAnswer, 'Correct answer:', correctAnswer, 'Is correct:', isCorrect);
       setLastAnswerCorrect(isCorrect);
       if (isCorrect) {
         setScore(prevScore => prevScore + 1);
       } else {
-        console.log('Adding failed question:', quizHtml);
+        //console.log('Adding failed question:', quizHtml);
         setFailedQuizzes(prev => [...prev, quizHtml || '']);
       }
       setQuizzesTaken(prevQuizzes => prevQuizzes + 1);

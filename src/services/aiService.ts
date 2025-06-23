@@ -347,6 +347,35 @@ export const getFailedQuestionsPrimer = async (skillDescription :string, failedQ
 
     const prompt = `Create me a primer or tutorial that will help a student who failed these quizzes for this topic "${skillDescription}
     Format the response in clean HTML.
+
+    1. For code examples in the answer section, use <pre><code class="language-xxx"> tags. For "language-xxx", use one of the following based on the snippet's language: "language-typescript", "language-javascript", "language-jsx", "language-tsx", "language-markup", "language-css", "language-graphql", "language-cpp", "language-python", "language-rust", "language-go", "language-ruby", "language-sql", "language-java", "language-csharp".
+2. Indent code properly inside the code block.
+3. Put each explanation point on a new line using <p> tags.
+4. If the question itself contains a code snippet (e.g., asking "What does this code do?"), that snippet must also be wrapped in <pre><code class="language-xxx"> tags directly within the <div class="question">. For "language-xxx", use one of the following based on the snippet's language: "language-typescript", "language-javascript", "language-jsx", "language-tsx", "language-markup", "language-css", "language-graphql", "language-cpp", "language-python", "language-rust", "language-go", "language-ruby", "language-sql", "language-java", "language-csharp".
+5. Make code examples practical and focused. Ensure all code, whether in question or answer, is correctly embedded within the specified <pre><code> structure with a supported language class.
+Supported language classes for <code class="language-xxx"> are: language-typescript, language-javascript, language-jsx, language-tsx, language-markup, language-css, language-graphql, language-cpp, language-python, language-rust, language-go, language-ruby, language-sql, language-java, language-csharp.
+6. All code snippets, whether in the main question text (inside <div class="question">) or in the answer/explanation section, MUST be wrapped in <pre><code class="language-xxx">...your code here...</code></pre> tags. This structure is MANDATORY.
+7. The \`language-xxx\` part of the class on the <code> tag is ESSENTIAL for syntax highlighting. You MUST use ONLY ONE of the following specific and supported language classes:
+    - \`language-markup\` (for HTML, XML, SVG)
+    - \`language-css\`
+    - \`language-javascript\`
+    - \`language-jsx\`
+    - \`language-typescript\`
+    - \`language-tsx\`
+    - \`language-graphql\`
+    - \`language-cpp\`
+    - \`language-python\`
+    - \`language-rust\`
+    - \`language-go\`
+    - \`language-ruby\`
+    - \`language-sql\`
+    - \`language-java\`
+    - \`language-csharp\`
+   Do NOT use any other language classes.  If a code snippet is for a language not in this list, 
+   please use \`language-javascript\` if it's a generic script-like snippet or \`language-markup\` 
+   if it resembles HTML/XML. Avoid generating code snippets for languages not on this list if possible.
+
+
     Failed questions: ${failedQuestions.join(', Next Failed Quizk: ')}.`
 
 
