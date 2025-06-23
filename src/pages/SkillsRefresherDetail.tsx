@@ -395,7 +395,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
       const doc = parser.parseFromString(question, 'text/html');
       const correctAnswerElement = doc.querySelector('.correct-answer');
       if (correctAnswerElement?.textContent) {
-        submitQuizAnswer(correctAnswerElement.textContent);
+        submitQuizAnswer(correctAnswerElement.textContent, question);
       } else {
         // Fallback or error if correct answer can't be parsed
         console.warn("Could not parse correct answer from question HTML.");
@@ -649,7 +649,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
               )}
             </Box>
 
-            {!isSlideDeck && !showYoutubeResources && (isQuizActive || startCourse === 1) && !showAnswer && (
+            {!isSlideDeck && !showYoutubeResources && (isQuizActive || startCourse === 1) && !showAnswer && !isLoading && (
               <FormControl component="fieldset" sx={{ my: 2, p:2, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1 }}>
                 <FormLabel component="legend" sx={{ color: 'primary.light', mb: 1 }}>Choose an answer:</FormLabel>
                 <RadioGroup 

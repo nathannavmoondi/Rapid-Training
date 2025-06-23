@@ -24,7 +24,8 @@ interface CustomSkill {
 }
 
 export const SkillsRefresher = () => {
-  const navigate = useNavigate();  const { setStartCourse } = useQuiz();
+  const navigate = useNavigate();  
+  const { setStartCourse, resetQuiz } = useQuiz();
   const [currentTab, setCurrentTab] = useState<SkillCategory>('all');
   const [newSkillCategory, setNewSkillCategory] = useState<SkillCategory>('general');
   const [newSkillTitle, setNewSkillTitle] = useState('');

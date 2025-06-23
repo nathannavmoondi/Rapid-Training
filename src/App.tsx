@@ -19,6 +19,7 @@ import { MarketingAI } from './pages/MarketingAI';
 import { FoodSaver } from './pages/FoodSaver';
 import { Sidebar } from './components/Sidebar';
 import './App.css';
+import FailedQuestionsPrimer from './pages/FailedQuestionsPrimer';
 
 
 function App() {
@@ -58,6 +59,7 @@ function App() {
                     <Route path="/algorithm/:id" element={<AlgorithmDetail />} />
                     <Route path="/item/:id" element={<Details />} />
                     <Route path="/quiz-results" element={<QuizResults />} />
+                    <Route path="/failed-questions-primer" element={<React.Suspense fallback={<div>Loading...</div>}><FailedQuestionsPrimer /></React.Suspense>} />
                     <Route path="/promptdb" element={<PromptDB />} />
                     <Route path="/marketing-ai" element={<MarketingAI />} />
                     <Route path="/food-saver" element={<FoodSaver />} />
