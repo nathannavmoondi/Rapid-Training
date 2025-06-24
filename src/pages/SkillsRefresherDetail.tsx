@@ -48,7 +48,8 @@ const getProcessedQuestionHtml = (html: string, answerVisible: boolean, showFeed
           ${isCorrect ? '✓' : '✕'}
         </span>
         <span style="font-size: 20px; color: ${isCorrect ? 'green' : 'red !important'}">
-          ${isCorrect ? 'Correct!' : 'Incorrect!'}
+          ${isCorrect ? 'Correct!' : 'Incorrect!'}import { render } from '@testing-library/react';
+
         </span>
       </div>
     `;
@@ -98,6 +99,9 @@ export const SkillsRefresherDetail = () => {
 
   // Ref to track the latest isQuizActive state for unmount cleanup
   const isQuizActiveRef = useRef(isQuizActive);
+
+  let localPreviousQuizzes: string[] = [];  
+
   // Effect to update the ref whenever isQuizActive changes
   useEffect(() => {
     isQuizActiveRef.current = isQuizActive;
@@ -199,7 +203,7 @@ export const SkillsRefresherDetail = () => {
     setIsSlideDeck(false);
     setShowYoutubeResources(false);
     setQuestion('');
-      if (intendsNewQuizRound && quizzesTaken < maxQuizzes) {
+    if (intendsNewQuizRound && quizzesTaken < maxQuizzes) {
       if (!previousPath) { // Set previous path only if not already set (e.g. by "Start Quiz with this Q")
         setPreviousPath(location.pathname + location.search);
       }
@@ -211,16 +215,18 @@ export const SkillsRefresherDetail = () => {
       // If fetching a regular question while a quiz was active, effectively end the quiz mode for this question.
       // The quiz context's submitAnswer already sets isQuizActive to false.
       // If a user explicitly asks for a "New Question" (not "Next Quiz Question"), reset the quiz progression.
+      console.log('Ending quiz mode for new question request');
       resetQuiz();
     }
 
 
     try {
-      const response = await requestRefresher(level, currentSkill.title, currentSkill.category, startCourse, previousQuizzes); // Use level from context
+      const response = await requestRefresher(level, currentSkill.title, currentSkill.category, startCourse, localPreviousQuizzes); // Use level from context
       if (!isSlideDeck && !showYoutubeResources && startCourse !== 1) {
-        console.log('adding to previous quizzes:', response);
-        setPreviousQuizzes(prevQuizzes => [...prevQuizzes, response]);  // Store previous question if not in slidedeck or youtube mode
-        
+        setPreviousQuizzes(prevQuizzes =>{
+         localPreviousQuizzes = [...prevQuizzes, response];
+        return [...prevQuizzes, response]
+        });  // Store previous question if not in slidedeck or youtube mode
       }
       setQuestion(response || 'Failed to load question. Please try again.');
     } catch (error) {
@@ -892,6 +898,7 @@ export const SkillsRefresherDetail = () => {
             </Box>
             )}            
             
+          
             {showYoutubeResources && !isLoading && !isLoadingYoutube && (
               <Box sx={{ display: 'flex', gap: '7px', mt: 2 }}>
                 <Button                  variant="contained"

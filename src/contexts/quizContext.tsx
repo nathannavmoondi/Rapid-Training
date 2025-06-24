@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react';
 
 interface QuizContextType {
   score: number;
@@ -30,8 +30,9 @@ interface QuizContextType {
 
 const QuizContext = createContext<QuizContextType | undefined>(undefined);
 
-export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  //default values
+export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>   
+  {
+  //the state values that what we want to share
   const [score, setScore] = useState(0);
   const [quizzesTaken, setQuizzesTaken] = useState(0);
   const [maxQuizzes, setMaxQuizzes] = useState(3); // Make maxQuizzes stateful
@@ -44,6 +45,12 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [showYoutubeResources, setShowYoutubeResources] = useState<boolean>(false);
   const [previousQuizzes, setPreviousQuizzes] = useState<string[]>([]);
   const [failedQuizzes, setFailedQuizzes] = useState<string[]>([]);
+
+
+  // Add effect to log quiz state changes
+  useEffect(() => {
+    console.log('Quiz context - previousQuizzes updated:', previousQuizzes.length);    
+  }, [previousQuizzes]);
 
   const startQuiz = useCallback(() => {
     setIsQuizActive(true);
@@ -71,7 +78,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setSelectedAnswer(null); // Reset selected answer when submitting
     }
   }, [selectedAnswer]);
-  
+
   const resetQuiz = useCallback(() => {
     console.log('Resetting quiz...');
     setScore(0);
@@ -82,6 +89,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setLastAnswerCorrect(null);
     setSkillDescription(''); // Reset skill description when resetting quiz
     setPreviousPath_internal(null); // Reset previous path when resetting quiz
+    console.log('Clearing previousQuizzes array');
     setPreviousQuizzes([]); // Reset previous quizzes when resetting quiz
     setFailedQuizzes([]); // Reset failed quizzes when resetting quiz
   }, []);
@@ -94,7 +102,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setLevelState(newLevel);
   }, []);  
   
-  //easier than type it all in in the provider value line. give it an object.
+  //identify to provider all that want to share with other components.  usualy specified in app.tsx 
   const contextValue = {
     score,
     quizzesTaken,
