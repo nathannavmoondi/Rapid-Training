@@ -4,6 +4,8 @@ import { getFailedQuestionsPrimer } from '../services/aiService';
 import { Container, Typography, Paper, Box, Button, CircularProgress } from '@mui/material';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useNavigate } from 'react-router-dom';
+
 
 const processHtmlWithSyntaxHighlighting = (html: string) => {
   const codeBlockRegex = /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g;
@@ -64,6 +66,18 @@ const FailedQuestionsPrimer: React.FC = () => {
   const [primerHtml, setPrimerHtml] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const {  resetQuiz  } = useQuiz();
+  
+  const navigate = useNavigate();
+
+  const handleGoBack = () => {    
+    resetQuiz(); // Reset quiz state when going back
+    navigate('/skills'); // Navigate to skills page
+  };
+
+  React.useEffect(() => {
+    handleGetPrimer();
+  }, []);
 
   const handleGetPrimer = async () => {
     setLoading(true);
@@ -119,6 +133,9 @@ const FailedQuestionsPrimer: React.FC = () => {
           </Box>
         )}
       </Paper>
+      <Button variant="contained" color="primary" onClick={() => handleGoBack()} sx={{ mt: 2 }}>
+                Go Back To Skills
+              </Button>
     </Container>
   );
 };

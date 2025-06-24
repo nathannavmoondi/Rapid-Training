@@ -31,6 +31,7 @@ interface QuizContextType {
 const QuizContext = createContext<QuizContextType | undefined>(undefined);
 
 export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  //default values
   const [score, setScore] = useState(0);
   const [quizzesTaken, setQuizzesTaken] = useState(0);
   const [maxQuizzes, setMaxQuizzes] = useState(3); // Make maxQuizzes stateful
@@ -93,6 +94,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setLevelState(newLevel);
   }, []);  
   
+  //easier than type it all in in the provider value line. give it an object.
   const contextValue = {
     score,
     quizzesTaken,
@@ -124,6 +126,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   return <QuizContext.Provider value={contextValue}>{children}</QuizContext.Provider>;
 };
 
+//for clients.  give them the context from useContext
 export const useQuiz = (): QuizContextType => {
   const context = useContext(QuizContext);
   if (!context) {

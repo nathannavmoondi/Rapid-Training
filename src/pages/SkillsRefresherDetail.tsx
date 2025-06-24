@@ -1,12 +1,3 @@
-/**
- * SkillsRefresherDetail Component
- * 
- * Displays interactive questions for a specific skill.
- * Features:
- * - Dynamic question loading based on skill
- * - Navigation between questions
- * - Progress tracking
- */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'; // Added useLocation
 import { Container, Typography, Paper, Box, Button, Stack, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Select, MenuItem, InputLabel, IconButton, Tooltip } from '@mui/material'; // Added Select, MenuItem, InputLabel
@@ -23,15 +14,7 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import '../styles/answer-section.css';
 import { useQuiz } from '../contexts/quizContext'; // Import useQuiz
 
-// Debounced highlight function
-const debounce = <T extends (...args: any[]) => void>(func: T, wait: number) => {
-  let timeout: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);  };
-};
-
-// Helper function to process HTML for answer visibility and quiz status
+// Helper function to process HTML for answer visibility and quiz status.  Add or remove sections.
 const getProcessedQuestionHtml = (html: string, answerVisible: boolean, showFeedback: boolean = false, isCorrect: boolean | null = null, maxQuizzes?: number, quizzesTaken?: number): string => {
   if (!html) return '';
 
@@ -84,10 +67,12 @@ const getProcessedQuestionHtml = (html: string, answerVisible: boolean, showFeed
   return html;
 };
 
-export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchParams();
+export const SkillsRefresherDetail = () => {  
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation(); // Get current location
-    const { 
+  
+  const { 
     score, 
     quizzesTaken,
     maxQuizzes,
@@ -109,24 +94,25 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     startCourse,
     previousQuizzes,
     setPreviousQuizzes
-  } = useQuiz();
+  } = useQuiz(); //from quizcontext
 
   // Ref to track the latest isQuizActive state for unmount cleanup
   const isQuizActiveRef = useRef(isQuizActive);
+  // Effect to update the ref whenever isQuizActive changes
   useEffect(() => {
     isQuizActiveRef.current = isQuizActive;
   }, [isQuizActive]);
   
-  // Add lastAnswerCorrect to the ref as well if needed, or ensure dependencies using it are correct.
-  // For now, direct usage of lastAnswerCorrect from context in render should be fine.
-
-  const skillTitle = searchParams.get('skill');  const skillCategory = searchParams.get('category');
+  //states
+  const skillTitle = searchParams.get('skill');  
+  const skillCategory = searchParams.get('category');
   const contentRef = useRef<HTMLDivElement>(null);
   const quizContentRef = useRef<HTMLDivElement>(null);// Add ref for quiz content section
-    const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [question, setQuestion] = useState('');
   const [currentSkill, setCurrentSkill] = useState<Skill | undefined>();
-    // Chat functionality
+
+  // Chat functionality
   const [isChatOpen, setIsChatOpen] = useState(true);
   const { setChatboxSkill } = useChat();
   const [showAnswer, setShowAnswer] = useState(false); // Added state for answer visibility
@@ -142,6 +128,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     }
     
     try {
+      //todo: just use url params.get('skill') and not localStorage
       const customSkillsJson = localStorage.getItem('customSkills');
       const customSkillsData = customSkillsJson ? JSON.parse(customSkillsJson) : []; // Renamed to avoid conflict
       const allSkills = [...skills, ...customSkillsData]; // Use renamed variable
@@ -151,7 +138,8 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
       const foundSkill = allSkills.find(s => 
         s.title.trim().toLowerCase() === normalizedTitle.toLowerCase()
       );
-        if (foundSkill) {
+      
+      if (foundSkill) {
         setCurrentSkill(foundSkill);
         setChatboxSkill(foundSkill.title); // Update chat context with current skill
       } else {
@@ -203,10 +191,6 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     setIsLoadingYoutube(false);
   }, [currentSkill?.title, isQuizActive, resetQuiz, setShowYoutubeResources]);
 
-  useEffect(() => {
-  console.log('Previous quizzes updated:', previousQuizzes);
-}, [previousQuizzes]);
-
   const handleRequestNewQuestion = useCallback(async (intendsNewQuizRound: boolean) => {
     if (!currentSkill?.title) return;
 
@@ -245,7 +229,8 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     }
     setIsLoading(false);
   }, [currentSkill, startQuiz, setPreviousPath, location.pathname, location.search, quizzesTaken, resetQuiz, isQuizActive, previousPath, level]);
-  // Fetch initial question only when currentSkill changes and has a title
+  
+  // So when some button is clicked, it triggers a new question request 
   useEffect(() => {
     if (currentSkill?.title) {
       if (!question && !isLoading && !isQuizActive) { // Fetch initial question if none exists, not loading, AND not in a quiz
@@ -272,6 +257,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
         <Button onClick={() => navigate('/skills')} sx={{ mt: 2 }}>Back to Skills</Button>
       </Container>
     );  }
+
   // Function to process raw HTML from AI response
   const processRawHtml = (rawHtml: string): string => {
     if (!rawHtml) return '';
@@ -284,33 +270,35 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
       .replace(/\\t/g, '\t');
   };
 
-  // Function to process HTML and render with syntax highlighting
-  const processHtmlWithSyntaxHighlighting = (html: string) => {
-    if (!html) return { __html: '' };
+  // // Function to process HTML and render with syntax highlighting
+  // const processHtmlWithSyntaxHighlighting = (html: string) => {
+  //   if (!html) return { __html: '' };
 
-    // Extract code blocks and replace with placeholders
-    const codeBlockRegex = /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g;
-    const codeBlocks: Array<{ language: string; code: string }> = [];
+  //   // Extract code blocks and replace with placeholders
+  //   const codeBlockRegex = /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g;
+  //   const codeBlocks: Array<{ language: string; code: string }> = [];
     
-    let processedHtml = html.replace(codeBlockRegex, (match, language, code) => {
-      // Decode HTML entities in code
-      const decodedCode = code
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&amp;/g, '&')
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'");
+  //   let processedHtml = html.replace(codeBlockRegex, (match, language, code) => {
+  //     // Decode HTML entities in code
+  //     const decodedCode = code
+  //       .replace(/&lt;/g, '<')
+  //       .replace(/&gt;/g, '>')
+  //       .replace(/&amp;/g, '&')
+  //       .replace(/&quot;/g, '"')
+  //       .replace(/&#39;/g, "'");
       
-      const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
-      codeBlocks.push({ language, code: decodedCode.trim() });
-      return placeholder;
-    });
+  //     const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+  //     codeBlocks.push({ language, code: decodedCode.trim() });
+  //     return placeholder;
+  //   });
 
-    // Store code blocks for later rendering
-    (processedHtml as any).codeBlocks = codeBlocks;
+  //   // Store code blocks for later rendering
+  //   (processedHtml as any).codeBlocks = codeBlocks;
     
-    return { __html: processedHtml };
-  };  const htmlToRender = getProcessedQuestionHtml(
+  //   return { __html: processedHtml };
+  // }; 
+  
+  const htmlToRender = getProcessedQuestionHtml(
     processRawHtml(question), 
     showAnswer,
     showAnswer && !isSlideDeck && isQuizActive, // Only show feedback when answer is shown, not in slidedeck, AND in quiz mode
@@ -387,6 +375,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
   const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     selectQuizAnswer(event.target.value);
   };
+
   const handleSubmitQuizAnswer = () => {    // Get the current scroll position before any updates
     const currentScrollPosition = window.scrollY;
 
@@ -418,7 +407,8 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     
     setShowAnswer(true); // Show answer section after submission
   };
-    const handleStartThisQuestionAsQuiz = () => {
+
+  const handleStartThisQuestionAsQuiz = () => {
     if (quizzesTaken < maxQuizzes && currentSkill) {
       setPreviousPath(location.pathname + location.search);
       setSkillDescription(currentSkill.title); // Set the skill description
@@ -426,7 +416,9 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     } else {
       navigate('/quiz-results');
     }
-  };const handleShowAnswer = () => {
+  };
+  
+  const handleShowAnswer = () => {
     // Get the current scroll position before any updates
     const currentScrollPosition = window.scrollY;
 
@@ -444,7 +436,9 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     });
 
     setShowAnswer(true);
-  };  const handleStartCourse = async () => {    
+  }; 
+  
+  const handleStartCourse = async () => {    
     setIsLoading(true);
     setShowAnswer(false); // Reset answer visibility for new question    
     setShowYoutubeResources(false);
@@ -493,12 +487,12 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
     if (showYoutubeResources) {
     return 'Youtube Resources for ' + currentSkill?.title;
     }
-   
-    return 'Practice Quiz'
 
-   
+    return 'Practice Quiz';
+
   };
 
+  //main component
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {!currentSkill ? (
@@ -523,7 +517,8 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
           backgroundColor: 'rgba(45, 45, 45, 0.7)', 
           borderRadius: 2 
         }}
-      >        {isLoading && !question ? ( 
+      >        
+      {isLoading && !question ? ( 
           <Typography>
             {isSlideDeck ? 'Loading Slidedeck... ' : 
              startCourse === 1 ? 'Loading Course...' : 'Loading question...'}
@@ -669,7 +664,8 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                     />
                   ))}
                 </RadioGroup>
-              </FormControl>            )}            {/* Button Container: Adjusted for new layout */}
+              </FormControl>            )}     
+                     {/* Button Container: Adjusted for new layout */}
             {!showYoutubeResources && !isLoading && !isLoadingYoutube && (
             <Box sx={{ mt: 3 }}>
               {/* First row of buttons */}
@@ -686,6 +682,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                       >
                         Start Quiz (This Q)
                       </Button>
+
                       <FormControl size="small" sx={{ minWidth: 160, ml: 0, height: 48 }}>
                         <Select
                           value={maxQuizzes}
@@ -723,7 +720,7 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                   )}
                 </Box>
 
-                {/* Right-aligned group */}
+                {/* bottom buttons */}
                 <Stack direction="row" spacing={'7px'} justifyContent="flex-end" flexWrap="wrap">
                   <Button
                     variant="contained"
@@ -736,7 +733,9 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                     }}
                   >
                     {isQuizActive && !showAnswer ? 'Submit Answer' : 'Show Answer'}
-                  </Button>                  {showAnswer && !isSlideDeck && startCourse !== 1 && (
+                  </Button>                
+                  
+                  {showAnswer && !isSlideDeck && startCourse !== 1 && (
                     quizzesTaken < maxQuizzes ? (
                       <Button
                         variant="contained"
@@ -772,7 +771,8 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                      End Quiz
                     </Button>
                   )}
-                    <Button
+
+                  <Button
                     variant="outlined"
                     onClick={() => { resetQuiz(); navigate('/skills'); }}
                     sx={{ borderColor: 'primary.main', color: 'primary.main', '&:hover': { borderColor: 'primary.light', backgroundColor: 'rgba(255, 255, 255, 0.08)'} }}
@@ -796,7 +796,9 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                       }}
                     >
                       End Course
-                    </Button>                    <Box sx={{ display: 'flex', gap: '7px' }}>
+                    </Button>                    
+                    
+                    <Box sx={{ display: 'flex', gap: '7px' }}>
                       <Button
                         variant="contained"
                         onClick={handleStartCourse}
@@ -807,7 +809,8 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                       </Button>
                     </Box>
                   </>
-                ) : (                    <Box sx={{ display: 'flex', alignItems: 'center', gap: '7px', ml: 'auto' }}>
+                ) : (                   
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: '7px', ml: 'auto' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Typography variant="body1" sx={{ color: 'white', mr: 1 }}>Level:</Typography>
                       <FormControl sx={{ minWidth: 120 }} size="small">
@@ -887,7 +890,9 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
                 )}
               </Box>
             </Box>
-            )}            {showYoutubeResources && !isLoading && !isLoadingYoutube && (
+            )}            
+            
+            {showYoutubeResources && !isLoading && !isLoadingYoutube && (
               <Box sx={{ display: 'flex', gap: '7px', mt: 2 }}>
                 <Button                  variant="contained"
                   onClick={() => handleRequestNewQuestion(false)}
@@ -930,7 +935,8 @@ export const SkillsRefresherDetail = () => {  const [searchParams] = useSearchPa
               flexDirection: 'column',
               gap: 2
             }}
-          >            <Typography 
+          >            
+          <Typography 
               variant="h6" 
               align="center" 
               sx={{ 

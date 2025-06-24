@@ -35,23 +35,23 @@ interface TypewriterTextProps {
   text: string;
 }
 
-const TypewriterText: React.FC<TypewriterTextProps> = ({ text }) => {
-  const [displayedText, setDisplayedText] = useState('');
-  const [currentIndex, setCurrentIndex] = useState(0);
+// const TypewriterText: React.FC<TypewriterTextProps> = ({ text }) => {
+//   const [displayedText, setDisplayedText] = useState('');
+//   const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
-    if (currentIndex < text.length) {
-      const timer = setTimeout(() => {
-        setDisplayedText(prev => prev + text[currentIndex]);
-        setCurrentIndex(c => c + 1);
-      }, 30); // Adjust speed here
+//   useEffect(() => {
+//     if (currentIndex < text.length) {
+//       const timer = setTimeout(() => {
+//         setDisplayedText(prev => prev + text[currentIndex]);
+//         setCurrentIndex(c => c + 1);
+//       }, 30); // Adjust speed here
 
-      return () => clearTimeout(timer);
-    }
-  }, [currentIndex, text]);
+//       return () => clearTimeout(timer);
+//     }
+//   }, [currentIndex, text]);
 
-  return <>{displayedText}</>;
-};
+//   return <>{displayedText}</>;
+// };
 
 // Component to render AI message content with syntax highlighting
 const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isUser }) => {
@@ -72,7 +72,9 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
         {text}
       </Typography>
     );
-  }  // Parse the message to identify code blocks
+  }  
+  
+  // Parse the message to identify code blocks returns box or typography
   const renderContentWithSyntaxHighlighting = (content: string) => {
     // First, handle HTML code blocks (<pre><code class="language-xxx">)
     let processedContent = content.replace(
@@ -183,7 +185,7 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
             </SyntaxHighlighter>
           </Box>
         );
-      } else {
+      } else {  //if not code
         // Regular text content
         return (
           <Typography
@@ -214,15 +216,13 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
         );
       }
     });
-  };
+  }; //end: renderContentWithSyntaxHighlighting  whew.
 
   return <Box>{renderContentWithSyntaxHighlighting(text)}</Box>;
 };
 
-export const Chat: React.FC<{ 
-  isOpen: boolean; 
-  onClose: () => void;
-}> = ({ isOpen, onClose }) => {
+export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ isOpen, onClose }) => 
+ {
   const { chatboxSkill } = useChat();
   
   // Function to get initial message
@@ -232,13 +232,14 @@ export const Chat: React.FC<{
     isUser: false,
     timestamp: new Date()
   });
+
   const [messages, setMessages] = useState<ChatMessage[]>([getInitialMessage()]);
   const [input, setInput] = useState('');
   const [width, setWidth] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   
-  // Speech-to-text functionality
+  // Speech-to-text functionality hook
   const { isListening, isSupported, toggleListening } = useSpeechToText({
     onTranscript: (transcript, isFinal) => {
       if (isFinal) {
@@ -290,7 +291,8 @@ export const Chat: React.FC<{
       }, 100);
     }
   }, [isOpen]);
-    const messagesEndRef = useRef<null | HTMLDivElement>(null);
+
+  const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const initialX = useRef(0);
   const initialWidth = useRef(0);
@@ -301,7 +303,9 @@ export const Chat: React.FC<{
     initialWidth.current = width;
   };
 
+  //at startt
   useEffect(() => {
+
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
       const deltaX = e.clientX - initialX.current;
@@ -323,6 +327,7 @@ export const Chat: React.FC<{
       document.removeEventListener('mouseup', handleMouseUp);
     };
   }, [isResizing]);
+
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
@@ -346,7 +351,9 @@ export const Chat: React.FC<{
       text: "Thinking...",
       isUser: false,
       timestamp: new Date()
-    };    setMessages(prev => [...prev, userMessage, loadingMessage]);
+    };    
+    
+    setMessages(prev => [...prev, userMessage, loadingMessage]);
     setInput('');
 
     try {

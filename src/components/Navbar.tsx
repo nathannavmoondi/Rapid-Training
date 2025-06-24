@@ -25,6 +25,7 @@ interface NavbarProps {
 }
 
 export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
+
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -58,19 +59,22 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
     // For other pages
     return location.pathname === path;
   };
+
   const isSkillDetailPage = () => {
     return location.pathname === '/skills/detail';
   };  // Set skill name when arriving at a skill detail page
+
   useEffect(() => {
     if (isSkillDetailPage()) {
       const params = new URLSearchParams(location.search);
       const skill = params.get('skill');
       if (skill) {
         const decodedSkill = decodeURIComponent(skill);
-        setChatboxSkill(decodedSkill);
+        setChatboxSkill(decodedSkill); //chatcontext
       }
     }
   }, [location.search, setChatboxSkill]);
+
   const getCurrentSkill = () => {
     if (isSkillDetailPage()) {
       const params = new URLSearchParams(location.search);
@@ -88,13 +92,17 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
     '&:hover': {
       backgroundColor: isActive(path) ? 'rgba(144, 202, 249, 0.3)' : 'rgba(255, 255, 255, 0.08)'
     }
-  });  const menuItems = [
+  });  
+  
+  const menuItems = [
     { label: 'Rapid Training AI', path: '/skills',  external: false   },
     { label: 'Algorithms', path: '/algorithms',  external: false   },
     { label: 'Marketing AI', path: '/marketing-ai',  external: false   },
     { label: 'Food Saver', path: '/food-saver',   external: false   },
     { label: 'Github', path: 'https://github.com/nathannavmoondi', external: true }
-  ];  return (
+  ]; 
+  
+  return (
     <AppBar position="fixed" sx={{ 
       borderBottom: '2px solid rgba(255, 255, 255, 0.2)',
       zIndex: 1300,
