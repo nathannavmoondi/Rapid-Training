@@ -195,9 +195,9 @@ export const SkillsRefresherDetail = () => {
     setIsLoadingYoutube(false);
   }, [currentSkill?.title, isQuizActive, resetQuiz, setShowYoutubeResources]);
 
-  //no callback cuz we call setState and being memoized it won't show latest value! if you use callback, make sure
-  //dependencies are correct.
-  const handleRequestNewQuestion = async (intendsNewQuizRound: boolean) => {
+  //remmeber: callback  we call setState and being memoized it won't show latest value! if you use callback, make sure
+  //dependencies are correct like previousquizzes!  wasted so many hours and ai was useless.
+  const handleRequestNewQuestion = useCallback( async (intendsNewQuizRound: boolean) => {
     if (!currentSkill?.title) return;
 
     setIsLoading(true);
@@ -223,6 +223,7 @@ export const SkillsRefresherDetail = () => {
 
 
     try {            
+      console.log('previous quizzzes', previousQuizzes.length)
       const response = await requestRefresher(level, currentSkill.title, currentSkill.category, startCourse, previousQuizzes); // Use level from context
       if (!isSlideDeck && !showYoutubeResources && startCourse !== 1) {
         
@@ -239,7 +240,7 @@ export const SkillsRefresherDetail = () => {
       setQuestion('Failed to load question. Please try again.');
     }
     setIsLoading(false);
-  }
+  },[currentSkill, startQuiz, setPreviousPath, location.pathname, location.search, quizzesTaken, resetQuiz, isQuizActive, previousPath, level, previousQuizzes]);
   
   // So when some button is clicked, it triggers a new question request 
   useEffect(() => {
