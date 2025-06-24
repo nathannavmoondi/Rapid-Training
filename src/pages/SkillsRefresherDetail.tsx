@@ -93,7 +93,7 @@ export const SkillsRefresherDetail = () => {
     setStartCourse,
     setShowYoutubeResources,
     startCourse,
-    previousQuizzes,
+    previousQuizzes, //most of these shoudl be local state
     setPreviousQuizzes
   } = useQuiz(); //from quizcontext
 
