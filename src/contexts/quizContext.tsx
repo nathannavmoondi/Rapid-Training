@@ -47,10 +47,10 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [failedQuizzes, setFailedQuizzes] = useState<string[]>([]);
 
 
-  // Add effect to log quiz state changes
-  useEffect(() => {
-    console.log('Quiz context - previousQuizzes updated:', previousQuizzes.length);    
-  }, [previousQuizzes]);
+  // // Add effect to log quiz state changes
+  // useEffect(() => {
+  //   console.log('Quiz context - previousQuizzes updated:', previousQuizzes.length);    
+  // }, [previousQuizzes]);
 
   const startQuiz = useCallback(() => {
     setIsQuizActive(true);

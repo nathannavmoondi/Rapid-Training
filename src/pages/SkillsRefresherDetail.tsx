@@ -195,7 +195,9 @@ export const SkillsRefresherDetail = () => {
     setIsLoadingYoutube(false);
   }, [currentSkill?.title, isQuizActive, resetQuiz, setShowYoutubeResources]);
 
-  const handleRequestNewQuestion = useCallback(async (intendsNewQuizRound: boolean) => {
+  //no callback cuz we call setState and being memoized it won't show latest value! if you use callback, make sure
+  //dependencies are correct.
+  const handleRequestNewQuestion = async (intendsNewQuizRound: boolean) => {
     if (!currentSkill?.title) return;
 
     setIsLoading(true);
@@ -220,18 +222,14 @@ export const SkillsRefresherDetail = () => {
     }
 
 
-    try {      
-      const response = await requestRefresher(level, currentSkill.title, currentSkill.category, startCourse, localPreviousQuizzes); // Use level from context
+    try {            
+      const response = await requestRefresher(level, currentSkill.title, currentSkill.category, startCourse, previousQuizzes); // Use level from context
       if (!isSlideDeck && !showYoutubeResources && startCourse !== 1) {
         
         setPreviousQuizzes(prevQuizzes =>{ //more than 10 it gets too slow.
-          if (localPreviousQuizzes.length > 10) {
-            //keep only first 9 items            
-            localPreviousQuizzes = [...localPreviousQuizzes.slice(-9), response]; // Keep the last 9 questions and add the new one
-            return [...prevQuizzes.slice(-9), response];
-          }
-
-        localPreviousQuizzes = [...prevQuizzes, response];
+          if (prevQuizzes.length > 10) {
+               return [...prevQuizzes.slice(-9), response];
+          }        
         return [...prevQuizzes, response]
         });  // Store previous question if not in slidedeck or youtube mode
       }
@@ -241,7 +239,7 @@ export const SkillsRefresherDetail = () => {
       setQuestion('Failed to load question. Please try again.');
     }
     setIsLoading(false);
-  }, [currentSkill, startQuiz, setPreviousPath, location.pathname, location.search, quizzesTaken, resetQuiz, isQuizActive, previousPath, level]);
+  }
   
   // So when some button is clicked, it triggers a new question request 
   useEffect(() => {

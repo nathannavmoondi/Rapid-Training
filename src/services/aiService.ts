@@ -8,10 +8,7 @@ export const requestRefresher = async (
   previousQuizzes?: string[]
 ): Promise<string> => {
   try {
-    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;        
-    
-    console.log('Previous quizzes size:', previousQuizzes?.length || 0);
-    console.log('previous quizzes sent by compponent', previousQuizzes);
+    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;            
 
     const callOpenRouter = async () => {
       if (!apiKey) {
