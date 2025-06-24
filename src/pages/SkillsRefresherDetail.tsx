@@ -154,7 +154,7 @@ export const SkillsRefresherDetail = () => {
     }
   }, [skillTitle]);
 
-  const handleSlideDeck = useCallback(async () => {
+  const handleSlideDeck = async () => {
     if (isQuizActive) {
       resetQuiz();
     }
@@ -172,9 +172,9 @@ export const SkillsRefresherDetail = () => {
       console.error('Error fetching slidedeck:', error);
       setQuestion('Failed to load slidedeck. Please try again.');
     }    setIsLoading(false);
-  }, [currentSkill?.title, currentSkill?.category, isQuizActive, resetQuiz]);
+  };
 
-  const handleYoutubeResources = useCallback(async () => {
+  const handleYoutubeResources = async () => {
     if (isQuizActive) {
       resetQuiz();
     }
@@ -193,11 +193,11 @@ export const SkillsRefresherDetail = () => {
       setYoutubeContent('Failed to load YouTube resources. Please try again.');
     }
     setIsLoadingYoutube(false);
-  }, [currentSkill?.title, isQuizActive, resetQuiz, setShowYoutubeResources]);
+  };
 
   //remmeber: callback  we call setState and being memoized it won't show latest value! if you use callback, make sure
   //dependencies are correct like previousquizzes!  wasted so many hours and ai was useless.
-  const handleRequestNewQuestion = useCallback( async (intendsNewQuizRound: boolean) => {
+  const fetchNewQuestion = useCallback( async (intendsNewQuizRound: boolean) => {
     if (!currentSkill?.title) return;
 
     setIsLoading(true);
@@ -246,9 +246,9 @@ export const SkillsRefresherDetail = () => {
   useEffect(() => {
     if (currentSkill?.title) {
       if (!question && !isLoading && !isQuizActive) { // Fetch initial question if none exists, not loading, AND not in a quiz
-        handleRequestNewQuestion(false); 
+        fetchNewQuestion(false); 
       }
-    }  }, [currentSkill, handleRequestNewQuestion, question, isLoading, isQuizActive]); // Added isQuizActive
+    }  }, [currentSkill, fetchNewQuestion, question, isLoading, isQuizActive]); // Added isQuizActive
 
   // Cleanup effect to reset quiz if user navigates away while quiz is active
   useEffect(() => {
@@ -752,7 +752,7 @@ export const SkillsRefresherDetail = () => {
                       <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => handleRequestNewQuestion(!!previousPath)}
+                        onClick={() => fetchNewQuestion(!!previousPath)}
                         disabled={isLoading}
                         sx={{ backgroundColor: '#2196F3', '&:hover': { backgroundColor: '#1976D2'} }}
                       >
@@ -776,7 +776,7 @@ export const SkillsRefresherDetail = () => {
                     <Button // General "New Question" - distinct from "Next Quiz Question"
                       variant="contained"
                       color="info"
-                      onClick={() => handleRequestNewQuestion(false)} // Always fetches a non-quiz question, resets quiz if active
+                      onClick={() => fetchNewQuestion(false)} // Always fetches a non-quiz question, resets quiz if active
                       disabled={isLoading} // isSlideDeck is implicitly handled by the outer condition
                       sx={{ backgroundColor: '#17a2b8', '&:hover': { backgroundColor: '#117a8b'} }}
                     >
@@ -908,7 +908,7 @@ export const SkillsRefresherDetail = () => {
             {showYoutubeResources && !isLoading && !isLoadingYoutube && (
               <Box sx={{ display: 'flex', gap: '7px', mt: 2 }}>
                 <Button                  variant="contained"
-                  onClick={() => handleRequestNewQuestion(false)}
+                  onClick={() => fetchNewQuestion(false)}
                   sx={{ 
                     backgroundColor: 'blue', 
                     color: 'white',
