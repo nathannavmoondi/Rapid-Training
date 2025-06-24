@@ -220,11 +220,18 @@ export const SkillsRefresherDetail = () => {
     }
 
 
-    try {
+    try {      
       const response = await requestRefresher(level, currentSkill.title, currentSkill.category, startCourse, localPreviousQuizzes); // Use level from context
       if (!isSlideDeck && !showYoutubeResources && startCourse !== 1) {
-        setPreviousQuizzes(prevQuizzes =>{
-         localPreviousQuizzes = [...prevQuizzes, response];
+        
+        setPreviousQuizzes(prevQuizzes =>{ //more than 10 it gets too slow.
+          if (localPreviousQuizzes.length > 10) {
+            //keep only first 9 items            
+            localPreviousQuizzes = [...localPreviousQuizzes.slice(-9), response]; // Keep the last 9 questions and add the new one
+            return [...prevQuizzes.slice(-9), response];
+          }
+
+        localPreviousQuizzes = [...prevQuizzes, response];
         return [...prevQuizzes, response]
         });  // Store previous question if not in slidedeck or youtube mode
       }
