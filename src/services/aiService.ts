@@ -25,13 +25,21 @@ export const requestRefresher = async (
         if (storedContent) previousContent = storedContent;
         if (storedSection) currentSection = parseInt(storedSection, 10) + 1;
       }           
-      
+      // Include a practical code example with syntax highlighting in the answer section.
+
         var prompt = `I'm creating a ${skillDescription} quiz for a job applicant.  
       Give me a completely new random ${level} difficulty ${skillDescription} question on a random topic.
 
+      Make sure to format the question with good spacing and readability:
+- Use paragraphs with blank lines between them
+- Break down long scenarios into smaller parts
+- Put requirements in bullet points
+- Keep the main question clear and separate
+- Make answer options simple.  Do not use code elements.
+
 Do not include the word html and GRAVE ACCENT in the answer.
-Include a practical code example with syntax highlighting in the answer section.
 Each question should be different topic from previous question.  Ask a random topic each time. 
+Content will be displayed on a dark background and that it should only use light colors for text.
 Format the response in this exact HTML structure:
 
 <div class="question-container">
@@ -92,10 +100,11 @@ Supported language classes for <code class="language-xxx"> are: language-typescr
 
 prompt += `  Also!, quiz can't be similar to these previous ${previousQuizzes?.length} quizzes: ${previousQuizzes ? previousQuizzes.join(', Next Quiz:  ') : 'none'}.`;
 
+//todo: just add to prompt to NOT use code elements
 if (skillCategory === 'non-technology'){
   prompt = `I'm creating a ${skillDescription} quiz for a job applicant.  
       Give me a completely new random ${level} difficulty ${skillDescription} question on a random topic.
-
+  Content will be displayed on a dark background and that it should only use light colors for text.
 Do not include the word html and GRAVE ACCENT in the answer.
 
 Each question should be different topic from previous question.  Ask a random topic each time. 
@@ -133,17 +142,33 @@ prompt += `  Also, quiz can't be similar to these previous ${previousQuizzes?.le
   }
 
 if (startCourse === 1) {
-        // Course mode prompt
+        // Course mode prompt        
         prompt = `Create nicely formatted section ${currentSection} of a comprehensive tutorial course for ${skillDescription}.
         ${previousContent ? `Previous section covered: [begin section] ${previousContent} [end section]` : 'This is the first section.'}        
-        Show one section only. Next section will be given in next prompt.        Format each content section like:
+        Show one section only. Next section will be given in next prompt.  
+        Content will be displayed on a dark background and that it should only use light colors for text.
+        text should be white.
+
+          Format section content nicely:
+        - Use proper HTML tags for emphasis (<strong> for bold, <em> for italics)
+        - DO NOT use asterisks (**) for emphasis or formatting
+        - Use line breaks (<br/>) and paragraphs (<p>)
+        - Use lists (<ul> and <li>) for bullet points
+        - Use appropriate headings (<h3>, <h4>)        
+        - Keep text white for readability on dark background
+        - Structure content with clear visual hierarchy
+        - For h4 color them lightcyan
+
+
+        Format each content section like:
         <h3 class="section-title">Section Title</h3>        
         [section content]
 
-        Format section content nicely, use line breaks, li's, uls, change colors, nice css, bold, etc.  Use code section if needed.  Stylize.
+        Format section content nicely, use line breaks, li's, uls, change colors, nice css, bold, etc. Stylize.`
 
-        All code snippets in section content  MUST be wrapped in <pre><code class="language-xxx">...your code here...</code></pre> tags. This structure is MANDATORY.
-. The \`language-xxx\` part of the class on the <code> tag is ESSENTIAL for syntax highlighting. You MUST use ONLY ONE of the following specific and supported language classes:
+        if (skillCategory !== 'non-technology'){
+        prompt += `Use code sections when needed. All code snippets in section content  MUST be wrapped in <pre><code class="language-xxx">...your code here...</code></pre> tags. This structure is MANDATORY.
+    . The \`language-xxx\` part of the class on the <code> tag is ESSENTIAL for syntax highlighting. You MUST use ONLY ONE of the following specific and supported language classes:
     - \`language-markup\` (for HTML, XML, SVG)
     - \`language-css\`
     - \`language-javascript\`
@@ -162,8 +187,10 @@ if (startCourse === 1) {
  The example structure for a code snippet within the question text is: \`<pre><code class="language-javascript">const snippet = "example";</code></pre>\`. Adhere to this, using an appropriate language class from the list in point 7.
  Indent code properly inside the <code> block.
  non code text color shoudl always be white.
-        
-        At end show ONE multiple choice question on this section.
+        Include a practical code example with syntax highlighting in the answer section.  
+       `};
+
+        prompt += `
         Do not include the word html and GRAVE ACCENT in the answer.
         Do not include any language tags like <lang="en"> or <!DOCTYPE> or <html> or <body>.
         Do not wrap content in HTML/HEAD/BODY tags.
@@ -171,7 +198,7 @@ if (startCourse === 1) {
         Never use any h1 or h2 tags.
         Never use fragment tags (<> or </> or <></> or <Fragment> or </Fragment>).
         Never use React or JSX syntax.
-  Include a practical code example with syntax highlighting in the answer section.  
+  
   style response nicely.
   Content structure rules:
   - Use only h3 with class "section-title" for section headings (no h1 or h2)
@@ -179,6 +206,8 @@ if (startCourse === 1) {
   - Avoid any inline styles
   - Send only the direct content without any document-level HTML tags or fragments
   - Use only plain HTML without React/JSX components or fragments
+  - If course is not a programming language, DO NOT USE CODE EXAMPLE OR BLOCKS AT ALL!!!
+  - At end show ONE multiple choice question on this section.
   Format the response in this exact HTML structure:
         
   <div class="question-container">
@@ -211,10 +240,22 @@ if (startCourse === 1) {
         // Store content for next section
         localStorage.setItem('currentSection', currentSection.toString());
         localStorage.setItem('previousContent', `Section ${currentSection}`);
-      } else if (level === 'slidedeck') {
+      } else       
+      if (level === 'slidedeck') {
         // Slide deck mode prompt
         prompt = `Create a detailed thorough educational slide deck about ${skillDescription} basics and intermediate.  At the end include a section on steps needed to get proficient in this skill.
         For text that is bold, format them with lightcyan color.  Dont use ** to wrap aroudn important text, instead make it bold with color.
+         Format section content nicely:
+        - Use proper HTML tags for emphasis (<strong> for bold, <em> for italics)
+        - DO NOT use asterisks (**) for emphasis or formatting
+        - Use line breaks (<br/>) and paragraphs (<p>)
+        - Use lists (<ul> and <li>) for bullet points
+        - Use appropriate headings (<h3>, <h4>)
+        - Use code sections when needed with proper syntax highlighting
+        - Keep text white for readability on dark background
+        - Structure content with clear visual hierarchy
+        Do not use * as marker.
+        If course is not a programming language, DO NOT USE CODE EXAMPLE OR BLOCKS AT ALL!!!
         Format output as:
         <div class="slide-container">
             <div class="slide">

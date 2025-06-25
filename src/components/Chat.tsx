@@ -192,13 +192,16 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
             key={index}
             component="div"
             sx={{
+              color: isUser ? '#fff' : '#000',
               '& p': {
                 margin: '0 0 8px 0',
                 lineHeight: '1.5',
+                color: 'inherit',
                 '&:last-child': { marginBottom: 0 }
               },
               '& strong': {
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                color: 'inherit'
               }
             }}
             dangerouslySetInnerHTML={{
@@ -479,7 +482,10 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
                 color: message.isUser ? '#fff' : '#000',
                 borderRadius: '12px',
                 p: 2,
-                maxWidth: '85%'
+                maxWidth: '85%',
+                '& p, & div': {
+                  color: message.isUser ? '#fff' : '#000'
+                }
               }}
             >            <MessageContent text={message.text} isUser={message.isUser} />
             </Box>

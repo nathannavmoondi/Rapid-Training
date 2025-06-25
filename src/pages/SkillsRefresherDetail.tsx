@@ -42,14 +42,12 @@ const getProcessedQuestionHtml = (html: string, answerVisible: boolean, showFeed
 
   // Handle quiz status content
   if (showFeedback && isCorrect !== null) {
-    const feedbackContent = `
-      <div style="margin: 16px 0; padding: 16px; border: 2px solid ${isCorrect ? 'green' : 'red'}; border-radius: 4px; background-color: transparent; display: flex; align-items: center; justify-content: center">
-        <span style="margin-right: 8px; color: ${isCorrect ? 'green' : 'red !important'}; font-size: 24px;">
+    const feedbackContent = `      <div style="margin: 16px 0; padding: 16px; border: 2px solid ${isCorrect ? '#00FF00' : '#FF0000'}; border-radius: 4px; background-color: transparent; display: flex; align-items: center; justify-content: center">
+        <span style="margin-right: 8px; color: ${isCorrect ? '#00FF00' : '#FF0000 !important'}; font-size: 24px;">
           ${isCorrect ? '✓' : '✕'}
         </span>
-        <span style="font-size: 20px; color: ${isCorrect ? 'green' : 'red !important'}">
-          ${isCorrect ? 'Correct!' : 'Incorrect!'}import { render } from '@testing-library/react';
-
+        <span style="font-size: 20px; color: ${isCorrect ? '#00FF00' : '#FF0000 !important'}">
+          ${isCorrect ? 'Correct!' : 'Incorrect!'}
         </span>
       </div>
     `;
@@ -313,7 +311,7 @@ export const SkillsRefresherDetail = () => {
   const htmlToRender = getProcessedQuestionHtml(
     processRawHtml(question), 
     showAnswer,
-    showAnswer && !isSlideDeck && isQuizActive, // Only show feedback when answer is shown, not in slidedeck, AND in quiz mode
+    showAnswer && !isSlideDeck && (isQuizActive || startCourse === 1), // Only show feedback when answer is shown, not in slidedeck, AND in quiz mode or course mode
     lastAnswerCorrect,  // Pass the correct/incorrect state
     maxQuizzes,
     quizzesTaken
@@ -389,6 +387,7 @@ export const SkillsRefresherDetail = () => {
   };
 
   const handleSubmitQuizAnswer = () => {    // Get the current scroll position before any updates
+    console.log('submitting answer');
     const currentScrollPosition = window.scrollY;
 
     if (selectedAnswer && question) {
@@ -454,6 +453,7 @@ export const SkillsRefresherDetail = () => {
     setIsLoading(true);
     setShowAnswer(false); // Reset answer visibility for new question    
     setShowYoutubeResources(false);
+    setIsSlideDeck(false);
     setQuestion(''); // Clear previous question while loading new one
     try {
       if (startCourse === 0) {
@@ -498,6 +498,10 @@ export const SkillsRefresherDetail = () => {
 
     if (showYoutubeResources) {
     return 'Youtube Resources for ' + currentSkill?.title;
+    }
+
+    if (startCourse === 1) {
+      return 'Course Content for ' + currentSkill?.title;
     }
 
     return 'Practice Quiz';
@@ -566,6 +570,7 @@ export const SkillsRefresherDetail = () => {
               ref={contentRef}
               className="question-content" 
               sx={{ 
+                color: '#fff', // Set default text color to white for this container
                 my: 3,
                 p: 3, 
                 borderRadius: 1,
@@ -732,20 +737,21 @@ export const SkillsRefresherDetail = () => {
                   )}
                 </Box>
 
-                {/* bottom buttons */}
-                <Stack direction="row" spacing={'7px'} justifyContent="flex-end" flexWrap="wrap">
-                  <Button
-                    variant="contained"
-                    onClick={(isQuizActive || startCourse ==1) && !showAnswer ? handleSubmitQuizAnswer : handleShowAnswer}
-                    disabled={isLoading || showAnswer || !question || isSlideDeck || (isQuizActive && !selectedAnswer && !showAnswer)}
-                    sx={{ 
-                      backgroundColor: (isQuizActive && !showAnswer) ? '#007bff' : '#4CAF50', 
-                      color: 'white',
-                      '&:hover': { backgroundColor: (isQuizActive && !showAnswer) ? '#0056b3' : '#388E3C'}
-                    }}
-                  >
-                    {isQuizActive && !showAnswer ? 'Submit Answer' : 'Show Answer'}
-                  </Button>                
+                {/* bottom buttons */}                <Stack direction="row" spacing={'7px'} justifyContent="flex-end" flexWrap="wrap">
+                  {(!showAnswer || (showAnswer && startCourse !== 1)) && (
+                    <Button
+                      variant="contained"
+                      onClick={(isQuizActive || startCourse ==1) && !showAnswer ? handleSubmitQuizAnswer : handleShowAnswer}
+                      disabled={isLoading || showAnswer || !question || isSlideDeck || (isQuizActive && !selectedAnswer && !showAnswer)}
+                      sx={{ 
+                        backgroundColor: (isQuizActive && !showAnswer) ? '#007bff' : '#4CAF50', 
+                        color: 'white',
+                        '&:hover': { backgroundColor: (isQuizActive && !showAnswer) ? '#0056b3' : '#388E3C'}
+                      }}
+                    >
+                      {(isQuizActive || startCourse === 1) && !showAnswer ? 'Submit Answer' : 'Show Answer'}
+                    </Button>
+                  )}
                   
                   {showAnswer && !isSlideDeck && startCourse !== 1 && (
                     quizzesTaken < maxQuizzes ? (
@@ -784,13 +790,15 @@ export const SkillsRefresherDetail = () => {
                     </Button>
                   )}
 
-                  <Button
-                    variant="outlined"
-                    onClick={() => { resetQuiz(); navigate('/skills'); }}
-                    sx={{ borderColor: 'primary.main', color: 'primary.main', '&:hover': { borderColor: 'primary.light', backgroundColor: 'rgba(255, 255, 255, 0.08)'} }}
-                  >
-                    Done (Back to Topics)
-                  </Button>
+                  {startCourse !== 1 && (
+                    <Button
+                      variant="outlined"
+                      onClick={() => { resetQuiz(); navigate('/skills'); }}
+                      sx={{ borderColor: 'primary.main', color: 'primary.main', '&:hover': { borderColor: 'primary.light', backgroundColor: 'rgba(255, 255, 255, 0.08)'} }}
+                    >
+                      Done (Back to Topics)
+                    </Button>
+                  )}
                 </Stack>
               </Box>
               
@@ -890,14 +898,16 @@ export const SkillsRefresherDetail = () => {
                       sx={{ backgroundColor: '#2196F3', '&:hover': { backgroundColor: '#1976D2'} }}
                     >
                       Start Course
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={handleSlideDeck}
-                      disabled={isLoading || isQuizActive}
-                      sx={{ backgroundColor: '#FFC107', color: 'black', '&:hover': { backgroundColor: '#FFA000' } }}
-                    >                      Slide Deck (the basics)
-                    </Button>
+                    </Button>                    {!isSlideDeck && (
+                      <Button
+                        variant="contained"
+                        onClick={handleSlideDeck}
+                        disabled={isLoading || isQuizActive}
+                        sx={{ backgroundColor: '#FFC107', color: 'black', '&:hover': { backgroundColor: '#FFA000' } }}
+                      >
+                        Slide Deck (SUMMARY)
+                      </Button>
+                    )}
                   </Box>
                 )}
               </Box>

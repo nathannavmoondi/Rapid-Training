@@ -58,7 +58,9 @@ When providing code examples or explanations:
 3. Indent code properly inside the code block.
 4. Make code examples practical, focused, and properly formatted.
 5. Never use markdown code blocks, always use the HTML structure above.
-6. Choose the most appropriate language class for the code being shown.`
+6. Choose the most appropriate language class for the code being shown.
+7. If ${skill} is not a programming language, do not use CODE ELEMENTS OR BLOCKS AT ALL!!
+`
             },
             ...conversationMessages // Include conversation history
           ]
