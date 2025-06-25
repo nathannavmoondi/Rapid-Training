@@ -11,7 +11,8 @@ import {
   MenuItem,
   useTheme,
   useMediaQuery,
-  Tooltip
+  Tooltip,
+  Avatar
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChatIcon from '@mui/icons-material/Chat';
@@ -118,8 +119,17 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
         px: { xs: 1, sm: 2 } 
       }}>
         {/* Logo and title */}
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/')}>
-          <img src="/favicon.ico" alt="Favicon" style={{ marginRight: '8px', height: '20px', width: '20px' }} />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} onClick={() => navigate('/')}>
+          <img 
+            src="/favicon.ico" 
+            alt="Logo" 
+            style={{ 
+              width: '24px', 
+              height: '24px',
+              marginRight: '8px',
+              verticalAlign: 'middle'
+            }} 
+          />
           <Typography 
             variant="subtitle2"
             component="div" 
