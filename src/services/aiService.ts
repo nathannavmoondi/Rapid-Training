@@ -36,6 +36,7 @@ export const requestRefresher = async (
 - Put requirements in bullet points
 - Keep the main question clear and separate
 - Make answer options simple.  Do not use code elements.
+- Option should not be more than 2 lines.
 
 Do not include the word html and GRAVE ACCENT in the answer.
 Each question should be different topic from previous question.  Ask a random topic each time. 
@@ -106,7 +107,7 @@ if (skillCategory === 'non-technology'){
       Give me a completely new random ${level} difficulty ${skillDescription} question on a random topic.
   Content will be displayed on a dark background and that it should only use light colors for text.
 Do not include the word html and GRAVE ACCENT in the answer.
-
+Option should not be more than 2 lines.
 Each question should be different topic from previous question.  Ask a random topic each time. 
 Format the response in this exact HTML structure:
 
@@ -148,6 +149,7 @@ if (startCourse === 1) {
         Show one section only. Next section will be given in next prompt.  
         Content will be displayed on a dark background and that it should only use light colors for text.
         text should be white.
+        Option should not be more than 2 lines.
 
           Format section content nicely:
         - Use proper HTML tags for emphasis (<strong> for bold, <em> for italics)

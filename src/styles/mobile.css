@@ -1,0 +1,91 @@
+/* Mobile-specific styles */
+@media screen and (max-width: 600px) {
+  /* General text sizes */
+  body {
+    font-size: 14px !important;
+  }
+
+  /* Main headings */
+  h1, .MuiTypography-h1 {
+    font-size: 1.8rem !important;
+  }
+
+  h2, .MuiTypography-h2 {
+    font-size: 1.5rem !important;
+  }
+
+  h3, .MuiTypography-h3, .section-title {
+    font-size: 1.3rem !important;
+  }
+
+  /* Question text */
+  .question-container {
+    font-size: 0.9rem !important;
+  }
+
+  .question {
+    font-size: 0.9rem !important;
+  }
+
+  /* Options */
+  .option {
+    font-size: 0.9rem !important;
+    padding: 8px 12px !important;
+  }
+
+  /* Code blocks */
+  pre, code {
+    font-size: 0.8rem !important;
+  }
+
+  /* Course content */
+  .content-block p,
+  .content-block li {
+    font-size: 0.9rem !important;
+    line-height: 1.4 !important;
+  }
+
+  /* Buttons */
+  .MuiButton-root {
+    font-size: 0.9rem !important;
+    padding: 6px 12px !important;
+  }
+
+  /* Quiz feedback */
+  .quiz-status span {
+    font-size: 1rem !important;
+  }
+
+  /* Answer section */
+  .answer-box {
+    padding: 16px !important;
+  }
+
+  .correct-answer {
+    font-size: 0.9rem !important;
+  }
+
+  .explanation p {
+    font-size: 0.9rem !important;
+    line-height: 1.4 !important;
+  }
+}
+
+/* Tablet-specific adjustments */
+@media screen and (min-width: 601px) and (max-width: 960px) {
+  body {
+    font-size: 15px !important;
+  }
+
+  h1, .MuiTypography-h1 {
+    font-size: 2rem !important;
+  }
+
+  h2, .MuiTypography-h2 {
+    font-size: 1.7rem !important;
+  }
+
+  h3, .MuiTypography-h3, .section-title {
+    font-size: 1.4rem !important;
+  }
+}

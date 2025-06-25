@@ -18,6 +18,7 @@ import { PromptDB } from './pages/PromptDB';
 import { MarketingAI } from './pages/MarketingAI';
 import { FoodSaver } from './pages/FoodSaver';
 import { Sidebar } from './components/Sidebar';
+import './styles/mobile.css';
 import './App.css';
 import FailedQuestionsPrimer from './pages/FailedQuestionsPrimer';
 import Test2 from './pages/Test2';
@@ -52,10 +53,9 @@ function App() {
                 }}
               >
                 <Container>
-                  <Routes>
-                    <Route path="/" element={<Navigate to="/skills" replace />} />
-                    <Route path="/skills" element={<SkillsRefresher />} />
-                    <Route path="/skills/:id" element={<SkillsRefresherDetail />} />
+                  <Routes>                    <Route path="/" element={<Navigate to="/topics" replace />} />
+                    <Route path="/topics" element={<SkillsRefresher />} />
+                    <Route path="/topics/:id" element={<SkillsRefresherDetail />} />
                     <Route path="/algorithms" element={<AlgorithmList />} />
                     <Route path="/algorithm/:id" element={<AlgorithmDetail />} />
                     <Route path="/item/:id" element={<Details />} />

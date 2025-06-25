@@ -49,7 +49,7 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
 
   const isActive = (path: string) => {
     // For skills pages
-    if (path === '/skills' && (location.pathname === '/skills' || location.pathname.startsWith('/skills/'))) {
+    if (path === '/topics' && (location.pathname === '/topics' || location.pathname.startsWith('/topics/'))) {
       return true;
     }
     // For algorithm pages
@@ -61,7 +61,7 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
   };
 
   const isSkillDetailPage = () => {
-    return location.pathname === '/skills/detail';
+    return location.pathname === '/topics/detail';
   };  // Set skill name when arriving at a skill detail page
 
   useEffect(() => {
@@ -95,7 +95,7 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
   });  
   
   const menuItems = [
-    { label: 'Rapid Training AI', path: '/skills',  external: false   },
+    { label: 'Rapid Training AI', path: '/topics',  external: false   },
     { label: 'Algorithms', path: '/algorithms',  external: false   },
     { label: 'Marketing AI', path: '/marketing-ai',  external: false   },
     { label: 'Food Saver', path: '/food-saver',   external: false   },

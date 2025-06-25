@@ -72,7 +72,7 @@ const FailedQuestionsPrimer: React.FC = () => {
 
   const handleGoBack = () => {    
     resetQuiz(); // Reset quiz state when going back
-    navigate('/skills'); // Navigate to skills page
+    navigate('/topics'); // Navigate to topics page
   };
 
   React.useEffect(() => {

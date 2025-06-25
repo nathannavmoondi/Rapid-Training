@@ -264,7 +264,7 @@ export const SkillsRefresherDetail = () => {
         <Typography variant="h5" color="error">
           Skill not found. Please check the URL or go back to skills list.
         </Typography>
-        <Button onClick={() => navigate('/skills')} sx={{ mt: 2 }}>Back to Skills</Button>
+        <Button onClick={() => navigate('/topics')} sx={{ mt: 2 }}>Back to Topics</Button>
       </Container>
     );  }
 
@@ -478,7 +478,7 @@ export const SkillsRefresherDetail = () => {
     localStorage.removeItem('currentSection');
     setStartCourse(0);
     resetQuiz();
-    navigate('/skills');
+    navigate('/topics');
     window.scrollTo(0, 0);
   };
 

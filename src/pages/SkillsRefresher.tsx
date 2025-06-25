@@ -206,7 +206,7 @@ export const SkillsRefresher = () => {
                 boxShadow: '0 4px 20px rgba(144, 202, 249, 0.2)',
                 bgcolor: 'rgba(45, 45, 45, 0.9)'
               }            }}
-            onClick={() => navigate(`/skills/detail?skill=${encodeURIComponent(skill.title)}&category=${skill.category}`)}
+            onClick={() => navigate(`/topics/detail?skill=${encodeURIComponent(skill.title)}&category=${skill.category}`)}
           >
             <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
