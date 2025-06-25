@@ -96,7 +96,7 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
   });  
   
   const menuItems = [
-    { label: 'Rapid Topics', path: '/topics',  external: false   },
+    { label: 'Topics', path: '/topics',  external: false   },
     { label: 'Algorithms', path: '/algorithms',  external: false   },
     { label: 'Marketing AI', path: '/marketing-ai',  external: false   },
     { label: 'Food Saver', path: '/food-saver',   external: false   },
