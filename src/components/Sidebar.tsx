@@ -10,7 +10,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
-  { label: 'Rapid Training', path: '/topics', icon: <SchoolIcon />, external: false },
+  { label: 'Rapid Topics', path: '/topics', icon: <SchoolIcon />, external: false },
   { label: 'Algorithms', path: '/algorithms', icon: <FunctionsIcon />, external: false },
   { label: 'Marketing AI', path: '/marketing-ai', icon: <CampaignIcon />, external: false },
   { label: 'Food Saver', path: '/food-saver', icon: <RestaurantIcon />, external: false },

@@ -96,7 +96,7 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
   });  
   
   const menuItems = [
-    { label: 'Rapid Training AI', path: '/topics',  external: false   },
+    { label: 'Rapid Topics', path: '/topics',  external: false   },
     { label: 'Algorithms', path: '/algorithms',  external: false   },
     { label: 'Marketing AI', path: '/marketing-ai',  external: false   },
     { label: 'Food Saver', path: '/food-saver',   external: false   },
@@ -146,7 +146,7 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
               fontSize: '0.875rem'
             }}
           >
-            Rapid Training - AI Based Learning (Nathan Moondi DEMO)
+            Rapid Mind - AI Based Learning (Nathan Moondi DEMO)
           </Typography>
         </Box>
 
