@@ -582,7 +582,8 @@ export const SkillsRefresherDetail = () => {
                   const isOption = target.closest('.option') || // Check for direct option click
                                  target.closest('li'); // Check for list item click (options are often in li elements)
                   if (isOption) {
-                     userSelectedOption = isOption.textContent || ''; // Store the selected option
+                     userSelectedOption = isOption.textContent || ''; // Store the selected option since no clue
+                     //when state will be updated (in context)
                     handleSubmitQuizAnswer();
                     //handleShowAnswer();
                   }
