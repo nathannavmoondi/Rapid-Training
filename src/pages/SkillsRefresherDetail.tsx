@@ -577,7 +577,8 @@ export const SkillsRefresherDetail = () => {
               className="question-content" 
               onClick={(e) => {
                 // Check if we're not in quiz mode and clicked on an answer option
-                if (!isQuizActive && !startCourse && !showAnswer) {
+                //if (!isQuizActive && !startCourse && !showAnswer) {
+                if (!showAnswer) {
                   const target = e.target as HTMLElement;
                   const isOption = target.closest('.option') || // Check for direct option click
                                  target.closest('li'); // Check for list item click (options are often in li elements)
@@ -711,12 +712,8 @@ export const SkillsRefresherDetail = () => {
                           selectQuizAnswer(option);
                           // Then wait for state to be updated before submitting
                           userSelectedOption = option; // Store the selected option for later use
-                          setTimeout(() => {
-                            // Double check that the answer is set
-                            if (option) {
-                              handleSubmitQuizAnswer();
-                            }
-                          }, 1500); // Increased delay to ensure state updates
+                          handleSubmitQuizAnswer();
+                          
                         } else {
                           // Not in quiz mode, show the answer
                           handleShowAnswer();
