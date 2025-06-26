@@ -253,13 +253,22 @@ export const SkillsRefresherDetail = () => {
 
   // Cleanup effect to reset quiz if user navigates away while quiz is active
   useEffect(() => {
+    
     return () => {
-      // Only reset quiz if navigating away but NOT to the results page      
-      if (!isQuizActiveRef.current) {        
-        resetQuiz();
+      // When unmounting, reset the quiz if it was active but not finished.
+      // If it was finished, we assume navigation is to the results page,
+      // so we don't reset, allowing the results page to show the score.
+      // check the url of the new page wer'e being transffered to
+      const newPath = location.pathname + location.search;
+      if (newPath !== '/quiz-results' && isQuizActiveRef.current) {
+        console.log('Resetting quiz on unmount');
+        //resetQuiz(); let quizresults of refersher prage reset it
+      } else {
+        console.log('Not resetting quiz, either already finished or navigating to results');
       }
+      
     };
-  }, [resetQuiz, location.pathname]); // Add location.pathname to dependencies
+  }, [quizzesTaken, maxQuizzes, resetQuiz]);
 
 
   if (!currentSkill) {
@@ -682,7 +691,7 @@ export const SkillsRefresherDetail = () => {
               )}
             </Box>
 
-            {!isSlideDeck && !showYoutubeResources && (isQuizActive || startCourse === 1) && !showAnswer && !isLoading && (
+            {(false) && !isSlideDeck && !showYoutubeResources && (isQuizActive || startCourse === 1) && !showAnswer && !isLoading && (
               <FormControl component="fieldset" sx={{ my: 2, p:2, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1 }}>
                 <FormLabel component="legend" sx={{ color: 'primary.light', mb: 1 }}>Choose an answer:</FormLabel>
                 <RadioGroup 
