@@ -231,7 +231,7 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
   // Function to get initial message
   const getInitialMessage = () => ({
     id: '1',
-    text: "Hi. I'm Mr. Buddy. Do you have a question about " + (chatboxSkill || 'this topic') + "?",
+    text: "Hi. I'm Mr. Buddy. Do you have any questions about " + (chatboxSkill || 'this topic') + "?",
     isUser: false,
     timestamp: new Date()
   });
