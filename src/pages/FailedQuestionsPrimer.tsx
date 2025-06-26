@@ -134,7 +134,7 @@ const FailedQuestionsPrimer: React.FC = () => {
         )}
       </Paper>
       <Button variant="contained" color="primary" onClick={() => handleGoBack()} sx={{ mt: 2 }}>
-                Go Back To Skills
+                Go Back To Topics
               </Button>
     </Container>
   );

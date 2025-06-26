@@ -38,7 +38,7 @@ export const Details = () => {
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent'
           }}>
-            Welcome to Skills Refresher 
+            Welcome to topics Refresher 
           </Typography>
 
           <Box sx={{ 

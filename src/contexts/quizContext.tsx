@@ -18,7 +18,7 @@ interface QuizContextType {
   setMaxQuizzes: (value: number) => void;
   startQuiz: () => void;
   selectAnswer: (answer: string) => void;
-  submitAnswer: (correctAnswer: string, quizHtml?: string) => void;
+  submitAnswer: (correctAnswer: string, userAnswer: string, quizHtml?: string) => void;
   resetQuiz: () => void;
   setPreviousPath: (path: string) => void;
   setLevel: (level: string) => void;
@@ -62,10 +62,11 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setSelectedAnswer(answer);
   }, []);  
   
-  const submitAnswer = useCallback((correctAnswer: string, quizHtml?: string) => {
-    if (selectedAnswer) {
+  const submitAnswer = (correctAnswer: string,  userAnswer: string, quizHtml?: string,) => {
       const correctAnswerLetter = correctAnswer.replace("Correct Answer: ", "").trim().charAt(0);
-      const isCorrect = selectedAnswer.charAt(0).toUpperCase() === correctAnswerLetter.toUpperCase();
+      const isCorrect = userAnswer.charAt(0).toUpperCase() === correctAnswerLetter.toUpperCase();
+      console.log('Submitting answer:', userAnswer);
+      console.log('Correct answer:', correctAnswer);
       //console.log('Submitting answer:', selectedAnswer, 'Correct answer:', correctAnswer, 'Is correct:', isCorrect);
       setLastAnswerCorrect(isCorrect);
       if (isCorrect) {
@@ -75,9 +76,8 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setFailedQuizzes(prev => [...prev, quizHtml || '']);
       }
       setQuizzesTaken(prevQuizzes => prevQuizzes + 1);
-      setSelectedAnswer(null); // Reset selected answer when submitting
-    }
-  }, [selectedAnswer]);
+      setSelectedAnswer(null); // Reset selected answer when submitting    
+  }
 
   const resetQuiz = useCallback(() => {
     console.log('Resetting quiz...');

@@ -10,7 +10,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
-  { label: 'Rapid Topics', path: '/topics', icon: <SchoolIcon />, external: false },
+  { label: 'Topics', path: '/topics', icon: <SchoolIcon />, external: false },
   { label: 'Algorithms', path: '/algorithms', icon: <FunctionsIcon />, external: false },
   { label: 'Marketing AI', path: '/marketing-ai', icon: <CampaignIcon />, external: false },
   { label: 'Food Saver', path: '/food-saver', icon: <RestaurantIcon />, external: false },
@@ -21,7 +21,6 @@ const SIDEBAR_MIN_WIDTH = 60;
 const SIDEBAR_MAX_WIDTH = 220;
 const TEXT_VISIBILITY_THRESHOLD = 130; // Width below which text will be hidden
 const WIDTH_BREAKPOINT = 1100;
-const MOBILE_BREAKPOINT = 600; // Width below which we consider it a mobile device
 
 export const Sidebar = () => {
   const navigate = useNavigate();
@@ -29,15 +28,13 @@ export const Sidebar = () => {
   const [width, setWidth] = useState(window.innerWidth < WIDTH_BREAKPOINT ? SIDEBAR_MIN_WIDTH : SIDEBAR_MAX_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
   const [shouldShowHamburger, setShouldShowHamburger] = useState(window.innerWidth < WIDTH_BREAKPOINT);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= MOBILE_BREAKPOINT);
-  const showText = !isMobile && width >= TEXT_VISIBILITY_THRESHOLD;
+  const showText = width >= TEXT_VISIBILITY_THRESHOLD;
+
   useEffect(() => {
     const handleResize = () => {
       const shouldCollapse = window.innerWidth < WIDTH_BREAKPOINT;
-      const newIsMobile = window.innerWidth <= MOBILE_BREAKPOINT;
       setShouldShowHamburger(shouldCollapse);
-      setIsMobile(newIsMobile);
-      setWidth(shouldCollapse || newIsMobile ? SIDEBAR_MIN_WIDTH : SIDEBAR_MAX_WIDTH);
+      setWidth(shouldCollapse ? SIDEBAR_MIN_WIDTH : SIDEBAR_MAX_WIDTH);
     };
 
     window.addEventListener('resize', handleResize);
@@ -86,19 +83,18 @@ export const Sidebar = () => {
       sx={{
         width: width,
         minWidth: SIDEBAR_MIN_WIDTH,
-        maxWidth: SIDEBAR_MAX_WIDTH,        height: '100vh',
+        maxWidth: SIDEBAR_MAX_WIDTH,
+        height: 'calc(100vh - 40px)',
         bgcolor: '#005487',
         color: 'white',
         display: 'flex',
         flexDirection: 'column',
         transition: isResizing ? 'none' : 'all 0.2s',
         position: 'fixed',
-        top: 0,
+        top: 40,
         left: 0,
         zIndex: 1200,
         borderRight: '3px solid rgba(255, 255, 255, 0.05)',
-        paddingTop: '56px', // Height of the AppBar
-        boxSizing: 'border-box',
         boxShadow: `
           inset -2px 0 3px rgba(255, 255, 255, 0.15),
           inset -3px 0 4px rgba(0, 0, 0, 0.3),
@@ -127,16 +123,15 @@ export const Sidebar = () => {
             <MenuIcon />
           </IconButton>
         </Box>
-      )}      <Box sx={{ 
+      )}
+
+      <Box sx={{ 
         flex: 1, 
         display: 'flex', 
         flexDirection: 'column', 
-        gap: isMobile ? 1 : 0.5, 
+        gap: 0.5, 
         py: shouldShowHamburger ? 1 : 2,
-        mt: shouldShowHamburger ? 0 : 1,
-        '& .MuiSvgIcon-root': {
-          fontSize: isMobile ? '28px' : '24px' // Larger icons on mobile
-        }
+        mt: shouldShowHamburger ? 0 : 1
       }}>
         {menuItems.map((item) => (
           <Tooltip title={!showText ? item.label : ''} placement="right" key={item.label}>

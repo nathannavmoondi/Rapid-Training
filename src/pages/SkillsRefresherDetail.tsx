@@ -15,7 +15,8 @@ import '../styles/answer-section.css';
 import { useQuiz } from '../contexts/quizContext'; // Import useQuiz
 
 // Helper function to process HTML for answer visibility and quiz status.  Add or remove sections.
-const getProcessedQuestionHtml = (html: string, answerVisible: boolean, showFeedback: boolean = false, isCorrect: boolean | null = null, maxQuizzes?: number, quizzesTaken?: number): string => {
+const processQuestionHtml = (html: string, answerVisible: boolean, showFeedback: boolean = false, isCorrect: boolean | null = null, maxQuizzes?: number, quizzesTaken?: number)
+: string => {
   if (!html) return '';
 
   if (isCorrect == null) isCorrect = false;
@@ -48,6 +49,7 @@ const getProcessedQuestionHtml = (html: string, answerVisible: boolean, showFeed
         </span>
         <span style="font-size: 20px; color: ${isCorrect ? '#00FF00' : '#FF0000 !important'}">
           ${isCorrect ? 'Correct!' : 'Incorrect!'}
+
         </span>
       </div>
     `;
@@ -97,6 +99,7 @@ export const SkillsRefresherDetail = () => {
 
   // Ref to track the latest isQuizActive state for unmount cleanup
   const isQuizActiveRef = useRef(isQuizActive);
+  let userSelectedOption: string = ''; // Track user-selected option for quiz questions
 
   let localPreviousQuizzes: string[] = [];  
 
@@ -258,6 +261,7 @@ export const SkillsRefresherDetail = () => {
     };
   }, [resetQuiz, location.pathname]); // Add location.pathname to dependencies
 
+
   if (!currentSkill) {
     return (
       <Container sx={{ py: 4 }}>
@@ -308,10 +312,10 @@ export const SkillsRefresherDetail = () => {
   //   return { __html: processedHtml };
   // }; 
   
-  const htmlToRender = getProcessedQuestionHtml(
+  const htmlToRender = processQuestionHtml(
     processRawHtml(question), 
     showAnswer,
-    showAnswer && !isSlideDeck && (isQuizActive || startCourse === 1), // Only show feedback when answer is shown, not in slidedeck, AND in quiz mode or course mode
+    showAnswer && !isSlideDeck, // Only show feedback when answer is shown, not in slidedeck, AND in quiz mode or course mode
     lastAnswerCorrect,  // Pass the correct/incorrect state
     maxQuizzes,
     quizzesTaken
@@ -387,19 +391,20 @@ export const SkillsRefresherDetail = () => {
   };
 
   const handleSubmitQuizAnswer = () => {    // Get the current scroll position before any updates
-    console.log('submitting answer');
-    const currentScrollPosition = window.scrollY;
 
-    if (selectedAnswer && question) {
+    const currentScrollPosition = window.scrollY;
+    console.log('select answer', userSelectedOption);
+    
+    if (question) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(question, 'text/html');
       const correctAnswerElement = doc.querySelector('.correct-answer');
       if (correctAnswerElement?.textContent) {
-        submitQuizAnswer(correctAnswerElement.textContent, question);
+        submitQuizAnswer(correctAnswerElement.textContent, userSelectedOption, question);
       } else {
         // Fallback or error if correct answer can't be parsed
         console.warn("Could not parse correct answer from question HTML.");
-        submitQuizAnswer("Error: Could not determine correct answer."); // Or handle differently
+        submitQuizAnswer("Error: Could not determine correct answer.", '', ''); // Or handle differently
       }
     }
 
@@ -508,6 +513,7 @@ export const SkillsRefresherDetail = () => {
 
   };
 
+
   //main component
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -569,6 +575,19 @@ export const SkillsRefresherDetail = () => {
             <Box
               ref={contentRef}
               className="question-content" 
+              onClick={(e) => {
+                // Check if we're not in quiz mode and clicked on an answer option
+                if (!isQuizActive && !startCourse && !showAnswer) {
+                  const target = e.target as HTMLElement;
+                  const isOption = target.closest('.option') || // Check for direct option click
+                                 target.closest('li'); // Check for list item click (options are often in li elements)
+                  if (isOption) {
+                     userSelectedOption = isOption.textContent || ''; // Store the selected option
+                    handleSubmitQuizAnswer();
+                    //handleShowAnswer();
+                  }
+                }
+              }}
               sx={{ 
                 color: '#fff', // Set default text color to white for this container
                 my: 3,
@@ -677,7 +696,31 @@ export const SkillsRefresherDetail = () => {
                       value={option} 
                       control={<Radio sx={{ color: 'primary.light', '&.Mui-checked': { color: 'secondary.main' } }} />} 
                       label={option} 
-                      sx={{ color: 'text.secondary' }}
+                      sx={{ 
+                        color: 'text.secondary',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                          borderRadius: 1
+                        }
+                      }}
+                      onClick={() => {
+                        if (isQuizActive || startCourse === 1) {
+                          // In quiz mode, first set the answer
+                          selectQuizAnswer(option);
+                          // Then wait for state to be updated before submitting
+                          userSelectedOption = option; // Store the selected option for later use
+                          setTimeout(() => {
+                            // Double check that the answer is set
+                            if (option) {
+                              handleSubmitQuizAnswer();
+                            }
+                          }, 1500); // Increased delay to ensure state updates
+                        } else {
+                          // Not in quiz mode, show the answer
+                          handleShowAnswer();
+                        }
+                      }}
                     />
                   ))}
                 </RadioGroup>
@@ -793,7 +836,7 @@ export const SkillsRefresherDetail = () => {
                   {startCourse !== 1 && (
                     <Button
                       variant="outlined"
-                      onClick={() => { resetQuiz(); navigate('/skills'); }}
+                      onClick={() => { resetQuiz(); navigate('/topics'); }}
                       sx={{ borderColor: 'primary.main', color: 'primary.main', '&:hover': { borderColor: 'primary.light', backgroundColor: 'rgba(255, 255, 255, 0.08)'} }}
                     >
                       Done (Back to Topics)

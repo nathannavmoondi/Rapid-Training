@@ -9,7 +9,13 @@ const Test2: React.FC = () => {
       } = useQuiz(); //from quizcontext
 
 const [quizzes, setQuizzes] = React.useState<string[]>([]);
-console.log('previousQuizzes:', previousQuizzes.length);
+
+const print = ()=> {
+    console.log('quizzes:', quizzes.length);
+    
+}
+
+
   return (
     <div style={{ padding: 32 }}>
       <h1>Test2 Page</h1>
@@ -22,7 +28,12 @@ console.log('previousQuizzes:', previousQuizzes.length);
             </div>
         ))}
 
-      <button onClick={() => setQuizzes([...quizzes, `Quiz ${quizzes.length + 1}`])} style={{ padding: '8px 16px', fontSize: '16px' }}>
+      <button onClick={
+        () => {
+          setQuizzes([...quizzes, `Quiz ${quizzes.length + 1}`]);
+          print();
+        }
+      }>
         Add Quiz
       </button>
 
