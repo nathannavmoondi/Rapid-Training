@@ -102,6 +102,7 @@ export const SkillsRefresherDetail = () => {
   let userSelectedOption: string = ''; // Track user-selected option for quiz questions
 
   let localPreviousQuizzes: string[] = [];  
+ 
 
   // Effect to update the ref whenever isQuizActive changes
   useEffect(() => {
@@ -739,7 +740,7 @@ export const SkillsRefresherDetail = () => {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '7px' }}>
                 {/* Left-aligned: Start Quiz Button */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  {!isSlideDeck && !isQuizActive && !showAnswer && quizzesTaken < maxQuizzes && startCourse !== 1 && (
+                  {!isSlideDeck && !isQuizActive && !showAnswer && startCourse !== 1 && (
                     <>
                       <Button
                         variant="contained"
@@ -803,8 +804,8 @@ export const SkillsRefresherDetail = () => {
                     </Button>
                   )}
                   
-                  {showAnswer && !isSlideDeck && startCourse !== 1 && (
-                    quizzesTaken < maxQuizzes ? (
+                  {showAnswer && !isSlideDeck &&  startCourse !== 1 && (
+                    (quizzesTaken < maxQuizzes || !isQuizActive) ? (
                       <Button
                         variant="contained"
                         color="primary"

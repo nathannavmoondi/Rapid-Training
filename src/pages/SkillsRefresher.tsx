@@ -43,6 +43,7 @@ export const SkillsRefresher = () => {
     if (savedSkills) {
       setCustomSkills(JSON.parse(savedSkills));
     }
+    resetQuiz();
   }, []);
   // Combine built-in skills with custom skills and filter based on category
   const allSkills = [...skills, ...customSkills];

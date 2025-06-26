@@ -75,7 +75,10 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         //console.log('Adding failed question:', quizHtml);
         setFailedQuizzes(prev => [...prev, quizHtml || '']);
       }
-      setQuizzesTaken(prevQuizzes => prevQuizzes + 1);
+      if (isQuizActive) 
+      {        
+        setQuizzesTaken(prevQuizzes => prevQuizzes + 1);
+      }
       setSelectedAnswer(null); // Reset selected answer when submitting    
   }
 
