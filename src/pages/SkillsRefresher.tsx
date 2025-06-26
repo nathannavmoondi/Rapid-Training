@@ -109,7 +109,7 @@ export const SkillsRefresher = () => {
         gap: 2
       }}>
         <Typography variant="h5" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-          AI Learning -&nbsp;
+          Rapid Training -&nbsp;
           {currentTab === 'all' ? 'All Topics' :
            currentTab === 'frontend' ? 'Frontend Development' :
            currentTab === 'backend' ? 'Backend Development' :
