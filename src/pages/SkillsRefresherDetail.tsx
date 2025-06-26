@@ -1009,7 +1009,7 @@ export const SkillsRefresherDetail = () => {
                 mb: 2
               }}
             >
-              Rapid Course Training
+              Rapid Skill Training
             </Typography>
             <Typography 
               sx={{ 
@@ -1019,8 +1019,8 @@ export const SkillsRefresherDetail = () => {
                 textAlign: 'center'
               }}
             >
-              A new concept designed by Nathan Moondi to give the student
-              little snippets of information, quiz them, then go to next part. And can do over and over again until they mastered it.
+              A new concept designed by Nathan Moondi to reinvent how we learn.  This approach aims to give the student
+              little snippets of information, quiz them, then go to next part. They can do this repeatedly until they master it.
               Learn by snippet rather than by entire chapter or course. Easier on the brain and quick dopamine hits.
             </Typography>          </Box>
         </>
