@@ -33,25 +33,27 @@ export const requestRefresher = async (
       Make sure to format the question with good spacing and readability:
 - Use paragraphs with blank lines between them
 - Break down long scenarios into smaller parts
-- Put requirements in bullet points
+- For bullet points or lists of requirements, use HTML <ul> and <li> tags.
 - Keep the main question clear and separate
-- Make answer options simple.  Do not use code elements.
-- Option should not be more than 2 lines.
+- Make answer options simple.  Try not to create quizzes with options that include code.
+- Each option should not be more than 2 lines.
 
 Do not include the word html and GRAVE ACCENT in the answer.
 Each question should be different topic from previous question.  Ask a random topic each time. 
 Content will be displayed on a dark background and that it should only use light colors for text.
+If option is not a code fragment then remove the <pre><code> tags.
 Format the response in this exact HTML structure:
 
 <div class="question-container">
     <div class="question">
         [Your question text here. If the question includes a code snippet, format it like this: <pre><code class="language-javascript">const snippet = "example";</code></pre> within the question text. Ensure the class attribute is one of the supported languages listed below.]
     </div>
-    <div class="options">
-        <div class="option"><span class="option-prefix">A)</span> [Option A]</div>
+    <div class="options"> 
+        <div class="option"><span class="option-prefix">A)</span>[Option A]</div>
         <div class="option"><span class="option-prefix">B)</span> [Option B]</div>
         <div class="option"><span class="option-prefix">C)</span> [Option C]</div>
-        <div class="option"><span class="option-prefix">D)</span> [Option D]</div>
+        <div class="option"><span class="option-prefix">D)</span>[Option D]</div>
+        
     </div>
     <div class="quiz-status"></div>
     <div class="answer-box">
@@ -70,7 +72,7 @@ Format the response in this exact HTML structure:
 </div>
 
 Important:
-1. For code examples in the answer section, use <pre><code class="language-xxx"> tags. For "language-xxx", use one of the following based on the snippet's language: "language-typescript", "language-javascript", "language-jsx", "language-tsx", "language-markup", "language-css", "language-graphql", "language-cpp", "language-python", "language-rust", "language-go", "language-ruby", "language-sql", "language-java", "language-csharp".
+1. For code examples in the answer or options section, use <pre><code class="language-xxx"> tags. For "language-xxx", use one of the following based on the snippet's language: "language-typescript", "language-javascript", "language-jsx", "language-tsx", "language-markup", "language-css", "language-graphql", "language-cpp", "language-python", "language-rust", "language-go", "language-ruby", "language-sql", "language-java", "language-csharp".
 2. Indent code properly inside the code block.
 3. Put each explanation point on a new line using <p> tags.
 4. If the question itself contains a code snippet (e.g., asking "What does this code do?"), that snippet must also be wrapped in <pre><code class="language-xxx"> tags directly within the <div class="question">. For "language-xxx", use one of the following based on the snippet's language: "language-typescript", "language-javascript", "language-jsx", "language-tsx", "language-markup", "language-css", "language-graphql", "language-cpp", "language-python", "language-rust", "language-go", "language-ruby", "language-sql", "language-java", "language-csharp".

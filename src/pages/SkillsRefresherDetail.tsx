@@ -406,14 +406,15 @@ export const SkillsRefresherDetail = () => {
     console.log('select answer', userSelectedOption);
     
     if (question) {
+      const processedQuestion = processRawHtml(question);
       const parser = new DOMParser();
-      const doc = parser.parseFromString(question, 'text/html');
+      const doc = parser.parseFromString(processedQuestion, 'text/html');
       const correctAnswerElement = doc.querySelector('.correct-answer');
       if (correctAnswerElement?.textContent) {
         submitQuizAnswer(correctAnswerElement.textContent, userSelectedOption, question);
       } else {
         // Fallback or error if correct answer can't be parsed
-        console.warn("Could not parse correct answer from question HTML.");
+        console.warn("Could not parse correct answer from question HTML.", processedQuestion);
         submitQuizAnswer("Error: Could not determine correct answer.", '', ''); // Or handle differently
       }
     }
