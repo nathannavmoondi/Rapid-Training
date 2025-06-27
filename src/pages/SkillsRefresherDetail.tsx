@@ -97,36 +97,31 @@ export const SkillsRefresherDetail = () => {
     setPreviousQuizzes
   } = useQuiz(); //from quizcontext
 
-  // Ref to track the latest isQuizActive state for unmount cleanup
-  const isQuizActiveRef = useRef(isQuizActive);
-  let userSelectedOption: string = ''; // Track user-selected option for quiz questions
+  const {setChatboxSkill } = useChat();
 
-  let localPreviousQuizzes: string[] = [];  
- 
+  let userSelectedOption: string = ''; // Track user-selected option for quiz questions 
+  const quizOptions = ['A', 'B', 'C', 'D'];
+  const difficultyLevels = ['basic', 'intermediate', 'advanced'];
 
-  // Effect to update the ref whenever isQuizActive changes
-  useEffect(() => {
-    isQuizActiveRef.current = isQuizActive;
-  }, [isQuizActive]);
-  
   //states
-  const skillTitle = searchParams.get('skill');  
-  const skillCategory = searchParams.get('category');
-  const contentRef = useRef<HTMLDivElement>(null);
-  const quizContentRef = useRef<HTMLDivElement>(null);// Add ref for quiz content section
+
   const [isLoading, setIsLoading] = useState(false);
   const [question, setQuestion] = useState('');
   const [currentSkill, setCurrentSkill] = useState<Skill | undefined>();
 
   // Chat functionality
-  const [isChatOpen, setIsChatOpen] = useState(true);
-  const { setChatboxSkill } = useChat();
+  const [isChatOpen, setIsChatOpen] = useState(true);  
   const [showAnswer, setShowAnswer] = useState(false); // Added state for answer visibility
   const [isSlideDeck, setIsSlideDeck] = useState(false); // Added state for slide deck
   const [youtubeContent, setYoutubeContent] = useState(''); // Added state for YouTube resources content
   const [isLoadingYoutube, setIsLoadingYoutube] = useState(false); // Added loading state for YouTube  
 
-  // Find skill immediately
+  const skillTitle = searchParams.get('skill');  
+  const skillCategory = searchParams.get('category');
+  const contentRef = useRef<HTMLDivElement>(null);
+  const quizContentRef = useRef<HTMLDivElement>(null);// Add ref for quiz content section
+
+  // skilltitle changes, not needed
   useEffect(() => {    
     if (!skillTitle) {
       console.log('No skill title in URL');
@@ -202,6 +197,7 @@ export const SkillsRefresherDetail = () => {
   const fetchNewQuestion = useCallback( async (intendsNewQuizRound: boolean) => {
     if (!currentSkill?.title) return;
 
+    //think of this as init page load, so we reset everything
     setIsLoading(true);
     setShowAnswer(false);
     setIsSlideDeck(false);
@@ -216,19 +212,17 @@ export const SkillsRefresherDetail = () => {
       }
       startQuiz(); // Sets isQuizActive = true, resets selectedAnswer for the new question
     } else if (!intendsNewQuizRound && isQuizActive) {
-      // If fetching a regular question while a quiz was active, effectively end the quiz mode for this question.
-      // The quiz context's submitAnswer already sets isQuizActive to false.
-      // If a user explicitly asks for a "New Question" (not "Next Quiz Question"), reset the quiz progression.
+      // they clicked end quiz.  reset.
       console.log('Ending quiz mode for new question request');
       resetQuiz();
     }
 
-
-    try {            
-      console.log('previous quizzzes', previousQuizzes.length)
+    //load new question
+    try {                  
       const response = await requestRefresher(level, currentSkill.title, currentSkill.category, startCourse, previousQuizzes); // Use level from context
+      
+      //save to previous quizzes
       if (!isSlideDeck && !showYoutubeResources && startCourse !== 1) {
-        
         setPreviousQuizzes(prevQuizzes =>{ //more than 10 it gets too slow.
           if (prevQuizzes.length > 10) {
                return [...prevQuizzes.slice(-9), response];
@@ -252,25 +246,7 @@ export const SkillsRefresherDetail = () => {
       }
     }  }, [currentSkill, fetchNewQuestion, question, isLoading, isQuizActive]); // Added isQuizActive
 
-  // Cleanup effect to reset quiz if user navigates away while quiz is active
-  useEffect(() => {
-    
-    return () => {
-      // When unmounting, reset the quiz if it was active but not finished.
-      // If it was finished, we assume navigation is to the results page,
-      // so we don't reset, allowing the results page to show the score.
-      // check the url of the new page wer'e being transffered to
-      const newPath = location.pathname + location.search;
-      if (newPath !== '/quiz-results' && isQuizActiveRef.current) {
-        console.log('Resetting quiz on unmount');
-        //resetQuiz(); let quizresults of refersher prage reset it
-      } else {
-        console.log('Not resetting quiz, either already finished or navigating to results');
-      }
-      
-    };
-  }, [quizzesTaken, maxQuizzes, resetQuiz]);
-
+ 
 
   if (!currentSkill) {
     return (
@@ -292,35 +268,7 @@ export const SkillsRefresherDetail = () => {
       .replace(/\\"/g, '"')
       .replace(/\\'/g, "'")
       .replace(/\\t/g, '\t');
-  };
-
-  // // Function to process HTML and render with syntax highlighting
-  // const processHtmlWithSyntaxHighlighting = (html: string) => {
-  //   if (!html) return { __html: '' };
-
-  //   // Extract code blocks and replace with placeholders
-  //   const codeBlockRegex = /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g;
-  //   const codeBlocks: Array<{ language: string; code: string }> = [];
-    
-  //   let processedHtml = html.replace(codeBlockRegex, (match, language, code) => {
-  //     // Decode HTML entities in code
-  //     const decodedCode = code
-  //       .replace(/&lt;/g, '<')
-  //       .replace(/&gt;/g, '>')
-  //       .replace(/&amp;/g, '&')
-  //       .replace(/&quot;/g, '"')
-  //       .replace(/&#39;/g, "'");
-      
-  //     const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
-  //     codeBlocks.push({ language, code: decodedCode.trim() });
-  //     return placeholder;
-  //   });
-
-  //   // Store code blocks for later rendering
-  //   (processedHtml as any).codeBlocks = codeBlocks;
-    
-  //   return { __html: processedHtml };
-  // }; 
+  }; 
   
   const htmlToRender = processQuestionHtml(
     processRawHtml(question), 
@@ -498,10 +446,6 @@ export const SkillsRefresherDetail = () => {
     window.scrollTo(0, 0);
   };
 
-  const quizOptions = ['A', 'B', 'C', 'D'];
-  const difficultyLevels = ['basic', 'intermediate', 'advanced'];
-
-
   const getTitle = () => {
 
     if (isSlideDeck) {
@@ -528,11 +472,13 @@ export const SkillsRefresherDetail = () => {
   //main component
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+
       {!currentSkill ? (
         <Typography variant="h6" color="text.secondary" align="center">
-          Loading skill details...
+          Loading topic details...
         </Typography>
       ) : (
+        // main fragment
         <>
           <Box sx={{ mb: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom color="primary.main">
@@ -543,6 +489,7 @@ export const SkillsRefresherDetail = () => {
             </Typography>
           </Box>
 
+      {/* create main paper for page */}
       <Paper 
         elevation={3} 
         sx={{ 
@@ -587,20 +534,19 @@ export const SkillsRefresherDetail = () => {
               ref={contentRef}
               className="question-content" 
               onClick={(e) => {
-                // Check if we're not in quiz mode and clicked on an answer option
-                //if (!isQuizActive && !startCourse && !showAnswer) {
-                if (!showAnswer) {
+                // Check if we're not in quiz mode and clicked on an answer option                
+                // use fancy code to see if an opption has been clicked in the question section
+                if (!showAnswer) { //show answer not clicked yet
                   const target = e.target as HTMLElement;
                   const isOption = target.closest('.option') || // Check for direct option click
                                  target.closest('li'); // Check for list item click (options are often in li elements)
                   if (isOption) {
-                     userSelectedOption = isOption.textContent || ''; // Store the selected option since no clue
-                     //when state will be updated (in context)
+                    userSelectedOption = isOption.textContent || ''; // Store the selected option since no clue                     
                     handleSubmitQuizAnswer();
-                    //handleShowAnswer();
+                    
                   }
                 }
-              }}
+              }} //all the css for this box, maybe put into a css?
               sx={{ 
                 color: '#fff', // Set default text color to white for this container
                 my: 3,
@@ -651,7 +597,10 @@ export const SkillsRefresherDetail = () => {
                     color: 'primary.light',
                   },
                 },
-              }}            >
+              }}> 
+              {/* box */}
+     
+              {/* //now if yotubemode, show youtube html otherwise show the html       */}
               {showYoutubeResources ? (
                 <Box>
                   <Typography variant="h5" component="h2" sx={{ color: 'primary.main', mb: 3 }}>
@@ -688,11 +637,14 @@ export const SkillsRefresherDetail = () => {
                     />
                   )}
                 </Box>
-              ) : (
+              ) : 
+              // otherwise show the question/course/slidedeck html
+              (
                 renderContentWithSyntaxHighlighting(htmlToRender)
               )}
             </Box>
 
+            {/* now show the options (turned off for now) */}
             {(false) && !isSlideDeck && !showYoutubeResources && (isQuizActive || startCourse === 1) && !showAnswer && !isLoading && (
               <FormControl component="fieldset" sx={{ my: 2, p:2, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1 }}>
                 <FormLabel component="legend" sx={{ color: 'primary.light', mb: 1 }}>Choose an answer:</FormLabel>
@@ -734,7 +686,8 @@ export const SkillsRefresherDetail = () => {
                   ))}
                 </RadioGroup>
               </FormControl>            )}     
-                     {/* Button Container: Adjusted for new layout */}
+            
+            {/* Button Container */}
             {!showYoutubeResources && !isLoading && !isLoadingYoutube && (
             <Box sx={{ mt: 3 }}>
               {/* First row of buttons */}
@@ -789,7 +742,8 @@ export const SkillsRefresherDetail = () => {
                   )}
                 </Box>
 
-                {/* bottom buttons */}                <Stack direction="row" spacing={'7px'} justifyContent="flex-end" flexWrap="wrap">
+                {/* bottom buttons */} 
+                <Stack direction="row" spacing={'7px'} justifyContent="flex-end" flexWrap="wrap">
                   {(!showAnswer || (showAnswer && startCourse !== 1)) && (
                     <Button
                       variant="contained"
@@ -966,7 +920,7 @@ export const SkillsRefresherDetail = () => {
             </Box>
             )}            
             
-          
+            {/* Button Container just for youtube resources page (eg: go back)*/}
             {showYoutubeResources && !isLoading && !isLoadingYoutube && (
               <Box sx={{ display: 'flex', gap: '7px', mt: 2 }}>
                 <Button                  variant="contained"
@@ -984,6 +938,7 @@ export const SkillsRefresherDetail = () => {
           </>
       </Paper>
       
+      {/* show course footer */}
       {startCourse === 1 && (
         <>
           <Typography 
@@ -1037,7 +992,8 @@ export const SkillsRefresherDetail = () => {
         </>
       )}
       
-      {/* Chat Component */}      <Chat 
+      {/* Chat Component */} 
+      <Chat 
         isOpen={isChatOpen} 
         onClose={() => setIsChatOpen(false)} 
       />
