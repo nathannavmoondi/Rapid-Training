@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './styles/toastify-dark.css';
 import { Box, CssBaseline, Container } from '@mui/material';
 import { theme } from './styles/theme';
 import { Navbar } from './components/Navbar';
@@ -33,6 +36,19 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
+     <ToastContainer
+        position="top-right"
+        autoClose={4000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        toastClassName="custom-toast-dark"
+      />
       <CssBaseline />
       <QuizProvider>
         <ChatProvider>

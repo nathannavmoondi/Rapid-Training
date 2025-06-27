@@ -10,6 +10,8 @@ import { Chat } from '../components/Chat';
 import { useChat } from '../contexts/chatContext';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import '../styles/answer-section.css';
 import { useQuiz } from '../contexts/quizContext'; // Import useQuiz
@@ -98,11 +100,6 @@ export const SkillsRefresherDetail = () => {
   } = useQuiz(); //from quizcontext
 
   const {setChatboxSkill } = useChat();
-
-  let userSelectedOption: string = ''; // Track user-selected option for quiz questions 
-  const quizOptions = ['A', 'B', 'C', 'D'];
-  const difficultyLevels = ['basic', 'intermediate', 'advanced'];
-
   //states
 
   const [isLoading, setIsLoading] = useState(false);
@@ -116,40 +113,44 @@ export const SkillsRefresherDetail = () => {
   const [youtubeContent, setYoutubeContent] = useState(''); // Added state for YouTube resources content
   const [isLoadingYoutube, setIsLoadingYoutube] = useState(false); // Added loading state for YouTube  
 
-  const skillTitle = searchParams.get('skill');  
-  const skillCategory = searchParams.get('category');
+  const skillTitle = searchParams.get('skill');    
   const contentRef = useRef<HTMLDivElement>(null);
-  const quizContentRef = useRef<HTMLDivElement>(null);// Add ref for quiz content section
+  
+  let userSelectedOption: string = ''; // Track user-selected option for quiz questions 
+  const quizOptions = ['A', 'B', 'C', 'D'];
+  const difficultyLevels = ['basic', 'intermediate', 'advanced'];
 
-  // skilltitle changes, not needed
+  //run upon startup
   useEffect(() => {    
     if (!skillTitle) {
       console.log('No skill title in URL');
       return;
     }
-    
     try {
       //todo: just use url params.get('skill') and not localStorage
       const customSkillsJson = localStorage.getItem('customSkills');
       const customSkillsData = customSkillsJson ? JSON.parse(customSkillsJson) : []; // Renamed to avoid conflict
       const allSkills = [...skills, ...customSkillsData]; // Use renamed variable
-      
       const decodedTitle = decodeURIComponent(skillTitle);
       const normalizedTitle = decodedTitle.trim();
       const foundSkill = allSkills.find(s => 
         s.title.trim().toLowerCase() === normalizedTitle.toLowerCase()
       );
-      
+
+      //important so we can get all the topic details like this is technology, general, etc.
       if (foundSkill) {
         setCurrentSkill(foundSkill);
         setChatboxSkill(foundSkill.title); // Update chat context with current skill
       } else {
+        setCurrentSkill({ id: 'not-found', title: skillTitle, category: 'non-technology', description: skillTitle, topics: [] }); // Reset skill if not found
+        //add toastr alert that skill was not found so creating generic course
+        toast.info(`Topic not found: ${normalizedTitle}. Creating generic course.`);
         console.log('Skill not found:', normalizedTitle);
       }
     } catch (error) {
       console.error('Error finding skill:', error);
     }
-  }, [skillTitle]);
+  }, []);
 
   const handleSlideDeck = async () => {
     if (isQuizActive) {
@@ -472,7 +473,7 @@ export const SkillsRefresherDetail = () => {
   //main component
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-
+      
       {!currentSkill ? (
         <Typography variant="h6" color="text.secondary" align="center">
           Loading topic details...
@@ -485,7 +486,7 @@ export const SkillsRefresherDetail = () => {
               {currentSkill.title} Rapid Skill AI
             </Typography>
             <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-              Topic areas: {currentSkill.topics.join(', ')}
+              {currentSkill.topics.length < 1 ? null : `Topic areas: ${currentSkill.topics.join(', ')}`}
             </Typography>
           </Box>
 
