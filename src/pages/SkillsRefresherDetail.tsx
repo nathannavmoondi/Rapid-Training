@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'; // Added useLocation
 import { Container, Typography, Paper, Box, Button, Stack, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Select, MenuItem, InputLabel, IconButton, Tooltip } from '@mui/material'; // Added Select, MenuItem, InputLabel
-import { CheckCircleOutline, HighlightOff, Chat as ChatIcon, YouTube } from '@mui/icons-material'; // Added icons for feedback
+import { CheckCircleOutline, HighlightOff, Chat as ChatIcon, YouTube, PictureAsPdf as PictureAsPdfIcon } from '@mui/icons-material'; // Added icons for feedback
+import { toast } from 'react-toastify';
 import { skills } from '../data/skills';
 import type { Skill } from '../data/skills';
 import { requestRefresher } from '../services/aiService';
@@ -10,31 +11,27 @@ import { Chat } from '../components/Chat';
 import { useChat } from '../contexts/chatContext';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { ToastContainer, toast } from 'react-toastify';
+
+
+import { downloadHtmlAsPdf } from '../services/pdfService';
 import 'react-toastify/dist/ReactToastify.css';
 
 import '../styles/answer-section.css';
 import { useQuiz } from '../contexts/quizContext'; // Import useQuiz
 
-// Helper function to process HTML for answer visibility and quiz status.  Add or remove sections.
-const processQuestionHtml = (html: string, answerVisible: boolean, showFeedback: boolean = false, isCorrect: boolean | null = null, maxQuizzes?: number, quizzesTaken?: number)
-: string => {
-  if (!html) return '';
 
+// Helper function to process HTML for answer visibility and quiz status.  Add or remove sections.
+const processQuestionHtml = (html: string, answerVisible: boolean, showFeedback: boolean = false, isCorrect: boolean | null = null,
+   maxQuizzes: number, quizzesTaken: number, pdfExport: boolean): string => {
+  if (!html) return '';
   if (isCorrect == null) isCorrect = false;
-  
   // Handle both answer box and explanation visibility
   const answerBoxRegex = /<div\s+[^>]*class="[^"]*\banswer-box\b[^"]*">[\s\S]*?<\/div>/gi;
   const explanationRegex = /<div\s+[^>]*class="[^"]*\bexplanation\b[^"]*">[\s\S]*?<\/div>/gi;
-  
-  // If answer shouldn't be visible, remove both sections entirely
   if (!answerVisible) {
-    // First remove explanation divs
     html = html.replace(explanationRegex, '');
-    // Then remove answer box divs
     html = html.replace(answerBoxRegex, '');
   } else {
-    // When showing answer, ensure both sections are properly visible
     html = html.replace(explanationRegex, (match) => {
       return match.replace(/<div style="display:none">/g, '<div>');
     });
@@ -42,21 +39,16 @@ const processQuestionHtml = (html: string, answerVisible: boolean, showFeedback:
       return match.replace(/<div style="display:none">/g, '<div>');
     });
   }
-
-  // Handle quiz status content
-  if (showFeedback && isCorrect !== null) {
+  if (showFeedback && isCorrect !== null && !pdfExport) { //later part says pdf export cheap fix
     const feedbackContent = `      <div style="margin: 16px 0; padding: 16px; border: 2px solid ${isCorrect ? '#00FF00' : '#FF0000'}; border-radius: 4px; background-color: transparent; display: flex; align-items: center; justify-content: center">
         <span style="margin-right: 8px; color: ${isCorrect ? '#00FF00' : '#FF0000 !important'}; font-size: 24px;">
           ${isCorrect ? '✓' : '✕'}
         </span>
         <span style="font-size: 20px; color: ${isCorrect ? '#00FF00' : '#FF0000 !important'}">
           ${isCorrect ? 'Correct!' : 'Incorrect!'}
-
         </span>
       </div>
     `;
-    
-    // Replace empty quiz-status div with our feedback
     html = html.replace(/<div class="quiz-status"><\/div>/, `<div class="quiz-status">${feedbackContent}</div>`);
   } else if (!showFeedback && !answerVisible) {
     // Show remaining questions when not showing feedback
@@ -64,9 +56,9 @@ const processQuestionHtml = (html: string, answerVisible: boolean, showFeedback:
       <div style="margin: 16px 0; padding: 8px; border: 1px solid grey; border-radius: 4px; text-align: center">
         <span style="color: white; font-size: 14px;">Questions remaining in this quiz: #NUM#</span>
       </div>
-    `.replace('#NUM#', String((maxQuizzes ?? 5) - (quizzesTaken ?? 0))); // Show remaining questions
+    `.replace('#NUM#', String((maxQuizzes ?? 5) - (quizzesTaken ?? 0)));
+    // (not used in rendering)
   }
-
   return html;
 };
 
@@ -119,6 +111,7 @@ export const SkillsRefresherDetail = () => {
   let userSelectedOption: string = ''; // Track user-selected option for quiz questions 
   const quizOptions = ['A', 'B', 'C', 'D'];
   const difficultyLevels = ['basic', 'intermediate', 'advanced'];
+  let  questionRawHtml = "";
 
   //run upon startup
   useEffect(() => {    
@@ -277,8 +270,19 @@ export const SkillsRefresherDetail = () => {
     showAnswer && !isSlideDeck, // Only show feedback when answer is shown, not in slidedeck, AND in quiz mode or course mode
     lastAnswerCorrect,  // Pass the correct/incorrect state
     maxQuizzes,
-    quizzesTaken
+    quizzesTaken,
+    false
   );
+
+  questionRawHtml = processQuestionHtml(
+    processRawHtml(question), 
+    true,
+    true, // Only show feedback when answer is shown, not in slidedeck, AND in quiz mode or course mode
+    lastAnswerCorrect,  // Pass the correct/incorrect state
+    maxQuizzes, // cheap shortcut to tell function this is a pdf export so don't show answer given
+    quizzesTaken,
+    true
+  );; // Store processed HTML for PDF export
 
   // Simple function to render content with syntax highlighting
   const renderContentWithSyntaxHighlighting = (html: string) => {
@@ -469,6 +473,20 @@ export const SkillsRefresherDetail = () => {
 
   };
 
+  // Handler for PDF download
+  const handleDownloadPdf = async () => {
+    if (contentRef.current) {
+      // Clone the content node to avoid modifying the live DOM
+      const clone = contentRef.current.cloneNode(true) as HTMLElement;
+      try {
+        await downloadHtmlAsPdf(clone, `${currentSkill?.title || 'Skill'}-RapidSkillAI.pdf`, currentSkill?.title || 'Skill');
+      } catch (err) {
+        toast.error('PDF export failed.');
+      }
+    } else {
+      toast.error('Content not available for PDF export.');
+    }
+  };
 
   //main component
   return (
@@ -511,24 +529,43 @@ export const SkillsRefresherDetail = () => {
               <Typography variant="h6" sx={{ color: 'primary.light' }}>
                 {getTitle()}                
               </Typography>
-              
-              {/* Chat button - only show for Practice Question */}
-              {!isSlideDeck && startCourse !== 1 && (
-                <Tooltip title={`Ask questions about ${currentSkill?.title || 'this topic'}`}>
-                  <IconButton
-                    onClick={() => setIsChatOpen(!isChatOpen)}
-                    sx={{
-                      color: 'primary.light',
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.2)'
-                      }
-                    }}
-                  >
-                    <ChatIcon />
-                  </IconButton>
-                </Tooltip>
-              )}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {/* PDF icon button - always visible except in slide deck or course mode */}
+                {!isSlideDeck && startCourse !== 1 && (
+                  <Tooltip title="Download as PDF">
+                    <IconButton
+                      onClick={handleDownloadPdf}
+                      sx={{
+                        color: 'primary.light',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.2)'
+                        },
+                        mr: 1
+                      }}
+                    >
+                      <PictureAsPdfIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                {/* Chat button - only show for Practice Question */}
+                {!isSlideDeck && startCourse !== 1 && (
+                  <Tooltip title={`Ask questions about ${currentSkill?.title || 'this topic'}`}>
+                    <IconButton
+                      onClick={() => setIsChatOpen(!isChatOpen)}
+                      sx={{
+                        color: 'primary.light',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.2)'
+                        }
+                      }}
+                    >
+                      <ChatIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </Box>
             </Box>
             
             <Box
@@ -919,7 +956,7 @@ export const SkillsRefresherDetail = () => {
                 )}
               </Box>
             </Box>
-            )}            
+            )}
             
             {/* Button Container just for youtube resources page (eg: go back)*/}
             {showYoutubeResources && !isLoading && !isLoadingYoutube && (
