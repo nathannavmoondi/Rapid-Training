@@ -1,5 +1,7 @@
 import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react';
 
+export const languages: string[] = ["english", "french", "spanish"];
+
 interface QuizContextType {
   score: number;
   quizzesTaken: number;
@@ -26,6 +28,8 @@ interface QuizContextType {
   setShowYoutubeResources: (show: boolean) => void;
   setPreviousQuizzes: React.Dispatch<React.SetStateAction<string[]>>;
   setFailedQuizzes: React.Dispatch<React.SetStateAction<string[]>>;
+  language: string;
+  setLanguage: (lang: string) => void;
 }
 
 const QuizContext = createContext<QuizContextType | undefined>(undefined);
@@ -45,6 +49,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [showYoutubeResources, setShowYoutubeResources] = useState<boolean>(false);
   const [previousQuizzes, setPreviousQuizzes] = useState<string[]>([]);
   const [failedQuizzes, setFailedQuizzes] = useState<string[]>([]);
+  const [language, setLanguage] = useState<string>("english");
 
 
   // // Add effect to log quiz state changes
@@ -132,6 +137,8 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setPreviousQuizzes,
     failedQuizzes,
     setFailedQuizzes,
+    language,
+    setLanguage,
   };
 
   return <QuizContext.Provider value={contextValue}>{children}</QuizContext.Provider>;

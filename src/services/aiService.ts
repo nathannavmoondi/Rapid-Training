@@ -4,6 +4,7 @@ export const requestRefresher = async (
   level: string,
   skillDescription: string,
   skillCategory: string,
+  language: string,
   startCourse?: number,
   previousQuizzes?: string[]
 ): Promise<string> => {
@@ -27,7 +28,10 @@ export const requestRefresher = async (
       }           
       // Include a practical code example with syntax highlighting in the answer section.
 
-        var prompt = `I'm creating a ${skillDescription} quiz for a job applicant.  
+      var languageprompt = `Translate all text into this  language: ${language}.  `;
+      var prompt = languageprompt;
+        
+      prompt += `I'm creating a ${skillDescription} quiz for a job applicant.  
       Give me a completely new random ${level} difficulty ${skillDescription} question on a random topic.
 
       Make sure to format the question with good spacing and readability:
@@ -101,11 +105,12 @@ Supported language classes for <code class="language-xxx"> are: language-typescr
 10. Put each explanation point in the answer section on a new line using <p> tags.
 11. Make code examples practical and focused.`;     
 
+
 prompt += `  Also!, quiz can't be similar to these previous ${previousQuizzes?.length} quizzes: ${previousQuizzes ? previousQuizzes.join(', Next Quiz:  ') : 'none'}.`;
 
 //todo: just add to prompt to NOT use code elements
 if (skillCategory === 'non-technology'){
-  prompt = `I'm creating a ${skillDescription} quiz for a job applicant.  
+  prompt = languageprompt + `I'm creating a ${skillDescription} quiz for a job applicant.  
       Give me a completely new random ${level} difficulty ${skillDescription} question on a random topic.
   Content will be displayed on a dark background and that it should only use light colors for text.
 Do not include the word html and GRAVE ACCENT in the answer.
@@ -146,7 +151,7 @@ prompt += `  Also, quiz can't be similar to these previous ${previousQuizzes?.le
 
 if (startCourse === 1) {
         // Course mode prompt        
-        prompt = `Create nicely formatted section ${currentSection} of a comprehensive tutorial course for ${skillDescription}.
+        prompt =   languageprompt + `Create nicely formatted section ${currentSection} of a comprehensive tutorial course for ${skillDescription}.
         ${previousContent ? `Previous section covered: [begin section] ${previousContent} [end section]` : 'This is the first section.'}        
         Show one section only. Next section will be given in next prompt.  
         Content will be displayed on a dark background and that it should only use light colors for text.
@@ -247,7 +252,7 @@ if (startCourse === 1) {
       } else       
       if (level === 'slidedeck') {
         // Slide deck mode prompt
-        prompt = `Create a detailed thorough educational slide deck about ${skillDescription} basics and intermediate.  At the end include a section on steps needed to get proficient in this skill.
+        prompt = languageprompt +  `Create a detailed thorough educational slide deck about ${skillDescription} basics and intermediate.  At the end include a section on steps needed to get proficient in this skill.
         For text that is bold, format them with lightcyan color.  Dont use ** to wrap aroudn important text, instead make it bold with color.
          Format section content nicely:
         - Use proper HTML tags for emphasis (<strong> for bold, <em> for italics)

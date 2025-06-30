@@ -17,7 +17,7 @@ import { downloadHtmlAsPdf } from '../services/pdfService';
 import 'react-toastify/dist/ReactToastify.css';
 
 import '../styles/answer-section.css';
-import { useQuiz } from '../contexts/quizContext'; // Import useQuiz
+import { useQuiz, languages } from '../contexts/quizContext'; // Import useQuiz and languages
 
 
 // Helper function to process HTML for answer visibility and quiz status.  Add or remove sections.
@@ -88,7 +88,9 @@ export const SkillsRefresherDetail = () => {
     setShowYoutubeResources,
     startCourse,
     previousQuizzes, //most of these shoudl be local state
-    setPreviousQuizzes
+    setPreviousQuizzes,
+    language,
+    setLanguage
   } = useQuiz(); //from quizcontext
 
   const {setChatboxSkill } = useChat();
@@ -157,7 +159,7 @@ export const SkillsRefresherDetail = () => {
     setShowYoutubeResources(false);
     setQuestion(''); // Clear previous question while loading new one
     try {
-      const response = await requestRefresher('slidedeck', currentSkill.title, currentSkill.category, startCourse);
+      const response = await requestRefresher('slidedeck', currentSkill.title, currentSkill.category, language, startCourse);
       setQuestion(response || 'Failed to load slidedeck. Please try again.');
     } catch (error) {
       console.error('Error fetching slidedeck:', error);
@@ -213,7 +215,7 @@ export const SkillsRefresherDetail = () => {
 
     //load new question
     try {                  
-      const response = await requestRefresher(level, currentSkill.title, currentSkill.category, startCourse, previousQuizzes); // Use level from context
+      const response = await requestRefresher(level, currentSkill.title, currentSkill.category, language, startCourse, previousQuizzes); // Use level from context
       
       //save to previous quizzes
       if (!isSlideDeck && !showYoutubeResources && startCourse !== 1) {
@@ -433,7 +435,7 @@ export const SkillsRefresherDetail = () => {
       
       // Set startCourse to 1 and use the new value directly in requestRefresher
       setStartCourse(1);
-      const response = await requestRefresher('', currentSkill.title, currentSkill.category, 1);
+      const response = await requestRefresher('', currentSkill.title, currentSkill.category, language, 1);
       setQuestion(response || 'Failed to load course content. Please try again.');
     } catch (error) {
       console.error('Error fetching course content:', error);
@@ -958,6 +960,80 @@ export const SkillsRefresherDetail = () => {
             </Box>
             )}
             
+            {/* Third row: language dropdown left, icons right */}
+            {!isSlideDeck && startCourse !== 1 && !showYoutubeResources && !isLoading && !isLoadingYoutube && (
+              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '7px' }}>
+                {/* Language dropdown flush left */}
+                <FormControl size="small" sx={{ minWidth: 160 }}>
+                  <InputLabel id="language-select-label" sx={{ color: 'white', backgroundColor: '#795548', px: 1, borderRadius: '4px' }}>Language</InputLabel>
+                  <Select
+                    labelId="language-select-label"
+                    id="language-select"
+                    value={language}
+                    label="Language"
+                    onChange={e => setLanguage(e.target.value as string)}
+                    sx={{
+                      backgroundColor: '#795548', // brown
+                      color: 'white',
+                      fontWeight: 700,
+                      fontSize: '1rem',
+                      borderRadius: '6px',
+                      '& .MuiSelect-select': { display: 'flex', alignItems: 'center', color: 'white' },
+                      '& .MuiSelect-icon': { color: 'white' }
+                    }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          backgroundColor: '#795548',
+                          color: 'white',
+                          fontWeight: 700,
+                          fontSize: '1rem',
+                        }
+                      }
+                    }}
+                  >
+                    {languages.map(lang => (
+                      <MenuItem key={lang} value={lang} sx={{ color: 'white', backgroundColor: '#795548', '&:hover': { backgroundColor: '#5d4037' } }}>{lang.charAt(0).toUpperCase() + lang.slice(1)}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                {/* PDF and Chat icons at the bottom (restored) */}
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
+                  <Tooltip title="Download as PDF">
+                    <span>
+                      <IconButton
+                        onClick={handleDownloadPdf}
+                        sx={{
+                          color: 'primary.light',
+                          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                          '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)'
+                          },
+                          mr: 1
+                        }}
+                      >
+                        <PictureAsPdfIcon />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title={`Ask questions about ${currentSkill?.title || 'this topic'}`}> 
+                    <IconButton
+                      onClick={() => setIsChatOpen(!isChatOpen)}
+                      sx={{
+                        color: 'primary.light',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.2)'
+                        }
+                      }}
+                    >
+                      <ChatIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Box>
+            )}
+
             {/* Button Container just for youtube resources page (eg: go back)*/}
             {showYoutubeResources && !isLoading && !isLoadingYoutube && (
               <Box sx={{ display: 'flex', gap: '7px', mt: 2 }}>
@@ -973,6 +1049,8 @@ export const SkillsRefresherDetail = () => {
                 </Button>
               </Box>
             )}
+
+            
           </>
       </Paper>
       
