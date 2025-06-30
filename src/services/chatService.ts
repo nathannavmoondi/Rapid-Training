@@ -6,7 +6,24 @@ export interface ChatMessage {
 }
 
 class ChatService {
-  async respondChat(message: string, skill: string, conversationHistory: ChatMessage[] = []): Promise<ChatMessage> {
+
+   getFirstPromptInRightLanguage(skill: string, targetLanguage: string): string {
+    // Simple mock translation logic (replace with actual API call)
+    //in this block if language is english, return "Hi. I'm Mr. Buddy. Do you have any questions about " + (chatboxSkill || 'this topic') + "?"
+    //now if spanish return the spanish translation
+    if (targetLanguage.toLowerCase() === 'french') {
+      return `Bonjour. Je suis Mr. Buddy. Avez-vous des questions sur ${skill}?`;
+    }
+
+    if (targetLanguage.toLowerCase() === 'spanish') {
+      return `Hola. Soy Mr. Buddy. ¿Tienes alguna pregunta sobre ${skill}?`;
+    }
+    
+    return `Hi. I'm Mr. Buddy. Do you have any questions about ${skill}?`;    
+    
+  }
+
+  async respondChat(message: string, skill: string, conversationHistory: ChatMessage[] = [], language: string = 'english'): Promise<ChatMessage> {
     try {
       const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
       
@@ -60,6 +77,7 @@ When providing code examples or explanations:
 5. Never use markdown code blocks, always use the HTML structure above.
 6. Choose the most appropriate language class for the code being shown.
 7. If ${skill} is not a programming language, do not use CODE ELEMENTS OR BLOCKS AT ALL!!
+8. Return response in the language of $
 `
             },
             ...conversationMessages // Include conversation history
@@ -72,7 +90,8 @@ When providing code examples or explanations:
       }
 
       const data = await response.json();
-      const aiResponse = data.choices?.[0]?.message?.content || 'No response received';
+      let aiResponse = data.choices?.[0]?.message?.content || 'No response received';     
+     
 
       return {
         id: Math.random().toString(36).substring(7),

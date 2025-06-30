@@ -11,6 +11,9 @@ import { chatService, ChatMessage } from '../services/chatService';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useSpeechToText } from '../hooks/useSpeechToText';
+import { useQuiz, languages } from '../contexts/quizContext'; // Import useQuiz and languages
+
+
 
 const BuddyIcon = (props: any) => (
   <SvgIcon {...props} viewBox="0 0 24 24">
@@ -227,11 +230,13 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
 export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ isOpen, onClose }) => 
  {
   const { chatboxSkill } = useChat();
+  const {   language  } = useQuiz();
   
+  var firstMessage = chatService.getFirstPromptInRightLanguage(chatboxSkill, language);
   // Function to get initial message
   const getInitialMessage = () => ({
     id: '1',
-    text: "Hi. I'm Mr. Buddy. Do you have any questions about " + (chatboxSkill || 'this topic') + "?",
+    text: firstMessage,
     isUser: false,
     timestamp: new Date()
   });

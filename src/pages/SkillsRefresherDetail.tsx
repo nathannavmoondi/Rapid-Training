@@ -23,8 +23,10 @@ import { useQuiz, languages } from '../contexts/quizContext'; // Import useQuiz 
 // Helper function to process HTML for answer visibility and quiz status.  Add or remove sections.
 const processQuestionHtml = (html: string, answerVisible: boolean, showFeedback: boolean = false, isCorrect: boolean | null = null,
    maxQuizzes: number, quizzesTaken: number, pdfExport: boolean): string => {
+    console.log('is correct', isCorrect, 'maxQuizzes', maxQuizzes, 'quizzesTaken', quizzesTaken); 
+
   if (!html) return '';
-  if (isCorrect == null) isCorrect = false;
+  
   // Handle both answer box and explanation visibility
   const answerBoxRegex = /<div\s+[^>]*class="[^"]*\banswer-box\b[^"]*">[\s\S]*?<\/div>/gi;
   const explanationRegex = /<div\s+[^>]*class="[^"]*\bexplanation\b[^"]*">[\s\S]*?<\/div>/gi;
@@ -40,12 +42,14 @@ const processQuestionHtml = (html: string, answerVisible: boolean, showFeedback:
     });
   }
   if (showFeedback && isCorrect !== null && !pdfExport) { //later part says pdf export cheap fix
+    console.log('in answer part', isCorrect);
+      
     const feedbackContent = `      <div style="margin: 16px 0; padding: 16px; border: 2px solid ${isCorrect ? '#00FF00' : '#FF0000'}; border-radius: 4px; background-color: transparent; display: flex; align-items: center; justify-content: center">
         <span style="margin-right: 8px; color: ${isCorrect ? '#00FF00' : '#FF0000 !important'}; font-size: 24px;">
           ${isCorrect ? '✓' : '✕'}
         </span>
         <span style="font-size: 20px; color: ${isCorrect ? '#00FF00' : '#FF0000 !important'}">
-          ${isCorrect ? 'Correct!' : 'Incorrect!'}
+          ${isCorrect ? 'Correct!' : 'Incorrect!!!'}
         </span>
       </div>
     `;
@@ -114,6 +118,7 @@ export const SkillsRefresherDetail = () => {
   const quizOptions = ['A', 'B', 'C', 'D'];
   const difficultyLevels = ['basic', 'intermediate', 'advanced'];
   let  questionRawHtml = "";
+  let userLanguage = language;
 
   //run upon startup
   useEffect(() => {    
@@ -159,7 +164,7 @@ export const SkillsRefresherDetail = () => {
     setShowYoutubeResources(false);
     setQuestion(''); // Clear previous question while loading new one
     try {
-      const response = await requestRefresher('slidedeck', currentSkill.title, currentSkill.category, language, startCourse);
+      const response = await requestRefresher('slidedeck', currentSkill.title, currentSkill.category, userLanguage, startCourse);
       setQuestion(response || 'Failed to load slidedeck. Please try again.');
     } catch (error) {
       console.error('Error fetching slidedeck:', error);
@@ -215,7 +220,7 @@ export const SkillsRefresherDetail = () => {
 
     //load new question
     try {                  
-      const response = await requestRefresher(level, currentSkill.title, currentSkill.category, language, startCourse, previousQuizzes); // Use level from context
+      const response = await requestRefresher(level, currentSkill.title, currentSkill.category, userLanguage, startCourse, previousQuizzes); // Use level from context
       
       //save to previous quizzes
       if (!isSlideDeck && !showYoutubeResources && startCourse !== 1) {
@@ -232,7 +237,7 @@ export const SkillsRefresherDetail = () => {
       setQuestion('Failed to load question. Please try again.');
     }
     setIsLoading(false);
-  },[currentSkill, startQuiz, setPreviousPath, location.pathname, location.search, quizzesTaken, resetQuiz, isQuizActive, previousPath, level, previousQuizzes]);
+  },[currentSkill, startQuiz, setPreviousPath, location.pathname, location.search, quizzesTaken, resetQuiz, isQuizActive, previousPath, level, previousQuizzes, userLanguage]);
   
   // So when some button is clicked, it triggers a new question request 
   useEffect(() => {
@@ -266,11 +271,13 @@ export const SkillsRefresherDetail = () => {
       .replace(/\\t/g, '\t');
   }; 
   
+ console.log('is quiz active', isQuizActive, 'quizzes taken', quizzesTaken, 'max quizzes', maxQuizzes, 'last answer correct', lastAnswerCorrect);
+
   const htmlToRender = processQuestionHtml(
     processRawHtml(question), 
     showAnswer,
     showAnswer && !isSlideDeck, // Only show feedback when answer is shown, not in slidedeck, AND in quiz mode or course mode
-    lastAnswerCorrect,  // Pass the correct/incorrect state
+     isQuizActive ? lastAnswerCorrect : null,  // Pass the correct/incorrect state
     maxQuizzes,
     quizzesTaken,
     false
@@ -280,11 +287,11 @@ export const SkillsRefresherDetail = () => {
     processRawHtml(question), 
     true,
     true, // Only show feedback when answer is shown, not in slidedeck, AND in quiz mode or course mode
-    lastAnswerCorrect,  // Pass the correct/incorrect state
+    null,  // Pass the correct/incorrect state
     maxQuizzes, // cheap shortcut to tell function this is a pdf export so don't show answer given
     quizzesTaken,
     true
-  );; // Store processed HTML for PDF export
+  ); // Store processed HTML for PDF export
 
   // Simple function to render content with syntax highlighting
   const renderContentWithSyntaxHighlighting = (html: string) => {
@@ -435,7 +442,7 @@ export const SkillsRefresherDetail = () => {
       
       // Set startCourse to 1 and use the new value directly in requestRefresher
       setStartCourse(1);
-      const response = await requestRefresher('', currentSkill.title, currentSkill.category, language, 1);
+      const response = await requestRefresher('', currentSkill.title, currentSkill.category, userLanguage, 1);
       setQuestion(response || 'Failed to load course content. Please try again.');
     } catch (error) {
       console.error('Error fetching course content:', error);
@@ -960,20 +967,20 @@ export const SkillsRefresherDetail = () => {
             </Box>
             )}
             
-            {/* Third row: language dropdown left, icons right */}
+            {/* Third row: language dropdown with icons on right */}
             {!isSlideDeck && startCourse !== 1 && !showYoutubeResources && !isLoading && !isLoadingYoutube && (
-              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '7px' }}>
-                {/* Language dropdown flush left */}
+              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '7px' }}>
+                {/* Language dropdown */}
                 <FormControl size="small" sx={{ minWidth: 160 }}>
-                  <InputLabel id="language-select-label" sx={{ color: 'white', backgroundColor: '#795548', px: 1, borderRadius: '4px' }}>Language</InputLabel>
+                  
                   <Select
                     labelId="language-select-label"
                     id="language-select"
                     value={language}
                     label="Language"
-                    onChange={e => setLanguage(e.target.value as string)}
+                    onChange={e => { userLanguage = e.target.value; setLanguage(e.target.value as string)}}
                     sx={{
-                      backgroundColor: '#795548', // brown
+                      backgroundColor: '#795548',
                       color: 'white',
                       fontWeight: 700,
                       fontSize: '1rem',
@@ -997,24 +1004,22 @@ export const SkillsRefresherDetail = () => {
                     ))}
                   </Select>
                 </FormControl>
-                {/* PDF and Chat icons at the bottom (restored) */}
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
+                
+                {/* PDF and Chat icons */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
                   <Tooltip title="Download as PDF">
-                    <span>
-                      <IconButton
-                        onClick={handleDownloadPdf}
-                        sx={{
-                          color: 'primary.light',
-                          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.2)'
-                          },
-                          mr: 1
-                        }}
-                      >
-                        <PictureAsPdfIcon />
-                      </IconButton>
-                    </span>
+                    <IconButton
+                      onClick={handleDownloadPdf}
+                      sx={{
+                        color: 'primary.light',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.2)'
+                        }
+                      }}
+                    >
+                      <PictureAsPdfIcon />
+                    </IconButton>
                   </Tooltip>
                   <Tooltip title={`Ask questions about ${currentSkill?.title || 'this topic'}`}> 
                     <IconButton
@@ -1031,6 +1036,7 @@ export const SkillsRefresherDetail = () => {
                     </IconButton>
                   </Tooltip>
                 </Box>
+              
               </Box>
             )}
 

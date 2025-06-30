@@ -28,7 +28,7 @@ export const requestRefresher = async (
       }           
       // Include a practical code example with syntax highlighting in the answer section.
 
-      var languageprompt = `Translate all text into this  language: ${language}.  `;
+      var languageprompt = `Return all text in this  language: ${language}.  `;
       var prompt = languageprompt;
         
       prompt += `I'm creating a ${skillDescription} quiz for a job applicant.  
@@ -103,7 +103,8 @@ Supported language classes for <code class="language-xxx"> are: language-typescr
 8. The example structure for a code snippet within the question text is: \`<pre><code class="language-javascript">const snippet = "example";</code></pre>\`. Adhere to this, using an appropriate language class from the list in point 7.
 9. Indent code properly inside the <code> block.
 10. Put each explanation point in the answer section on a new line using <p> tags.
-11. Make code examples practical and focused.`;     
+11. Make code examples practical and focused.
+12. Start off content with the question, don't return a summary of what you will do or a list of instructions. Just return the question and options, then the answer and explanation.`;     
 
 
 prompt += `  Also!, quiz can't be similar to these previous ${previousQuizzes?.length} quizzes: ${previousQuizzes ? previousQuizzes.join(', Next Quiz:  ') : 'none'}.`;
