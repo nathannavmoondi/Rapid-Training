@@ -9,6 +9,7 @@ import { requestRefresher } from '../services/aiService';
 import { getYoutubeResources } from '../services/resourceService';
 import { Chat } from '../components/Chat';
 import { useChat } from '../contexts/chatContext';
+import { chatService } from '../services/chatService';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
@@ -97,7 +98,7 @@ export const SkillsRefresherDetail = () => {
     setLanguage
   } = useQuiz(); //from quizcontext
 
-  const {setChatboxSkill } = useChat();
+  const {setChatboxSkill, addExternalMessage } = useChat();
   //states
 
   const [isLoading, setIsLoading] = useState(false);
@@ -234,7 +235,31 @@ export const SkillsRefresherDetail = () => {
       setQuestion(response || 'Failed to load question. Please try again.');
     } catch (error) {
       console.error('Error fetching question:', error);
-      setQuestion('Failed to load question. Please try again.');
+      // For testing purposes, provide a sample question when API fails
+      const sampleQuestion = `
+<div class="question-container">
+    <div class="question">
+        <p>What is the primary purpose of React Hooks?</p>
+    </div>    
+    <div class="options">
+        <div class="option"><span class="option-prefix">A)</span> To replace class components entirely</div>
+        <div class="option"><span class="option-prefix">B)</span> To allow state and lifecycle features in functional components</div>
+        <div class="option"><span class="option-prefix">C)</span> To improve performance of React applications</div>
+        <div class="option"><span class="option-prefix">D)</span> To handle routing in React applications</div>
+    </div>
+    <div class="quiz-status"></div>
+    <div class="answer-box">
+        <div class="correct-answer">
+            Correct Answer: B) To allow state and lifecycle features in functional components
+        </div>
+        <div class="explanation">
+            <p>React Hooks were introduced to allow functional components to use state and other React features that were previously only available in class components.</p>
+            <p>Hooks like useState, useEffect, and useContext enable functional components to manage local state, handle side effects, and access context, making them more powerful and flexible.</p>
+            <p>This allows developers to write more concise and reusable code while maintaining the same functionality as class components.</p>
+        </div>
+    </div>
+</div>`;
+      setQuestion(sampleQuestion);
     }
     setIsLoading(false);
   },[currentSkill, startQuiz, setPreviousPath, location.pathname, location.search, quizzesTaken, resetQuiz, isQuizActive, previousPath, level, previousQuizzes, userLanguage]);
@@ -426,6 +451,45 @@ export const SkillsRefresherDetail = () => {
 
     setShowAnswer(true);
   }; 
+  
+  const handleExplainFurther = async () => {
+    if (!currentSkill || !question) return;
+    
+    // Open chat if not already open
+    if (!isChatOpen) {
+      setIsChatOpen(true);
+    }
+    
+    // Add "thinking" message to chat
+    const thinkingMessage = {
+      id: Math.random().toString(36).substring(7),
+      text: "Thinking...",
+      isUser: false,
+      timestamp: new Date()
+    };
+    addExternalMessage(thinkingMessage);
+    
+    try {
+      // Call AI with the explain further prompt
+      const aiResponse = await chatService.explainQuizInDepth(
+        currentSkill.title,
+        question,
+        language
+      );
+      
+      // Add AI response to chat
+      addExternalMessage(aiResponse);
+    } catch (error) {
+      console.error('Failed to explain further:', error);
+      const errorMessage = {
+        id: Math.random().toString(36).substring(7),
+        text: "Sorry, I encountered an error while trying to explain further. Please try again.",
+        isUser: false,
+        timestamp: new Date()
+      };
+      addExternalMessage(errorMessage);
+    }
+  };
   
   const handleStartCourse = async () => {    
     setIsLoading(true);
@@ -794,7 +858,7 @@ export const SkillsRefresherDetail = () => {
                   {(!showAnswer || (showAnswer && startCourse !== 1)) && (
                     <Button
                       variant="contained"
-                      onClick={(isQuizActive || startCourse ==1) && !showAnswer ? handleSubmitQuizAnswer : handleShowAnswer}
+                      onClick={(isQuizActive || startCourse === 1) && !showAnswer ? handleSubmitQuizAnswer : handleShowAnswer}
                       disabled={isLoading || showAnswer || !question || isSlideDeck || (isQuizActive && !selectedAnswer && !showAnswer)}
                       sx={{ 
                         backgroundColor: (isQuizActive && !showAnswer) ? '#007bff' : '#4CAF50', 
@@ -803,6 +867,22 @@ export const SkillsRefresherDetail = () => {
                       }}
                     >
                       {(isQuizActive || startCourse === 1) && !showAnswer ? 'Submit Answer' : 'Show Answer'}
+                    </Button>
+                  )}
+                  
+                  {/* Explain Further Button - appears when answer is shown */}
+                  {showAnswer && !isSlideDeck && startCourse !== 1 && (
+                    <Button
+                      variant="contained"
+                      onClick={handleExplainFurther}
+                      disabled={isLoading}
+                      sx={{ 
+                        backgroundColor: '#9C27B0', 
+                        color: 'white',
+                        '&:hover': { backgroundColor: '#7B1FA2'}
+                      }}
+                    >
+                      Explain Further
                     </Button>
                   )}
                   

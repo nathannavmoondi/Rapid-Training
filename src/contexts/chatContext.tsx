@@ -1,8 +1,12 @@
 import React, { createContext, useContext, useState } from 'react';
+import { ChatMessage } from '../services/chatService';
 
 interface ChatContextType {
   chatboxSkill: string;
   setChatboxSkill: (skill: string) => void;
+  externalMessages: ChatMessage[];
+  addExternalMessage: (message: ChatMessage) => void;
+  clearExternalMessages: () => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -11,9 +15,24 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 // this provider will be used to wrap the app and provide the chat context to all components.
 export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [chatboxSkill, setChatboxSkill] = useState(''); // storage location to save the chatbox skill and default value
+  const [externalMessages, setExternalMessages] = useState<ChatMessage[]>([]);
+
+  const addExternalMessage = (message: ChatMessage) => {
+    setExternalMessages(prev => [...prev, message]);
+  };
+
+  const clearExternalMessages = () => {
+    setExternalMessages([]);
+  };
 
   return (
-    <ChatContext.Provider value={{ chatboxSkill, setChatboxSkill }}>
+    <ChatContext.Provider value={{ 
+      chatboxSkill, 
+      setChatboxSkill, 
+      externalMessages, 
+      addExternalMessage, 
+      clearExternalMessages 
+    }}>
       {children}
     </ChatContext.Provider>
   );
