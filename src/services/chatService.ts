@@ -152,7 +152,8 @@ When providing code examples or explanations:
 7. Make code examples practical, focused, and properly formatted.
 8. Never use markdown code blocks, always use the HTML structure above.
 9. Choose the most appropriate language class for the code being shown.
-10. If ${skill} is not a programming language, do not use CODE ELEMENTS OR BLOCKS AT ALL!!`
+10. If ${skill} is not a programming language, do not use CODE ELEMENTS OR BLOCKS AT ALL!!
+11. Do not use backticks.`
             },
             {
               role: "user",
