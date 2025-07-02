@@ -92,8 +92,6 @@ When providing code examples or explanations:
       const data = await response.json();
       let aiResponse = data.choices?.[0]?.message?.content || 'No response received';
 
-      // Remove all backticks from the AI response
-      aiResponse = aiResponse.replace(/`+/g, '');
 
       return {
         id: Math.random().toString(36).substring(7),
@@ -171,6 +169,9 @@ When providing code examples or explanations:
 
       const data = await response.json();
       let aiResponse = data.choices?.[0]?.message?.content || 'No response received';     
+      
+      // Remove all backticks from the AI response
+      aiResponse = aiResponse.replace(/`+/g, '');
 
       return {
         id: Math.random().toString(36).substring(7),

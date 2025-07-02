@@ -23,8 +23,7 @@ import { useQuiz, languages } from '../contexts/quizContext'; // Import useQuiz 
 
 // Helper function to process HTML for answer visibility and quiz status.  Add or remove sections.
 const processQuestionHtml = (html: string, answerVisible: boolean, showFeedback: boolean = false, isCorrect: boolean | null = null,
-   maxQuizzes: number, quizzesTaken: number, pdfExport: boolean): string => {
-    console.log('is correct', isCorrect, 'maxQuizzes', maxQuizzes, 'quizzesTaken', quizzesTaken); 
+   maxQuizzes: number, quizzesTaken: number, pdfExport: boolean): string => {    
 
   if (!html) return '';
   
@@ -294,9 +293,8 @@ export const SkillsRefresherDetail = () => {
       .replace(/\\"/g, '"')
       .replace(/\\'/g, "'")
       .replace(/\\t/g, '\t');
-  }; 
-  
- console.log('is quiz active', isQuizActive, 'quizzes taken', quizzesTaken, 'max quizzes', maxQuizzes, 'last answer correct', lastAnswerCorrect);
+  };  
+ 
 
   const htmlToRender = processQuestionHtml(
     processRawHtml(question), 
