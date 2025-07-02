@@ -229,7 +229,7 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
 
 export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ isOpen, onClose }) => 
  {
-  const { chatboxSkill } = useChat();
+  const { chatboxSkill, externalMessages, clearExternalMessages } = useChat();
   const {   language  } = useQuiz();
   
   var firstMessage = chatService.getFirstPromptInRightLanguage(chatboxSkill, language);
@@ -287,8 +287,17 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
     if (isOpen) {
       setMessages([getInitialMessage()]);
       setInput('');
+      clearExternalMessages(); // Clear any pending external messages when opening
     }
   }, [isOpen, chatboxSkill]);
+
+  // Handle external messages
+  useEffect(() => {
+    if (externalMessages.length > 0) {
+      setMessages(prev => [...prev, ...externalMessages]);
+      clearExternalMessages(); // Clear external messages after adding them
+    }
+  }, [externalMessages, clearExternalMessages]);
 
   // Focus input when chat opens
   useEffect(() => {
