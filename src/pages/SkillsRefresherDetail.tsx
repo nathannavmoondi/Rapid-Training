@@ -858,7 +858,7 @@ export const SkillsRefresherDetail = () => {
                   {(!showAnswer || (showAnswer && startCourse !== 1)) && (
                     <Button
                       variant="contained"
-                      onClick={(isQuizActive || startCourse ==1) && !showAnswer ? handleSubmitQuizAnswer : handleShowAnswer}
+                      onClick={(isQuizActive || startCourse === 1) && !showAnswer ? handleSubmitQuizAnswer : handleShowAnswer}
                       disabled={isLoading || showAnswer || !question || isSlideDeck || (isQuizActive && !selectedAnswer && !showAnswer)}
                       sx={{ 
                         backgroundColor: (isQuizActive && !showAnswer) ? '#007bff' : '#4CAF50', 

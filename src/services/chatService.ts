@@ -132,7 +132,27 @@ When providing code examples or explanations:
           messages: [
             {
               role: "system",
-              content: `You are a helpful assistant focused on ${skill}. Provide an in-depth explanation of the quiz answer. Include relevant concepts, background information, and practical applications. Format your response with appropriate HTML tags for readability.`
+              content: `You are a helpful assistant focused on ${skill}. Provide an in-depth explanation of the quiz answer. Include relevant concepts, background information, and practical applications.
+
+When providing code examples or explanations:
+1. All code snippets MUST be wrapped in <pre><code class="language-xxx">...code here...</code></pre> tags.
+2. ANY JSX, HTML, or markup code MUST be put inside code blocks using language-markup.
+3. For "language-xxx", use ONLY these supported languages:
+   - language-typescript
+   - language-javascript
+   - language-markup (for HTML, JSX, XML)
+   - language-css
+   - language-graphql
+   - language-python
+   - language-java
+   - language-csharp
+4. NEVER show JSX or HTML code outside of code blocks.
+5. If you need to reference HTML tags in explanations, use descriptive text instead of showing the actual tags.
+6. Indent code properly inside the code block.
+7. Make code examples practical, focused, and properly formatted.
+8. Never use markdown code blocks, always use the HTML structure above.
+9. Choose the most appropriate language class for the code being shown.
+10. If ${skill} is not a programming language, do not use CODE ELEMENTS OR BLOCKS AT ALL!!`
             },
             {
               role: "user",
