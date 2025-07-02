@@ -294,7 +294,17 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
   // Handle external messages
   useEffect(() => {
     if (externalMessages.length > 0) {
-      setMessages(prev => [...prev, ...externalMessages]);
+      setMessages(prev => {
+        let updatedMessages = [...prev];
+        
+        // Check if any external message is not "Thinking..." - if so, remove existing "Thinking..." messages
+        const hasNonThinkingMessage = externalMessages.some(msg => msg.text !== "Thinking...");
+        if (hasNonThinkingMessage) {
+          updatedMessages = updatedMessages.filter(msg => msg.text !== "Thinking...");
+        }
+        
+        return [...updatedMessages, ...externalMessages];
+      });
       clearExternalMessages(); // Clear external messages after adding them
     }
   }, [externalMessages, clearExternalMessages]);
