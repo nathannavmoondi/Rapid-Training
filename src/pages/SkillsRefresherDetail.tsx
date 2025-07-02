@@ -9,6 +9,7 @@ import { requestRefresher } from '../services/aiService';
 import { getYoutubeResources } from '../services/resourceService';
 import { Chat } from '../components/Chat';
 import { useChat } from '../contexts/chatContext';
+import { chatService } from '../services/chatService';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
@@ -97,7 +98,7 @@ export const SkillsRefresherDetail = () => {
     setLanguage
   } = useQuiz(); //from quizcontext
 
-  const {setChatboxSkill } = useChat();
+  const {setChatboxSkill, addExternalMessage } = useChat();
   //states
 
   const [isLoading, setIsLoading] = useState(false);
@@ -426,6 +427,45 @@ export const SkillsRefresherDetail = () => {
 
     setShowAnswer(true);
   }; 
+  
+  const handleExplainFurther = async () => {
+    if (!currentSkill || !question) return;
+    
+    // Open chat if not already open
+    if (!isChatOpen) {
+      setIsChatOpen(true);
+    }
+    
+    // Add "thinking" message to chat
+    const thinkingMessage = {
+      id: Math.random().toString(36).substring(7),
+      text: "Thinking...",
+      isUser: false,
+      timestamp: new Date()
+    };
+    addExternalMessage(thinkingMessage);
+    
+    try {
+      // Call AI with the explain further prompt
+      const aiResponse = await chatService.explainQuizInDepth(
+        currentSkill.title,
+        question,
+        language
+      );
+      
+      // Add AI response to chat
+      addExternalMessage(aiResponse);
+    } catch (error) {
+      console.error('Failed to explain further:', error);
+      const errorMessage = {
+        id: Math.random().toString(36).substring(7),
+        text: "Sorry, I encountered an error while trying to explain further. Please try again.",
+        isUser: false,
+        timestamp: new Date()
+      };
+      addExternalMessage(errorMessage);
+    }
+  };
   
   const handleStartCourse = async () => {    
     setIsLoading(true);
@@ -803,6 +843,22 @@ export const SkillsRefresherDetail = () => {
                       }}
                     >
                       {(isQuizActive || startCourse === 1) && !showAnswer ? 'Submit Answer' : 'Show Answer'}
+                    </Button>
+                  )}
+                  
+                  {/* Explain Further Button - appears when answer is shown */}
+                  {showAnswer && !isSlideDeck && startCourse !== 1 && (
+                    <Button
+                      variant="contained"
+                      onClick={handleExplainFurther}
+                      disabled={isLoading}
+                      sx={{ 
+                        backgroundColor: '#9C27B0', 
+                        color: 'white',
+                        '&:hover': { backgroundColor: '#7B1FA2'}
+                      }}
+                    >
+                      Explain Further
                     </Button>
                   )}
                   
