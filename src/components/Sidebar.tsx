@@ -19,6 +19,7 @@ const menuItems = [
   { label: 'My Quizzes', path: '/my-quizzes', icon: <QuizIcon />, external: false },
   { label: 'My Slidedecks', path: '/my-slidedecks', icon: <WysiwygIcon />, external: false },
   { label: 'My Training', path: '/my-training', icon: <WorkspacesIcon />, external: false },
+  { label: 'Explore', path: '/explore', icon: <SettingsIcon />, external: false },
   { label: 'Food Saver', path: '/food-saver', icon: <RestaurantIcon />, external: false },
   { label: 'Github', path: 'https://github.com/nathannavmoondi', icon: <GitHubIcon />, external: true }
 ];
