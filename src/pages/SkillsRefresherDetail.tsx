@@ -300,7 +300,8 @@ export const SkillsRefresherDetail = () => {
     processRawHtml(question), 
     showAnswer,
     showAnswer && !isSlideDeck, // Only show feedback when answer is shown, not in slidedeck, AND in quiz mode or course mode
-     isQuizActive ? lastAnswerCorrect : null,  // Pass the correct/incorrect state
+     //isQuizActive ? lastAnswerCorrect : null,  // hide if not quiz mode
+    lastAnswerCorrect,   // Pass the correct/incorrect state
     maxQuizzes,
     quizzesTaken,
     false
