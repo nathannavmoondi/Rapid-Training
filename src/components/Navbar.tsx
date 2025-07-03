@@ -17,6 +17,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChatIcon from '@mui/icons-material/Chat';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { LoginDialog } from './LoginDialog';
 import { useChat } from '../contexts/chatContext';
 
 interface NavbarProps {
@@ -25,6 +26,11 @@ interface NavbarProps {
 }
 
 export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
+
+  const [loginOpen, setLoginOpen] = useState(false);
+  // Handler for login dialog
+  const handleLoginOpen = () => setLoginOpen(true);
+  const handleLoginClose = () => setLoginOpen(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -99,8 +105,8 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
     { label: 'Algorithms', path: '/algorithms',  external: false   },
     { label: 'Marketing AI', path: '/marketing-ai',  external: false   },
     { label: 'Food Saver', path: '/food-saver',   external: false   },
-    { label: 'Github', path: 'https://github.com/nathannavmoondi', external: true }
-  ]; 
+    { label: 'Github', path: 'https://github.com/nathannavmoondi', external: true },
+  ];
   
   return (
     <AppBar position="fixed" sx={{ 
@@ -142,6 +148,7 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
 
         {/* Navigation and Chat */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {/* Navigation and Chat */}
           {isMobile ? (
             <>
               <IconButton
@@ -184,21 +191,37 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
             </>
           ) : (
             <Box sx={{ display: 'flex', gap: 1 }}>
-              {menuItems.map((item) => (
-                <Button
-                  key={item.label}
-                  color="inherit"
-                  onClick={() => {
-                    if (item.external) {
-                      window.open(item.path, '_blank');
-                    } else {
-                      navigate(item.path);
-                    }
-                  }}
-                  sx={getButtonSx(item.path)}
-                >
-                  {item.label}
-                </Button>
+              {menuItems.map((item, idx) => (
+                <>
+                  <Button
+                    key={item.label}
+                    color="inherit"
+                    onClick={() => {
+                      if (item.external) {
+                        window.open(item.path, '_blank');
+                      } else {
+                        navigate(item.path);
+                      }
+                    }}
+                    sx={getButtonSx(item.path)}
+                  >
+                    {item.label}
+                  </Button>
+                  {/* Insert Login button after Github */}
+                  {item.label === 'Github' && (
+                    <>
+                      <Button
+                        color="inherit"
+                        variant="outlined"
+                        onClick={handleLoginOpen}
+                        sx={{ ml: 1, borderColor: '#90CAF9', color: '#90CAF9', fontWeight: 600, '&:hover': { backgroundColor: 'rgba(144,202,249,0.08)' } }}
+                      >
+                        Login
+                      </Button>
+                      <LoginDialog open={loginOpen} onClose={handleLoginClose} />
+                    </>
+                  )}
+                </>
               ))}
             </Box>
           )}
