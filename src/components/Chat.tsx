@@ -61,7 +61,18 @@ interface TypewriterTextProps {
 // Component to render AI message content with syntax highlighting
 const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isUser }) => {
   if (isUser) {
-    return <Typography component="div">{text}</Typography>;
+    return (
+      <Typography 
+        component="div" 
+        sx={{
+          wordWrap: 'break-word',
+          overflowWrap: 'break-word',
+          wordBreak: 'break-word'
+        }}
+      >
+        {text}
+      </Typography>
+    );
   }
 
   // Handle "Thinking..." message
@@ -71,7 +82,10 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
         component="div" 
         sx={{ 
           fontStyle: 'italic', 
-          opacity: 0.7 
+          opacity: 0.7,
+          wordWrap: 'break-word',
+          overflowWrap: 'break-word',
+          wordBreak: 'break-word'
         }}
       >
         {text}
@@ -198,10 +212,16 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
             component="div"
             sx={{
               color: isUser ? '#fff' : '#000',
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              wordBreak: 'break-word',
               '& p': {
                 margin: '0 0 8px 0',
                 lineHeight: '1.5',
                 color: 'inherit',
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
+                wordBreak: 'break-word',
                 '&:last-child': { marginBottom: 0 }
               },
               '& strong': {
@@ -534,8 +554,14 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
                 borderRadius: '12px',
                 p: 2,
                 maxWidth: '85%',
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
+                wordBreak: 'break-word',
                 '& p, & div': {
-                  color: message.isUser ? '#fff' : '#000'
+                  color: message.isUser ? '#fff' : '#000',
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                  wordBreak: 'break-word'
                 }
               }}
             >            <MessageContent text={message.text} isUser={message.isUser} />
