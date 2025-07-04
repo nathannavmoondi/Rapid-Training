@@ -7,6 +7,8 @@ import MicIcon from '@mui/icons-material/Mic';
 import MicOffIcon from '@mui/icons-material/MicOff';
 import { SvgIcon } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import { chatService, ChatMessage } from '../services/chatService';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -246,6 +248,7 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
   const [width, setWidth] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
   // Speech-to-text functionality hook
   const { isListening, isSupported, toggleListening } = useSpeechToText({
@@ -281,6 +284,11 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
     } catch (err) {
       console.error('Failed to copy text: ', err);
     }
+  };
+
+  // Toggle fullscreen function
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
   };
     // Reset messages when chatbox opens
   useEffect(() => {
@@ -419,37 +427,49 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
     <Box
       sx={{
         position: 'fixed',
-        right: 20,
-        top: 60,
-        bottom: 20,
-        width: `${width}px`,
+        ...(isFullscreen ? {
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100vh'
+        } : {
+          right: 20,
+          top: 60,
+          bottom: 20,
+          width: `${width}px`
+        }),
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: '#ffffff',
         color: '#000000',
-        zIndex: 1400,
-        borderRadius: '12px',
-        boxShadow: '0 2px 24px rgba(0, 0, 0, 0.15)',
+        zIndex: isFullscreen ? 1500 : 1400,
+        borderRadius: isFullscreen ? 0 : '12px',
+        boxShadow: isFullscreen ? 'none' : '0 2px 24px rgba(0, 0, 0, 0.15)',
         transform: isOpen ? 'translateX(0)' : 'translateX(calc(100% + 20px))',
         transition: isResizing ? 'none' : 'transform 0.3s ease-in-out'
       }}
     >
-      {/* Resize Handle */}      <Box
-        onMouseDown={handleMouseDown}
-        sx={{
-          position: 'absolute',
-          left: -4,
-          top: 0,
-          bottom: 0,
-          width: '8px',
-          cursor: 'ew-resize',
-          zIndex: 2000,
-          backgroundColor: isResizing ? 'rgba(0, 83, 167, 0.2)' : 'transparent',
-          '&:hover': {
-            backgroundColor: 'rgba(0, 83, 167, 0.1)'
-          }
-        }}
-      />
+      {/* Resize Handle */}
+      {!isFullscreen && (
+        <Box
+          onMouseDown={handleMouseDown}
+          sx={{
+            position: 'absolute',
+            left: -4,
+            top: 0,
+            bottom: 0,
+            width: '8px',
+            cursor: 'ew-resize',
+            zIndex: 2000,
+            backgroundColor: isResizing ? 'rgba(0, 83, 167, 0.2)' : 'transparent',
+            '&:hover': {
+              backgroundColor: 'rgba(0, 83, 167, 0.1)'
+            }
+          }}
+        />
+      )}
 
       {/* Header */}
       <Box
@@ -460,8 +480,8 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
           justifyContent: 'space-between',
           bgcolor: '#0053A7',
           color: '#fff',
-          borderTopLeftRadius: '12px',
-          borderTopRightRadius: '12px'
+          borderTopLeftRadius: isFullscreen ? 0 : '12px',
+          borderTopRightRadius: isFullscreen ? 0 : '12px'
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -470,9 +490,16 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
           </Avatar>
           <Typography>AI Assistant {chatboxSkill ? `(${chatboxSkill})` : ''}</Typography>
         </Box>
-        <IconButton onClick={onClose} sx={{ color: 'white' }}>
-          <CloseIcon />
-        </IconButton>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Tooltip title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}>
+            <IconButton onClick={toggleFullscreen} sx={{ color: 'white' }}>
+              {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+            </IconButton>
+          </Tooltip>
+          <IconButton onClick={onClose} sx={{ color: 'white' }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </Box>      {/* Messages */}
       <Box
         className="chat-messages"
