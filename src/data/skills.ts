@@ -27,6 +27,13 @@ export const skills: Skill[] = [
     category: 'frontend',
     description: 'Core JavaScript concepts, ES6+ features, and modern development practices',
     topics: ['ES6+', 'Async/Await', 'Closures', 'Promises', 'DOM Manipulation']
+  },  
+  {
+    id: 'Vue JS',
+    title: 'Vue JS',
+    category: 'frontend',
+    description: 'Progressive framework for building user interfaces',
+    topics: ['Components', 'Reactivity', 'Vue Router', 'Vuex', 'Single File Components']
   },
   {
     id: 'csharp',
@@ -153,5 +160,19 @@ export const skills: Skill[] = [
     category: 'non-technology',
     description: 'Keto principles and practices',
     topics: ['Ketogenic Diet', 'Meal Planning', 'Nutritional Ketosis', 'Keto Recipes', 'Health Benefits']
+  },
+  {
+    id: 'Police Academy',
+    title: 'Police Academy',
+    category: 'non-technology',
+    description: 'Police Academy principles and practices',
+    topics: ['Criminal Law', 'Investigation Techniques', 'Emergency Response', 'Community Policing', 'Ethics in Law Enforcement']
+  },
+  {
+    id: 'Music Theory',
+    title: 'Music Theory',
+    category: 'non-technology',
+    description: 'Music Theory principles and practices',
+    topics: ['Notation', 'Harmony', 'Melody', 'Rhythm', 'Form']
   }
 ];
