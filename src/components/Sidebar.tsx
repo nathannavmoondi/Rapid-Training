@@ -4,13 +4,13 @@ import MenuIcon from '@mui/icons-material/Menu';
 import SchoolIcon from '@mui/icons-material/School';
 import FunctionsIcon from '@mui/icons-material/Functions';
 import CampaignIcon from '@mui/icons-material/Campaign';
-import RestaurantIcon from '@mui/icons-material/Restaurant';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import SettingsIcon from '@mui/icons-material/Settings';
 import QuizIcon from '@mui/icons-material/Quiz';
 import WysiwygIcon from '@mui/icons-material/Wysiwyg';
 import WorkspacesIcon from '@mui/icons-material/Workspaces';
 import StarIcon from '@mui/icons-material/Star';
+import YouTubeIcon from '@mui/icons-material/YouTube';
 import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
@@ -21,8 +21,8 @@ const menuItems = [
   { label: 'My Slidedecks', path: '/my-slidedecks', icon: <WysiwygIcon />, external: false },
   { label: 'My Training', path: '/my-training', icon: <WorkspacesIcon />, external: false },
   { label: 'Custom Quizzes', path: '/custom-quizzes', icon: <StarIcon />, external: false },
+  { label: 'YT Generator', path: '/yt-generator', icon: <YouTubeIcon />, external: false },
   { label: 'Explore', path: '/explore', icon: <SettingsIcon />, external: false },
-  { label: 'Food Saver', path: '/food-saver', icon: <RestaurantIcon />, external: false },
   { label: 'Github', path: 'https://github.com/nathannavmoondi', icon: <GitHubIcon />, external: true }
 ];
 
