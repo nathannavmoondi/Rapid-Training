@@ -548,32 +548,16 @@ Important formatting rules:
             }
           ]
         })
-      });      const data = await response.json();      let content = data.choices?.[0]?.message?.content;
-
-      content = content.replace(/^```html\s*/i, '');
-      content = content.replace('```', '');
-
-      return content || 'No marketing plan generated. Please try again.';
+      });      
+      const data = await response.json();      
+      let content = data.choices?.[0]?.message?.content;
 
       if (content) {
-        // Clean up any extra whitespace and ensure proper formatting
+        content = content.replace(/^```html\s*/i, '');
+        content = content.replace('```', '');
         content = content.trim();
-
-        // Clean up any markdown code blocks and format them properly
-        interface CodeBlock {
-          _: string;
-          lang: string | undefined;
-          code: string;
-        }
-
-                content = content
-                  .replace(/```(\w+)?\s*\n?([\s\S]*?)\n?```/g, (_?: string, lang?: string, code?: string): string => {
-                    const language: string = lang || 'markup';
-                    return `<pre><code class="language-${language}">${(code ?? '').trim()}</code></pre>`;
-                  })
-                  .trim();
       }
-      
+
       return content || 'No marketing plan generated. Please try again.';
     };
   
@@ -593,12 +577,20 @@ export const getYoutubeQuiz = async (youtubeUrl: string): Promise<string> => {
       throw new Error('API key not found in environment variables!');
     }
 
-    const prompt = `For this youtube url: ${youtubeUrl}, create a random quiz for its contents.
+    const prompt = `I have a YouTube video URL: ${youtubeUrl}
+
+I understand you cannot access or view YouTube videos directly. Instead, please:
+
+1. Extract the video ID from the URL to understand the context
+2. Based on the URL structure and any identifiable patterns, create a general educational quiz
+3. If this appears to be a training/educational video (which is likely given the context), create a comprehensive quiz on common topics that such videos typically cover
+4. Use your knowledge to create relevant questions that would be appropriate for a training video
 
 Create a comprehensive quiz with the following structure:
-- Include 5 multiple-choice questions based on the video content
+- Include 5 multiple-choice questions that would be relevant for educational/training content
 - Each question should have 4 options (A, B, C, D)
 - Include clear explanations for the correct answers
+- Make the questions general but educational and valuable
 - Format the quiz in clean HTML using this structure:
 
 <div class="youtube-quiz">
@@ -633,10 +625,12 @@ Create a comprehensive quiz with the following structure:
 
 Important formatting rules:
 1. Use clean HTML structure without markdown
-2. Make questions specific to the video content
+2. Create educational questions that would be valuable for training purposes
 3. Provide detailed explanations for each answer
 4. Use light colors for text (content will be displayed on dark background)
-5. Focus on educational content and key learning points from the video`;
+5. Focus on general educational content and best practices that would be covered in training videos
+6. If you can infer the topic from the URL pattern, tailor questions to that subject area
+7. Make questions practical and useful for learning purposes`;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
