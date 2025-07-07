@@ -41,7 +41,7 @@ export async function downloadHtmlAsPdf(htmlContent: string | HTMLElement, filen
     h2.style.fontSize = '1.2rem';
     h2.style.marginBottom = '0.5rem';
     const h3 = document.createElement('h3');
-    h3.innerHTML = '<a href="https://rapidskill.ca" style="color:#4FC3F7;text-decoration:underline;">rapidskill.ca - A Better Way to Learn</a>';
+    h3.innerHTML = '<a href="https://rapidskill.ca" style="color:#4FC3F7;text-decoration:underline;">rapidskill.ca - Learn Faster, Smart, Better</a>';
     h3.style.fontSize = '1.1rem';
     h3.style.marginBottom = '0.5rem';
     wrapper.appendChild(h1);
