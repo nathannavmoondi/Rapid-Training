@@ -10,6 +10,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import QuizIcon from '@mui/icons-material/Quiz';
 import WysiwygIcon from '@mui/icons-material/Wysiwyg';
 import WorkspacesIcon from '@mui/icons-material/Workspaces';
+import StarIcon from '@mui/icons-material/Star';
 import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
@@ -19,13 +20,14 @@ const menuItems = [
   { label: 'My Quizzes', path: '/my-quizzes', icon: <QuizIcon />, external: false },
   { label: 'My Slidedecks', path: '/my-slidedecks', icon: <WysiwygIcon />, external: false },
   { label: 'My Training', path: '/my-training', icon: <WorkspacesIcon />, external: false },
+  { label: 'Custom Quizzes', path: '/custom-quizzes', icon: <StarIcon />, external: false },
   { label: 'Explore', path: '/explore', icon: <SettingsIcon />, external: false },
   { label: 'Food Saver', path: '/food-saver', icon: <RestaurantIcon />, external: false },
   { label: 'Github', path: 'https://github.com/nathannavmoondi', icon: <GitHubIcon />, external: true }
 ];
 
 const SIDEBAR_MIN_WIDTH = 60;
-const SIDEBAR_MAX_WIDTH = 220;
+const SIDEBAR_MAX_WIDTH = 235;
 const TEXT_VISIBILITY_THRESHOLD = 130; // Width below which text will be hidden
 const WIDTH_BREAKPOINT = 1100;
 
