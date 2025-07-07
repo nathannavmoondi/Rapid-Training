@@ -548,32 +548,16 @@ Important formatting rules:
             }
           ]
         })
-      });      const data = await response.json();      let content = data.choices?.[0]?.message?.content;
-
-      content = content.replace(/^```html\s*/i, '');
-      content = content.replace('```', '');
-
-      return content || 'No marketing plan generated. Please try again.';
+      });      
+      const data = await response.json();      
+      let content = data.choices?.[0]?.message?.content;
 
       if (content) {
-        // Clean up any extra whitespace and ensure proper formatting
+        content = content.replace(/^```html\s*/i, '');
+        content = content.replace('```', '');
         content = content.trim();
-
-        // Clean up any markdown code blocks and format them properly
-        interface CodeBlock {
-          _: string;
-          lang: string | undefined;
-          code: string;
-        }
-
-                content = content
-                  .replace(/```(\w+)?\s*\n?([\s\S]*?)\n?```/g, (_?: string, lang?: string, code?: string): string => {
-                    const language: string = lang || 'markup';
-                    return `<pre><code class="language-${language}">${(code ?? '').trim()}</code></pre>`;
-                  })
-                  .trim();
       }
-      
+
       return content || 'No marketing plan generated. Please try again.';
     };
   
@@ -582,6 +566,106 @@ Important formatting rules:
   } catch (error) {
     console.error('Error generating marketing plan:', error);
     return 'There was an error processing your request. Please try again later.';
+  }
+};
+
+export const getYoutubeQuiz = async (youtubeUrl: string): Promise<string> => {
+  try {
+    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+
+    if (!apiKey) {
+      throw new Error('API key not found in environment variables!');
+    }
+
+    const prompt = `I have a YouTube video URL: ${youtubeUrl}
+
+Please:
+
+1. Extract the video ID from the URL to understand the context
+2. Create a summary of that video and transcript.
+3. Based on the summary and transcript, create one quiz question
+
+
+
+- Format the quiz in clean HTML using this structure:
+
+<div class="youtube-quiz">
+  <div class="quiz-header">
+    <h2>Quiz: [Video Title]</h2>
+    <p>Test your knowledge from this YouTube video</p>
+  </div>
+  
+  <div class="question-item">
+    <div class="question">
+      <h3>Question 1: [Question text]</h3>
+    </div>
+    <div class="options">
+      <div class="option">A) [Option A]</div>
+      <div class="option">B) [Option B]</div>
+      <div class="option">C) [Option C]</div>
+      <div class="option">D) [Option D]</div>
+    </div>
+    <div class="answer-section">
+      <div class="correct-answer">
+        Correct Answer: [Letter]
+      </div>
+      <div class="explanation">
+        <p>[First line of explanation]</p>
+        <p>[Rest of the explanation with each point on a new line]</p>
+      </div>
+    </div>
+  </div>
+  
+  [Repeat for all 5 questions]
+</div>
+
+Important formatting rules:
+1. Use clean HTML structure without markdown
+3. Provide detailed explanations for each answer
+4. Use light colors for text (content will be displayed on dark background)
+5. Focus on general educational content and best practices that would be covered in training videos
+7. Make questions practical and useful for learning purposes`;
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': window.location.origin,
+        'X-Title': 'YouTube Quiz Generator'
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-3.5-sonnet',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 2000
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    let content = data.choices?.[0]?.message?.content;
+
+    if (content) {
+      // Clean up any markdown code blocks
+      content = content.replace(/^```html\s*/i, '');
+      content = content.replace('```', '');
+      content = content.trim();
+    }
+
+    return content || 'No quiz generated. Please try again.';
+
+  } catch (error) {
+    console.error('Error generating YouTube quiz:', error);
+    return 'There was an error generating the quiz. Please try again later.';
   }
 };
 

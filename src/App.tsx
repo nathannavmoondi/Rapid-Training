@@ -19,7 +19,7 @@ import { QuizProvider } from './contexts/quizContext';
 import { ChatProvider } from './contexts/chatContext';
 import { PromptDB } from './pages/PromptDB';
 import { MarketingAI } from './pages/MarketingAI';
-import { FoodSaver } from './pages/FoodSaver';
+import { YouTubeQuizGenerator } from './pages/YouTubeQuizGenerator';
 import { Sidebar } from './components/Sidebar';
 import './styles/mobile.css';
 import './App.css';
@@ -79,7 +79,7 @@ function App() {
                     <Route path="/failed-questions-primer" element={<React.Suspense fallback={<div>Loading...</div>}><FailedQuestionsPrimer /></React.Suspense>} />
                     <Route path="/promptdb" element={<PromptDB />} />
                     <Route path="/marketing-ai" element={<MarketingAI />} />
-                    <Route path="/food-saver" element={<FoodSaver />} />
+                    <Route path="/yt-generator" element={<YouTubeQuizGenerator />} />
                     <Route path="/test2" element={<Test2 />} />
                   </Routes>
                 </Container>
