@@ -579,18 +579,14 @@ export const getYoutubeQuiz = async (youtubeUrl: string): Promise<string> => {
 
     const prompt = `I have a YouTube video URL: ${youtubeUrl}
 
-I understand you cannot access or view YouTube videos directly. Instead, please:
+Please:
 
 1. Extract the video ID from the URL to understand the context
-2. Based on the URL structure and any identifiable patterns, create a general educational quiz
-3. If this appears to be a training/educational video (which is likely given the context), create a comprehensive quiz on common topics that such videos typically cover
-4. Use your knowledge to create relevant questions that would be appropriate for a training video
+2. Create a summary of that video and transcript.
+3. Based on the summary and transcript, create one quiz question
 
-Create a comprehensive quiz with the following structure:
-- Include 5 multiple-choice questions that would be relevant for educational/training content
-- Each question should have 4 options (A, B, C, D)
-- Include clear explanations for the correct answers
-- Make the questions general but educational and valuable
+
+
 - Format the quiz in clean HTML using this structure:
 
 <div class="youtube-quiz">
@@ -625,11 +621,9 @@ Create a comprehensive quiz with the following structure:
 
 Important formatting rules:
 1. Use clean HTML structure without markdown
-2. Create educational questions that would be valuable for training purposes
 3. Provide detailed explanations for each answer
 4. Use light colors for text (content will be displayed on dark background)
 5. Focus on general educational content and best practices that would be covered in training videos
-6. If you can infer the topic from the URL pattern, tailor questions to that subject area
 7. Make questions practical and useful for learning purposes`;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {

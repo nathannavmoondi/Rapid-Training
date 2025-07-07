@@ -11,7 +11,7 @@ import {
 import { getYoutubeQuiz } from '../services/aiService';
 
 export const YouTubeQuizGenerator: React.FC = () => {
-  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [youtubeUrl, setYoutubeUrl] = useState('https://www.youtube.com/watch?v=HlPyFmq3edw');
   const [isLoading, setIsLoading] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [videoId, setVideoId] = useState('');
@@ -195,9 +195,7 @@ export const YouTubeQuizGenerator: React.FC = () => {
             <Typography variant="h5" sx={{ color: '#4caf50', mb: 2 }}>
               Thank you. This feature is still in development.
             </Typography>
-            <Typography variant="body1" color="text.secondary">
-              The generated quiz has been logged to the console. Check your browser's developer tools to see the output.
-            </Typography>
+            
           </Box>
         )}
       </Paper>
