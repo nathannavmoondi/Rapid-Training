@@ -569,7 +569,7 @@ Important formatting rules:
   }
 };
 
-export const getYoutubeQuiz = async (youtubeUrl: string): Promise<string> => {
+export const getYoutubeSummaryAndTranscript = async (youtubeUrl: string): Promise<string> => {
   try {
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
 
@@ -583,9 +583,96 @@ Please:
 
 1. Extract the video ID from the URL to understand the context
 2. Create a summary of that video and transcript.
-3. Based on the summary and transcript, create one quiz question
 
+Return the response in this format:
+<div class="video-summary">
+  <div class="video-title">
+    <h3>[Video Title]</h3>
+  </div>
+  <div class="summary-section">
+    <h4>Summary:</h4>
+    <p>[Detailed summary of the video content]</p>
+  </div>
+  <div class="transcript-section">
+    <h4>Key Transcript Points:</h4>
+    <p>[Important points from the transcript]</p>
+  </div>
+</div>
 
+Focus on educational content and key learning points that would be useful for creating quiz questions.`;
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': window.location.origin,
+        'X-Title': 'YouTube Summary Generator'
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-3.5-sonnet',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 2000
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    let content = data.choices?.[0]?.message?.content;
+
+    if (content) {
+      // Clean up any markdown code blocks
+      content = content.replace(/^```html\s*/i, '');
+      content = content.replace('```', '');
+      content = content.trim();
+    }
+
+    return content || 'No summary and transcript generated. Please try again.';
+
+  } catch (error) {
+    console.error('Error generating YouTube summary and transcript:', error);
+    return 'There was an error generating the summary and transcript. Please try again later.';
+  }
+};
+
+export const getYoutubeQuiz = async (youtubeUrl: string, summaryAndTranscript?: string): Promise<string> => {
+  try {
+    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+
+    if (!apiKey) {
+      throw new Error('API key not found in environment variables!');
+    }
+
+    let prompt: string;
+    
+    if (summaryAndTranscript) {
+      prompt = `I have a YouTube video URL: ${youtubeUrl}
+
+The summary and transcript of the video follows:
+${summaryAndTranscript}
+
+Based on the summary and transcript above, create one quiz question.`;
+    } else {
+      // Fallback to original behavior if no summary provided
+      prompt = `I have a YouTube video URL: ${youtubeUrl}
+
+Please:
+
+1. Extract the video ID from the URL to understand the context
+2. Create a summary of that video and transcript.
+3. Based on the summary and transcript, create one quiz question`;
+    }
+
+    prompt += `
 
 - Format the quiz in clean HTML using this structure:
 

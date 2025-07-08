@@ -8,7 +8,7 @@ import {
   Paper,
   CircularProgress
 } from '@mui/material';
-import { getYoutubeQuiz } from '../services/aiService';
+import { getYoutubeQuiz, getYoutubeSummaryAndTranscript } from '../services/aiService';
 
 export const YouTubeQuizGenerator: React.FC = () => {
   const [youtubeUrl, setYoutubeUrl] = useState('https://www.youtube.com/watch?v=HlPyFmq3edw');
@@ -35,7 +35,14 @@ export const YouTubeQuizGenerator: React.FC = () => {
   const handleGenerate = async () => {
     setIsLoading(true);
     try {
-      const response = await getYoutubeQuiz(youtubeUrl);
+      // First AI call: Get summary and transcript
+      console.log('Step 1: Getting summary and transcript...');
+      const summaryAndTranscript = await getYoutubeSummaryAndTranscript(youtubeUrl);
+      console.log('Summary and Transcript:', summaryAndTranscript);
+      
+      // Second AI call: Generate quiz using the summary and transcript
+      console.log('Step 2: Generating quiz from summary and transcript...');
+      const response = await getYoutubeQuiz(youtubeUrl, summaryAndTranscript);
       console.log('Generated Quiz HTML:', response);
       setQuizGenerated(true);
     } catch (error) {
