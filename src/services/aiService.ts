@@ -1,4 +1,4 @@
-import { getSkillTopics } from './skillsService';
+// import { getSkillTopics } from './skillsService';
 
 export const requestRefresher = async (
   level: string,
@@ -577,25 +577,45 @@ export const getYoutubeSummaryAndTranscript = async (youtubeUrl: string): Promis
       throw new Error('API key not found in environment variables!');
     }
 
-    const prompt = `I have a YouTube video URL: ${youtubeUrl}
+    // Import the YouTube service
+    const { getVideoInfo, formatTranscript, getKeyTranscriptPoints } = await import('./youtubeService');
+    
+    // Get real video data
+    console.log('Fetching real YouTube video data...');
+    const videoInfo = await getVideoInfo(youtubeUrl);
+    
+    const fullTranscript = formatTranscript(videoInfo.transcript);
+    const keyPoints = getKeyTranscriptPoints(videoInfo.transcript);
+    
+    console.log('Video title:', videoInfo.title);
+    console.log('Transcript length:', fullTranscript.length, 'characters');
+    console.log('Key points length:', keyPoints.length, 'characters');
 
-Please:
+    const prompt = `I have the following YouTube video data:
 
-1. Extract the video ID from the URL to understand the context
-2. Create a summary of that video and transcript.
+Video Title: ${videoInfo.title}
+Video URL: ${youtubeUrl}
+
+Full Transcript:
+${fullTranscript}
+
+Key Transcript Points:
+${keyPoints}
+
+Based on this real video data, please create a comprehensive summary and organize the key transcript points.
 
 Return the response in this format:
 <div class="video-summary">
   <div class="video-title">
-    <h3>[Video Title]</h3>
+    <h3>${videoInfo.title}</h3>
   </div>
   <div class="summary-section">
     <h4>Summary:</h4>
-    <p>[Detailed summary of the video content]</p>
+    <p>[Create a detailed summary based on the actual transcript content]</p>
   </div>
   <div class="transcript-section">
     <h4>Key Transcript Points:</h4>
-    <p>[Important points from the transcript]</p>
+    <p>[Organize the most important educational points from the actual transcript]</p>
   </div>
 </div>
 
@@ -640,6 +660,23 @@ Focus on educational content and key learning points that would be useful for cr
 
   } catch (error) {
     console.error('Error generating YouTube summary and transcript:', error);
+    
+    // If there's an error with transcript fetching, provide a helpful error message
+    if (error instanceof Error && error.message.includes('Failed to fetch transcript')) {
+      return `<div class="video-summary">
+        <div class="error-message">
+          <h4>Error:</h4>
+          <p>Unable to fetch transcript for this video. This may be because:</p>
+          <ul>
+            <li>The video has no captions/subtitles available</li>
+            <li>The video is private or restricted</li>
+            <li>YouTube has disabled transcript access for this video</li>
+          </ul>
+          <p>Please try with a different video that has captions available.</p>
+        </div>
+      </div>`;
+    }
+    
     return 'There was an error generating the summary and transcript. Please try again later.';
   }
 };
@@ -660,7 +697,7 @@ export const getYoutubeQuiz = async (youtubeUrl: string, summaryAndTranscript?: 
 The summary and transcript of the video follows:
 ${summaryAndTranscript}
 
-Based on the summary and transcript above, create one quiz question.`;
+Based on the actual summary and transcript above (which was extracted from the real video), create 3-5 comprehensive quiz questions that test understanding of the key concepts covered in this video.`;
     } else {
       // Fallback to original behavior if no summary provided
       prompt = `I have a YouTube video URL: ${youtubeUrl}
@@ -669,7 +706,7 @@ Please:
 
 1. Extract the video ID from the URL to understand the context
 2. Create a summary of that video and transcript.
-3. Based on the summary and transcript, create one quiz question`;
+3. Based on the summary and transcript, create 3-5 quiz questions`;
     }
 
     prompt += `
@@ -678,13 +715,13 @@ Please:
 
 <div class="youtube-quiz">
   <div class="quiz-header">
-    <h2>Quiz: [Video Title]</h2>
+    <h2>Quiz: YouTube Video Knowledge Test</h2>
     <p>Test your knowledge from this YouTube video</p>
   </div>
   
   <div class="question-item">
     <div class="question">
-      <h3>Question 1: [Question text]</h3>
+      <h3>Question 1: [Question text based on video content]</h3>
     </div>
     <div class="options">
       <div class="option">A) [Option A]</div>
@@ -697,21 +734,44 @@ Please:
         Correct Answer: [Letter]
       </div>
       <div class="explanation">
-        <p>[First line of explanation]</p>
-        <p>[Rest of the explanation with each point on a new line]</p>
+        <p>[Detailed explanation referencing specific content from the video]</p>
+        <p>[Additional context and learning points]</p>
       </div>
     </div>
   </div>
   
-  [Repeat for all 5 questions]
+  <div class="question-item">
+    <div class="question">
+      <h3>Question 2: [Question text based on video content]</h3>
+    </div>
+    <div class="options">
+      <div class="option">A) [Option A]</div>
+      <div class="option">B) [Option B]</div>
+      <div class="option">C) [Option C]</div>
+      <div class="option">D) [Option D]</div>
+    </div>
+    <div class="answer-section">
+      <div class="correct-answer">
+        Correct Answer: [Letter]
+      </div>
+      <div class="explanation">
+        <p>[Detailed explanation referencing specific content from the video]</p>
+        <p>[Additional context and learning points]</p>
+      </div>
+    </div>
+  </div>
+
+  [Continue with 3-5 total questions]
 </div>
 
 Important formatting rules:
 1. Use clean HTML structure without markdown
-3. Provide detailed explanations for each answer
+2. Base questions on actual content from the video summary and transcript provided
+3. Provide detailed explanations for each answer that reference specific video content
 4. Use light colors for text (content will be displayed on dark background)
-5. Focus on general educational content and best practices that would be covered in training videos
-7. Make questions practical and useful for learning purposes`;
+5. Make questions challenging but fair, testing comprehension of key concepts
+6. Ensure questions cover different aspects/topics mentioned in the video
+7. Make explanations educational and informative`;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -730,7 +790,7 @@ Important formatting rules:
           }
         ],
         temperature: 0.7,
-        max_tokens: 2000
+        max_tokens: 3000
       })
     });
 

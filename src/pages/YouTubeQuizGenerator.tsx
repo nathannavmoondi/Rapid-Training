@@ -37,8 +37,15 @@ export const YouTubeQuizGenerator: React.FC = () => {
     try {
       // First AI call: Get summary and transcript
       console.log('Step 1: Getting summary and transcript...');
+      console.log('Using real YouTube transcript extraction...');
       const summaryAndTranscript = await getYoutubeSummaryAndTranscript(youtubeUrl);
       console.log('Summary and Transcript:', summaryAndTranscript);
+      
+      // Check if there was an error getting the transcript
+      if (summaryAndTranscript.includes('Error:')) {
+        // Display the error but don't fail completely
+        console.warn('Transcript extraction had issues, but continuing...');
+      }
       
       // Second AI call: Generate quiz using the summary and transcript
       console.log('Step 2: Generating quiz from summary and transcript...');
@@ -47,6 +54,8 @@ export const YouTubeQuizGenerator: React.FC = () => {
       setQuizGenerated(true);
     } catch (error) {
       console.error('Error generating quiz:', error);
+      // Show a more user-friendly error message
+      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}. Please check the console for more details.`);
     } finally {
       setIsLoading(false);
     }
