@@ -8,9 +8,28 @@ import {
   Paper,
   CircularProgress
 } from '@mui/material';
-import { getYoutubeQuiz } from '../services/aiService';
+import { getYoutubeQuiz, getYoutubeSummaryAndTranscript } from '../services/youtubeService';
 
 export const YouTubeQuizGenerator: React.FC = () => {
+
+//   This error is caused by CORS (Cross-Origin Resource Sharing) restrictions. When you run your React app locally (http://localhost:3000), the browser blocks direct fetch requests to YouTube (https://www.youtube.com/...) because YouTube does not allow cross-origin requests from browsers for these resources.
+
+// Specifically:
+
+// The youtube-transcript library tries to fetch the transcript by making a direct HTTP request to YouTube from your browser.
+// YouTube’s servers do not include the necessary CORS headers to allow this, so the browser blocks the request for security reasons.
+// This is why you see errors like "No 'Access-Control-Allow-Origin' header is present" and "Failed to fetch".
+// How to solve or work around this:
+
+// Use a backend proxy:
+// Move the transcript-fetching logic to your backend (Node.js/Express or serverless function). The backend is not subject to browser CORS restrictions and can fetch from YouTube, then return the transcript to your frontend.
+
+// Use only public APIs:
+// The YouTube Data API v3 can provide captions/transcripts, but only for videos where captions are public and available, and you need an API key. Even then, it’s not as straightforward as scraping the transcript.
+
+// Rely on user-uploaded transcripts:
+// Ask users to upload or paste the transcript, then process it in your app.
+
   const [youtubeUrl, setYoutubeUrl] = useState('https://www.youtube.com/watch?v=HlPyFmq3edw');
   const [isLoading, setIsLoading] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -35,11 +54,27 @@ export const YouTubeQuizGenerator: React.FC = () => {
   const handleGenerate = async () => {
     setIsLoading(true);
     try {
-      const response = await getYoutubeQuiz(youtubeUrl);
+      // First AI call: Get summary and transcript
+      console.log('Step 1: Getting summary and transcript...');
+      console.log('Using real YouTube transcript extraction...');
+      const summaryAndTranscript = await getYoutubeSummaryAndTranscript(youtubeUrl);
+      console.log('Summary and Transcript:', summaryAndTranscript);
+      
+      // Check if there was an error getting the transcript
+      if (summaryAndTranscript.includes('Error:')) {
+        // Display the error but don't fail completely
+        console.warn('Transcript extraction had issues, but continuing...');
+      }
+      
+      // Second AI call: Generate quiz using the summary and transcript
+      console.log('Step 2: Generating quiz from summary and transcript...');
+      const response = await getYoutubeQuiz(youtubeUrl, summaryAndTranscript);
       console.log('Generated Quiz HTML:', response);
       setQuizGenerated(true);
     } catch (error) {
       console.error('Error generating quiz:', error);
+      // Show a more user-friendly error message
+      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}. Please check the console for more details.`);
     } finally {
       setIsLoading(false);
     }
