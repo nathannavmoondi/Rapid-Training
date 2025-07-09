@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, IconButton, Tooltip, Typography, useTheme } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import SchoolIcon from '@mui/icons-material/School';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 import FunctionsIcon from '@mui/icons-material/Functions';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import GitHubIcon from '@mui/icons-material/GitHub';
@@ -22,6 +23,7 @@ const menuItems = [
   { label: 'My Training', path: '/my-training', icon: <WorkspacesIcon />, external: false },
   { label: 'Custom Quizzes', path: '/custom-quizzes', icon: <StarIcon />, external: false },
   { label: 'YT Generator', path: '/yt-generator', icon: <YouTubeIcon />, external: false },
+  { label: 'I want to learn', path: '/learn', icon: <MenuBookIcon />, external: false },
   { label: 'Explore', path: '/explore', icon: <SettingsIcon />, external: false },
   { label: 'Github', path: 'https://github.com/nathannavmoondi', icon: <GitHubIcon />, external: true }
 ];

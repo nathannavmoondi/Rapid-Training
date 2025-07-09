@@ -573,4 +573,9 @@ Important formatting rules:
 
 // Moved getYoutubeSummaryAndTranscript and getYoutubeQuiz to youtubeService.ts
 
+export const GetIWantToLearn = async (topic: string): Promise<void> => {
+  // Placeholder for future AI logic
+  return;
+};
+
 

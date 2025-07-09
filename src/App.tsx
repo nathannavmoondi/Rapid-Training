@@ -25,6 +25,7 @@ import './styles/mobile.css';
 import './App.css';
 import FailedQuestionsPrimer from './pages/FailedQuestionsPrimer';
 import Test2 from './pages/Test2';
+import { IWantToLearn } from './pages/IWantToLearn';
 
 
 function App() {
@@ -80,6 +81,7 @@ function App() {
                     <Route path="/promptdb" element={<PromptDB />} />
                     <Route path="/marketing-ai" element={<MarketingAI />} />
                     <Route path="/yt-generator" element={<YouTubeQuizGenerator />} />
+                    <Route path="/learn" element={<IWantToLearn />} />
                     <Route path="/test2" element={<Test2 />} />
                   </Routes>
                 </Container>
