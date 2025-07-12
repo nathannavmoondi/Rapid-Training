@@ -83,3 +83,11 @@ pre {
 span{
   color: white;
 }
+
+/* Google Sign-In button text and background override */
+#google-signin-btn div[role="button"] {
+  background: white !important;
+}
+#google-signin-btn div[role="button"] span {
+  color: black !important;
+}

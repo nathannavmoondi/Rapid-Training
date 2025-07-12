@@ -12,7 +12,7 @@ import {
   Typography,
   IconButton
 } from '@mui/material';
-import GoogleIcon from '@mui/icons-material/Google';
+import { googleLoginWithBackend } from '../services/authService';
 import CloseIcon from '@mui/icons-material/Close';
 
 interface LoginDialogProps {
@@ -31,11 +31,62 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
     setError('');
   };
 
-  const handleGoogleLogin = () => {
-    // Placeholder: In real app, use Google SDK or Firebase
-    alert('Google login not implemented.');
-    onClose();
-  };
+
+  // Google Identity Services script loader and button renderer
+  React.useEffect(() => {
+    // Load Google script if not present
+    if (!document.getElementById('google-identity')) {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.id = 'google-identity';
+      document.body.appendChild(script);
+    }
+    // Wait for script to load, then initialize and render button
+    const waitForGoogle = () => new Promise<void>((resolve, reject) => {
+      let tries = 0;
+      function check() {
+        // @ts-ignore
+        if (window.google && window.google.accounts && window.google.accounts.id) resolve();
+        else if (++tries > 20) reject(new Error('Google login is not available.'));
+        else setTimeout(check, 200);
+      }
+      check();
+    });
+    waitForGoogle().then(() => {
+      // @ts-ignore
+      window.google.accounts.id.initialize({
+        client_id: '650762672752-ph37g0p2p8bro1saihr4chc4f9cb1bie.apps.googleusercontent.com',
+        callback: async (response: any) => {
+          if (response.credential) {
+            const result = await googleLoginWithBackend(response.credential);
+            if (result.success) {
+              onClose();
+            } else {
+              setError(result.error || 'Login failed.');
+            }
+          } else {
+            setError('Google login failed.');
+          }
+        },
+      });
+      // Render Google button
+      if (document.getElementById('google-signin-btn')) {
+        // @ts-ignore
+        window.google.accounts.id.renderButton(
+          document.getElementById('google-signin-btn'),
+          { theme: 'outline', size: 'large', width: '100%' }
+        );
+      }
+    }).catch((e) => {
+      setError(e.message || 'Google login is not available.');
+    });
+    // Clean up button on close
+    return () => {
+      const btn = document.getElementById('google-signin-btn');
+      if (btn) btn.innerHTML = '';
+    };
+  }, [open]);
 
   const handleEmailLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,16 +126,10 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
         </Box>
         {method === 'google' ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-            <Button
-              variant="contained"
-              startIcon={<GoogleIcon />}
-              onClick={handleGoogleLogin}
-              sx={{ bgcolor: '#4285F4', color: 'white', '&:hover': { bgcolor: '#357ae8' }, width: '100%' }}
-            >
-              Continue with Google
-            </Button>
-            <Typography variant="body2" color="text.secondary" align="center">
-              We do not store your data. Google login is for demo only.
+            <div id="google-signin-btn" style={{ width: '100%' }} />
+            {error && <Typography color="error" variant="body2">{error}</Typography>}
+            <Typography variant="body2" align="center" sx={{ color: 'white' }}>
+              Google login is under development.
             </Typography>
           </Box>
         ) : (
