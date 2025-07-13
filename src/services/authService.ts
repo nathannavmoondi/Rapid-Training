@@ -4,7 +4,7 @@
 export async function googleLoginWithBackend(idToken: string): Promise<{ success: boolean; user?: any; error?: string }> {
   const backendUrl = process.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_API_URL;
   try {
-    const response = await fetch(`${backendUrl}/google-login`, {
+    const response = await fetch(`${backendUrl}/api/auth/google-login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -13,6 +13,7 @@ import {
   IconButton
 } from '@mui/material';
 import { googleLoginWithBackend } from '../services/authService';
+import { loginWithEmail } from '../services/emailAuthService';
 import CloseIcon from '@mui/icons-material/Close';
 
 interface LoginDialogProps {
@@ -88,7 +89,7 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
     };
   }, [open]);
 
-  const handleEmailLogin = (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     // Simple validation
     if (!email.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) {
@@ -99,9 +100,15 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
       setError('Password must be at least 8 characters and contain a number.');
       return;
     }
-    // Placeholder: In real app, send to backend
-    alert('Email login/signup not implemented.');
-    onClose();
+    // Call backend for login
+    setError('');
+    const result = await loginWithEmail(email, password);
+    console.log('Login result:', result);
+    if (result.success && result.token) {
+      onClose();
+    } else {
+      setError(result.error || 'Login failed.');
+    }
   };
 
   return (
