@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { googleLoginWithBackend } from '../services/authService';
 import { loginWithEmail } from '../services/emailAuthService';
+import { registerWithEmail } from '../services/emailAuthService';
 import CloseIcon from '@mui/icons-material/Close';
 
 interface LoginDialogProps {
@@ -25,73 +26,81 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
   const [method, setMethod] = useState<'google' | 'email'>('google');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [isRegister, setIsRegister] = useState(false);
 
   const handleMethod = (_: any, newMethod: 'google' | 'email') => {
     if (newMethod) setMethod(newMethod);
     setError('');
   };
 
+  const handleToggleRegister = () => {
+    setIsRegister((prev) => !prev);
+    setError('');
+    setConfirmPassword('');
+  };
 
   // Google Identity Services script loader and button renderer
   React.useEffect(() => {
-    // Load Google script if not present
-    if (!document.getElementById('google-identity')) {
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.id = 'google-identity';
-      document.body.appendChild(script);
-    }
-    // Wait for script to load, then initialize and render button
-    const waitForGoogle = () => new Promise<void>((resolve, reject) => {
-      let tries = 0;
-      function check() {
-        // @ts-ignore
-        if (window.google && window.google.accounts && window.google.accounts.id) resolve();
-        else if (++tries > 20) reject(new Error('Google login is not available.'));
-        else setTimeout(check, 200);
+    if (open && method === 'google') {
+      // Load Google script if not present
+      if (!document.getElementById('google-identity')) {
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.id = 'google-identity';
+        document.body.appendChild(script);
       }
-      check();
-    });
-    waitForGoogle().then(() => {
-      // @ts-ignore
-      window.google.accounts.id.initialize({
-        client_id: '650762672752-ph37g0p2p8bro1saihr4chc4f9cb1bie.apps.googleusercontent.com',
-        callback: async (response: any) => {
-          if (response.credential) {
-            const result = await googleLoginWithBackend(response.credential);
-            if (result.success) {
-              onClose();
-            } else {
-              setError(result.error || 'Login failed.');
-            }
-          } else {
-            setError('Google login failed.');
-          }
-        },
+      // Wait for script to load, then initialize and render button
+      const waitForGoogle = () => new Promise<void>((resolve, reject) => {
+        let tries = 0;
+        function check() {
+          // @ts-ignore
+          if (window.google && window.google.accounts && window.google.accounts.id) resolve();
+          else if (++tries > 20) reject(new Error('Google login is not available.'));
+          else setTimeout(check, 200);
+        }
+        check();
       });
-      // Render Google button
-      if (document.getElementById('google-signin-btn')) {
+      waitForGoogle().then(() => {
         // @ts-ignore
-        window.google.accounts.id.renderButton(
-          document.getElementById('google-signin-btn'),
-          { theme: 'outline', size: 'large', width: '100%' }
-        );
-      }
-    }).catch((e) => {
-      setError(e.message || 'Google login is not available.');
-    });
-    // Clean up button on close
-    return () => {
-      const btn = document.getElementById('google-signin-btn');
-      if (btn) btn.innerHTML = '';
-    };
-  }, [open]);
+        window.google.accounts.id.initialize({
+          client_id: '650762672752-ph37g0p2p8bro1saihr4chc4f9cb1bie.apps.googleusercontent.com',
+          callback: async (response: any) => {
+            if (response.credential) {
+              const result = await googleLoginWithBackend(response.credential);
+              if (result.success) {
+                onClose();
+              } else {
+                setError(result.error || 'Login failed.');
+              }
+            } else {
+              setError('Google login failed.');
+            }
+          },
+        });
+        // Render Google button
+        if (document.getElementById('google-signin-btn')) {
+          // @ts-ignore
+          window.google.accounts.id.renderButton(
+            document.getElementById('google-signin-btn'),
+            { theme: 'outline', size: 'large', width: '100%' }
+          );
+        }
+      }).catch((e) => {
+        setError(e.message || 'Google login is not available.');
+      });
+      // Clean up button on tab switch or close
+      return () => {
+        const btn = document.getElementById('google-signin-btn');
+        if (btn) btn.innerHTML = '';
+      };
+    }
+  }, [open, method]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simple validation
     if (!email.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) {
       setError('Please enter a valid email address.');
       return;
@@ -100,14 +109,29 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
       setError('Password must be at least 8 characters and contain a number.');
       return;
     }
-    // Call backend for login
-    setError('');
-    const result = await loginWithEmail(email, password);
-    console.log('Login result:', result);
-    if (result.success && result.token) {
-      onClose();
+    if (isRegister) {
+      if (password !== confirmPassword) {
+        setError('Passwords do not match.');
+        return;
+      }
+      // Call backend for register
+      setError('');
+      const result = await registerWithEmail(email, password);
+      if (result.success) {
+        onClose();
+      } else {
+        setError(result.error || 'Registration failed.');
+      }
     } else {
-      setError(result.error || 'Login failed.');
+      // Call backend for login
+      setError('');
+      const result = await loginWithEmail(email, password);
+      if (result.success && result.token) {
+        console.log('Login token:', result.token);
+        onClose();
+      } else {
+        setError(result.error || 'Login failed.');
+      }
     }
   };
 
@@ -158,9 +182,22 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
               fullWidth
               helperText="At least 8 characters and a number."
             />
+            {isRegister && (
+              <TextField
+                label="Confirm Password"
+                type="password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                required
+                fullWidth
+              />
+            )}
             {error && <Typography color="error" variant="body2">{error}</Typography>}
             <Button type="submit" variant="contained" color="primary" fullWidth>
-              Sign Up / Login
+              {isRegister ? 'Register' : 'Login'}
+            </Button>
+            <Button onClick={handleToggleRegister} color="secondary" fullWidth sx={{ mt: 1 }}>
+              {isRegister ? 'Login' : 'Register'}
             </Button>
           </Box>
         )}
