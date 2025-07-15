@@ -16,6 +16,7 @@ import { googleLoginWithBackend } from '../services/authService';
 import { loginWithEmail } from '../services/emailAuthService';
 import { registerWithEmail } from '../services/emailAuthService';
 import CloseIcon from '@mui/icons-material/Close';
+import { useUser } from '../contexts/chatContext';
 
 interface LoginDialogProps {
   open: boolean;
@@ -29,6 +30,7 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isRegister, setIsRegister] = useState(false);
+  const { setUser } = useUser();
 
   const handleMethod = (_: any, newMethod: 'google' | 'email') => {
     if (newMethod) setMethod(newMethod);
@@ -71,6 +73,12 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
             if (response.credential) {
               const result = await googleLoginWithBackend(response.credential);
               if (result.success) {
+                setUser({
+                  accessToken: result.user?.accessToken || '',
+                  refreshToken: result.user?.refreshToken || '',
+                  email: result.user?.email || '',
+                  isLogged: true,
+                });
                 onClose();
               } else {
                 setError(result.error || 'Login failed.');
@@ -118,6 +126,12 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
       setError('');
       const result = await registerWithEmail(email, password);
       if (result.success) {
+        setUser({
+          accessToken: '',
+          refreshToken: '',
+          email,
+          isLogged: true,
+        });
         onClose();
       } else {
         setError(result.error || 'Registration failed.');
@@ -127,6 +141,12 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
       setError('');
       const result = await loginWithEmail(email, password);
       if (result.success && result.token) {
+        setUser({
+          accessToken: result.token,
+          refreshToken: result.refreshToken || '',
+          email,
+          isLogged: true,
+        });
         console.log('Login token:', result.token);
         onClose();
       } else {

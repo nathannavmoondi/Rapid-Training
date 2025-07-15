@@ -15,10 +15,11 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChatIcon from '@mui/icons-material/Chat';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { LoginDialog } from './LoginDialog';
-import { useChat } from '../contexts/chatContext';
+import { useChat, useUser } from '../contexts/chatContext';
 
 interface NavbarProps {
   onChatToggle: () => void;
@@ -36,6 +37,7 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
   const location = useLocation();
   const theme = useTheme();
   const { setChatboxSkill } = useChat();
+  const { isLogged, logoff } = useUser();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -207,18 +209,36 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
                   >
                     {item.label}
                   </Button>
-                  {/* Insert Login button after Github */}
+                  {/* Insert Login/User/Logoff after Github */}
                   {item.label === 'Github' && (
                     <>
-                      <Button
-                        color="inherit"
-                        variant="outlined"
-                        onClick={handleLoginOpen}
-                        sx={{ ml: 1, borderColor: '#90CAF9', color: '#90CAF9', fontWeight: 600, '&:hover': { backgroundColor: 'rgba(144,202,249,0.08)' } }}
-                      >
-                        Login
-                      </Button>
-                      <LoginDialog open={loginOpen} onClose={handleLoginClose} />
+                      {!isLogged ? (
+                        <>
+                          <Button
+                            color="inherit"
+                            variant="outlined"
+                            onClick={handleLoginOpen}
+                            sx={{ ml: 1, borderColor: '#90CAF9', color: '#90CAF9', fontWeight: 600, '&:hover': { backgroundColor: 'rgba(144,202,249,0.08)' } }}
+                          >
+                            Login
+                          </Button>
+                          <LoginDialog open={loginOpen} onClose={handleLoginClose} />
+                        </>
+                      ) : (
+                        <>
+                          <IconButton color="inherit" sx={{ ml: 1 }}>
+                            <AccountCircleIcon />
+                          </IconButton>
+                          <Button
+                            color="inherit"
+                            variant="outlined"
+                            onClick={logoff}
+                            sx={{ ml: 1, borderColor: '#90CAF9', color: '#90CAF9', fontWeight: 600, '&:hover': { backgroundColor: 'rgba(144,202,249,0.08)' } }}
+                          >
+                            Logoff
+                          </Button>
+                        </>
+                      )}
                     </>
                   )}
                 </>
