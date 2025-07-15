@@ -70,23 +70,24 @@ const UserContext = createContext<UserContextType>(defaultUser);
 
 export const useUser = () => useContext(UserContext);
 
-export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUserState] = useState<Omit<UserContextType, 'setUser' | 'logoff'>>(defaultUser);
+const getInitialUser = () => {
+  const stored = localStorage.getItem('user');
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      return {
+        accessToken: parsed.accessToken || null,
+        refreshToken: parsed.refreshToken || null,
+        email: parsed.email || null,
+        isLogged: !!parsed.isLogged,
+      };
+    } catch {}
+  }
+  return defaultUser;
+};
 
-  React.useEffect(() => {
-    const stored = localStorage.getItem('user');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setUserState({
-          accessToken: parsed.accessToken || null,
-          refreshToken: parsed.refreshToken || null,
-          email: parsed.email || null,
-          isLogged: !!parsed.isLogged,
-        });
-      } catch {}
-    }
-  }, []);
+export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUserState] = useState<Omit<UserContextType, 'setUser' | 'logoff'>>(getInitialUser());
 
   React.useEffect(() => {
     localStorage.setItem('user', JSON.stringify(user));

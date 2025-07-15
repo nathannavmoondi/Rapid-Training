@@ -72,13 +72,19 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
           callback: async (response: any) => {
             if (response.credential) {
               const result = await googleLoginWithBackend(response.credential);
-              if (result.success) {
+              if (result && result.success && result.user && result.user.token && result.user.email) {
                 setUser({
-                  accessToken: result.user?.accessToken || '',
-                  refreshToken: result.user?.refreshToken || '',
-                  email: result.user?.email || '',
+                  accessToken: result.user.token,
+                  refreshToken: '',
+                  email: result.user.email,
                   isLogged: true,
                 });
+                localStorage.setItem('user', JSON.stringify({
+                  accessToken: result.user.token,
+                  refreshToken: '',
+                  email: result.user.email,
+                  isLogged: true,
+                }));
                 onClose();
               } else {
                 setError(result.error || 'Login failed.');
@@ -127,11 +133,17 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
       const result = await registerWithEmail(email, password);
       if (result.success) {
         setUser({
-          accessToken: '',
+          accessToken: '', // No token on register
           refreshToken: '',
           email,
           isLogged: true,
         });
+        localStorage.setItem('user', JSON.stringify({
+          accessToken: '',
+          refreshToken: '',
+          email,
+          isLogged: true,
+        }));
         onClose();
       } else {
         setError(result.error || 'Registration failed.');
@@ -147,6 +159,12 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
           email,
           isLogged: true,
         });
+        localStorage.setItem('user', JSON.stringify({
+          accessToken: result.token,
+          refreshToken: result.refreshToken || '',
+          email,
+          isLogged: true,
+        }));
         console.log('Login token:', result.token);
         onClose();
       } else {
