@@ -195,7 +195,9 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
         </Box>
         {method === 'google' ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-            <div id="google-signin-btn" style={{ width: '100%' }} />
+            <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+              <div id="google-signin-btn" style={{ minWidth: 250 }} />
+            </Box>
             {error && <Typography color="error" variant="body2">{error}</Typography>}
             <Typography variant="body2" align="center" sx={{ color: 'white' }}>
               Google login is under development.
