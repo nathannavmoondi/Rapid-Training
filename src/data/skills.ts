@@ -174,5 +174,33 @@ export const skills: Skill[] = [
     category: 'non-technology',
     description: 'Music Theory principles and practices',
     topics: ['Notation', 'Harmony', 'Melody', 'Rhythm', 'Form']
+  },
+  {
+    id: 'Next JS',
+    title: 'Next JS',
+    category: 'backend',
+    description: 'Building server-rendered React applications with Next.js',
+    topics: ['Static Generation', 'Server-side Rendering', 'API Routes', 'Dynamic Routing', 'Deployment']
+  },
+  {
+    id: 'Angular',
+    title: 'Angular',
+    category: 'frontend',
+    description: 'Building dynamic web applications with Angular framework',
+    topics: ['Components', 'Services', 'Routing', 'Forms', 'HTTP Client']   
+  },
+  {
+    id: 'Boat Ownership',
+    title: 'Boat Ownership',
+    category: 'non-technology',
+    description: 'Principles and practices of boat ownership',
+    topics: ['Maintenance', 'Safety Regulations', 'Navigation', 'Insurance', 'Marina Management']
+  },
+  {
+    id: "Human Resources",
+    title: "Human Resources",
+    category: 'non-technology',
+    description: "Human resources principles and practices",
+    topics: ['Recruitment', 'Employee Relations', 'Performance Management', 'Training and Development', 'Labor Laws']
   }
 ];
