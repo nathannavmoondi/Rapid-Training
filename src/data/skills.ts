@@ -99,13 +99,6 @@ export const skills: Skill[] = [
     topics: ['Branching Strategies', 'Merge Conflicts', 'Git Flow', 'Advanced Commands', 'Best Practices']
   },
    {
-    id: 'real estate',
-    title: 'Real Estate',
-    category: 'non-technology',
-    description: 'Real estate principles and practices',
-    topics: ['Property Valuation', 'Market Analysis', 'Investment Strategies', 'Real Estate Law', 'Financing Options']
-  },
-   {
     id: 'plumbing',
     title: 'Plumbing',
     category: 'non-technology',
@@ -202,5 +195,12 @@ export const skills: Skill[] = [
     category: 'non-technology',
     description: "Human resources principles and practices",
     topics: ['Recruitment', 'Employee Relations', 'Performance Management', 'Training and Development', 'Labor Laws']
+  },
+  {
+    id: "Real Estate Development",
+    title: "Real Estate Development",
+    category: 'non-technology',
+    description: "Real estate development principles and practices",
+    topics: ['Site Selection', 'Zoning Laws', 'Project Management', 'Financing', 'Market Analysis']
   }
 ];
