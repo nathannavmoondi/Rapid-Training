@@ -320,7 +320,7 @@ export const SkillsRefresherDetail = () => {
   // Simple function to render content with syntax highlighting
   const renderContentWithSyntaxHighlighting = (html: string) => {
     // Extract code blocks and their info
-    const codeBlockRegex = /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g;
+    const codeBlockRegex = /<pre><code class="language-([\w-]+)">([\s\S]*?)<\/code><\/pre>/g;
     const parts = [];
     let lastIndex = 0;
     let match;
@@ -338,7 +338,13 @@ export const SkillsRefresherDetail = () => {
       }
 
       // Add syntax highlighted code block
-      const language = match[1];
+      let language = match[1];
+      // Prism-react-syntax-highlighter uses 'bash' for shell, but sometimes 'sh' or 'shell' is used
+      if (language === 'shell') language = 'bash';
+      if (language === 'sh') language = 'bash';
+      // Prism-react-syntax-highlighter uses 'markup' for html
+      if (language === 'html') language = 'markup';
+
       const code = match[2]
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
@@ -347,11 +353,13 @@ export const SkillsRefresherDetail = () => {
         .replace(/&#39;/g, "'")
         .trim();
 
-      parts.push(        <SyntaxHighlighter
+      parts.push(
+        <SyntaxHighlighter
           key={`code-${parts.length}`}
           language={language}
           style={vscDarkPlus}
-          showLineNumbers={false}          customStyle={{
+          showLineNumbers={false}
+          customStyle={{
             margin: '12px 0',
             padding: '16px',
             background: '#1E1E1E',
