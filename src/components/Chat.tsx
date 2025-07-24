@@ -227,6 +227,23 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
               '& strong': {
                 fontWeight: 'bold',
                 color: 'inherit'
+              },
+              // Reduce spacing between list items and links
+              '& ul': {
+                margin: 0,
+                paddingLeft: '1.2em',
+              },
+              '& li': {
+                margin: 0,
+                padding: 0,
+                lineHeight: '1.2',
+              },
+              '& a': {
+                margin: 0,
+                padding: 0,
+                lineHeight: '1.2',
+                color: '#0000ee',
+                textDecoration: 'underline',
               }
             }}
             dangerouslySetInnerHTML={{
