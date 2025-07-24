@@ -118,7 +118,8 @@ When providing code examples or explanations:
         throw new Error('API key not found in environment variables!');
       }
 
-      const prompt = `Explain the answer of this quiz in depth. The topic is ${skill}. The quiz is: ${quizHtml}`;
+      const prompt = `Explain the answer of this quiz in depth. The topic is ${skill}. 
+      At end link appropriate learning links about this topic.  The quiz is: ${quizHtml}`;
 
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
@@ -153,7 +154,10 @@ When providing code examples or explanations:
 8. Never use markdown code blocks, always use the HTML structure above.
 9. Choose the most appropriate language class for the code being shown.
 10. If ${skill} is not a programming language, do not use CODE ELEMENTS OR BLOCKS AT ALL!!
-11. Do not use backticks.`
+11. Do not use backticks.
+12. Never start any line, list item, or point with * or - (asterisk or dash). Always use <ul> and <li> HTML tags for lists, or use icons. Strictly avoid * or - at the beginning of any line.
+13. When providing further learning resources or links, always use <a href="URL" target="_blank">Link Text</a> HTML tags for each resource, so links open in a new tab.
+14. Any headline or section title (such as 'Further learning resources') must be either bolded using <b> tags or wrapped in a <h1> tag.`
             },
             {
               role: "user",
@@ -168,10 +172,14 @@ When providing code examples or explanations:
       }
 
       const data = await response.json();
-      let aiResponse = data.choices?.[0]?.message?.content || 'No response received';     
-      
-      // Remove all backticks from the AI response
+      let aiResponse = data.choices?.[0]?.message?.content || 'No response received';
+
+      // Remove all backticks
       aiResponse = aiResponse.replace(/`+/g, '');
+      // Remove all '* ' at the start of a line
+      aiResponse = aiResponse.replace(/^\*\s+/gm, '');
+      // Remove all 'html' (case-insensitive)
+      aiResponse = aiResponse.replace(/html/gi, '');
 
       return {
         id: Math.random().toString(36).substring(7),
