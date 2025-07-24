@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { Box, TextField, IconButton, Typography, Avatar, Tooltip } from '@mui/material';
 import { useChat } from '../contexts/chatContext';
 import SendIcon from '@mui/icons-material/Send';
@@ -266,21 +267,33 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
   return <Box>{renderContentWithSyntaxHighlighting(text)}</Box>;
 };
 
-export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ isOpen, onClose }) => 
- {
+export const Chat: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOpen, onClose }) => {
+  // ...existing code...
+  // Only one declaration of messages and setMessages should exist below:
+
+  // ...existing code...
+  // ...existing code...
   const { chatboxSkill, externalMessages, clearExternalMessages } = useChat();
-  const {   language  } = useQuiz();
-  
-  var firstMessage = chatService.getFirstPromptInRightLanguage(chatboxSkill, language);
-  // Function to get initial message
+  const { language } = useQuiz();
+
+  // Function to get initial message (now after hooks)
   const getInitialMessage = () => ({
     id: '1',
-    text: firstMessage,
+    text: chatService.getFirstPromptInRightLanguage(chatboxSkill, language),
     isUser: false,
     timestamp: new Date()
   });
-
   const [messages, setMessages] = useState<ChatMessage[]>([getInitialMessage()]);
+  // Always scroll to top when new messages arrive so arrow appears if overflow
+  useEffect(() => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTop = 0;
+    }
+  }, [messages]);
+  const [showScrollDown, setShowScrollDown] = useState(false);
+  const [arrowOpacity, setArrowOpacity] = useState(1);
+  // ...existing code...
+  
   const [input, setInput] = useState('');
   const [width, setWidth] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
@@ -401,16 +414,33 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
     };
   }, [isResizing]);
 
-  // Scroll to top of chat messages when a new response is sent
-  const scrollToTop = useCallback(() => {
-    if (chatMessagesRef.current) {
-      chatMessagesRef.current.scrollTop = 0;
-    }
-  }, []);
+  // Do not auto-scroll to bottom on new messages. User stays at top of new message and sees down arrow if overflow.
 
+  // Show/hide/fade scroll down arrow
   useEffect(() => {
-    scrollToTop();
-  }, [messages, scrollToTop]);
+    const handleScroll = () => {
+      if (!chatMessagesRef.current) return;
+      const { scrollTop, scrollHeight, clientHeight } = chatMessagesRef.current;
+      const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+      const hasOverflow = scrollHeight > clientHeight + 2; // allow for rounding
+      // Arrow disappears when within 4px of bottom
+      if (hasOverflow && distanceFromBottom > 4) {
+        setShowScrollDown(true);
+        setArrowOpacity(Math.max(0, Math.min(1, distanceFromBottom / 80)));
+      } else {
+        setShowScrollDown(false);
+        setArrowOpacity(0);
+      }
+    };
+    const ref = chatMessagesRef.current;
+    if (ref) {
+      ref.addEventListener('scroll', handleScroll);
+      handleScroll();
+    }
+    return () => {
+      if (ref) ref.removeEventListener('scroll', handleScroll);
+    };
+  }, [messages]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -492,6 +522,23 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
         transition: isResizing ? 'none' : 'transform 0.3s ease-in-out'
       }}
     >
+      {/* DEBUG BUTTON: Add test messages to force overflow */}
+      <Box sx={{ p: 1, bgcolor: '#fffae6', borderBottom: '1px solid #eee', display: 'flex', gap: 1 }}>
+        <button
+          style={{ padding: '4px 12px', fontSize: '14px', borderRadius: '6px', border: '1px solid #0053A7', background: '#fff', color: '#0053A7', cursor: 'pointer' }}
+          onClick={() => {
+            setMessages(prev => [
+              ...prev,
+              ...Array.from({ length: 20 }, (_, i) => ({
+                id: 'debug-' + Math.random().toString(36).substring(7),
+                text: `Test message ${i + 1}`,
+                isUser: false,
+                timestamp: new Date()
+              }))
+            ]);
+          }}
+        >Add 20 test messages</button>
+      </Box>
       {/* Resize Handle */}
       {!isFullscreen && (
         <Box
@@ -541,17 +588,23 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
             <CloseIcon />
           </IconButton>
         </Box>
-      </Box>      {/* Messages */}
+      </Box>
+      {/* Messages */}
       <Box
         className="chat-messages"
         ref={chatMessagesRef}
         sx={{
           flex: 1,
-          overflow: 'auto',
+          minHeight: '320px', // Force minimum height for overflow
+          maxHeight: isFullscreen ? 'calc(100vh - 120px)' : '480px', // Limit height so overflow is possible
+          overflowY: 'auto',
           p: 2,
           display: 'flex',
           flexDirection: 'column',
-          gap: 2
+          gap: 2,
+          position: 'relative',
+          border: '2px dashed #0053A7', // Debug border, remove later
+          background: '#fff',
         }}
       >
         {messages.map((message) => (
@@ -569,7 +622,6 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
                 <BuddyIcon />
               </Avatar>
             )}
-            
             <Box
               sx={{
                 backgroundColor: message.isUser ? '#007AFF' : '#F1F2F6',
@@ -587,9 +639,9 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
                   wordBreak: 'break-word'
                 }
               }}
-            >            <MessageContent text={message.text} isUser={message.isUser} />
+            >
+              <MessageContent text={message.text} isUser={message.isUser} />
             </Box>
-            
             {/* Copy button for AI messages positioned outside and to the right of bubble */}
             {!message.isUser && message.text !== "Thinking..." && (
               <Tooltip 
@@ -619,6 +671,27 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
         ))}
         <div ref={messagesEndRef} />
       </Box>
+
+      {/* Down arrow icon for overflow - now outside scrollable container */}
+      {showScrollDown && (
+        <Box
+          sx={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: isFullscreen ? 24 : 32,
+            display: 'flex',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+            opacity: arrowOpacity,
+            transition: 'opacity 0.3s',
+            zIndex: 100,
+            userSelect: 'none',
+          }}
+        >
+          <ArrowDownwardIcon sx={{ fontSize: 36, color: '#0053A7', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }} />
+        </Box>
+      )}
 
       {/* Input */}
       <Box
