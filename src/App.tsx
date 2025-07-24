@@ -26,18 +26,25 @@ import './App.css';
 import FailedQuestionsPrimer from './pages/FailedQuestionsPrimer';
 import Test2 from './pages/Test2';
 import { IWantToLearn } from './pages/IWantToLearn';
+import SplashPage from './components/SplashPage';
 
 
 function App() {
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
 
   const handleChatToggle = () => {
     setIsChatOpen(!isChatOpen);
   };
 
+  const handleSplashClose = () => {
+    setShowSplash(false);
+  };
+
   return (
     <ThemeProvider theme={theme}>
-     <ToastContainer
+      {showSplash && <SplashPage onClose={handleSplashClose} />}
+      <ToastContainer
         position="top-right"
         autoClose={4000}
         hideProgressBar={false}
@@ -71,7 +78,8 @@ function App() {
                   }}
                 >
                   <Container>
-                    <Routes>                    <Route path="/" element={<Navigate to="/topics" replace />} />
+                    <Routes>
+                      <Route path="/" element={<Navigate to="/topics" replace />} />
                       <Route path="/topics" element={<SkillsRefresher />} />
                       <Route path="/topics/:id" element={<SkillsRefresherDetail />} />
                       <Route path="/algorithms" element={<AlgorithmList />} />
