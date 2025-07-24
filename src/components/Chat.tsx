@@ -348,6 +348,7 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
   }, [isOpen]);
 
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
+  const chatMessagesRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const initialX = useRef(0);
   const initialWidth = useRef(0);
@@ -383,13 +384,16 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
     };
   }, [isResizing]);
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // Scroll to top of chat messages when a new response is sent
+  const scrollToTop = useCallback(() => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTop = 0;
+    }
   }, []);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
+    scrollToTop();
+  }, [messages, scrollToTop]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -523,6 +527,7 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
       </Box>      {/* Messages */}
       <Box
         className="chat-messages"
+        ref={chatMessagesRef}
         sx={{
           flex: 1,
           overflow: 'auto',
@@ -531,7 +536,8 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
           flexDirection: 'column',
           gap: 2
         }}
-      >        {messages.map((message) => (
+      >
+        {messages.map((message) => (
           <Box
             key={message.id}
             sx={{
