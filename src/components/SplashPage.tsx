@@ -21,6 +21,7 @@ const SplashPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <button className="splash-close" onClick={onClose} aria-label="Close">×</button>
         <img src={aiHuman} alt="AI Human" className="splash-ai-img" />
         <h1 className="splash-title">Welcome to Rapid Skill</h1>
+        <div className="splash-cyber-rectangle" />
         <div className="splash-tech-bg" />
         <div className="splash-bottom-text">
           <span className="splash-cool-font">AI Helping You Learn Better</span>
