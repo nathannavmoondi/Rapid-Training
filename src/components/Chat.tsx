@@ -267,7 +267,7 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
   return <Box>{renderContentWithSyntaxHighlighting(text)}</Box>;
 };
 
-export const Chat: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOpen, onClose }) => {
+export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   // ...existing code...
   // Only one declaration of messages and setMessages should exist below:
 
@@ -357,16 +357,17 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOp
   // Handle external messages (like "Explain Further")
   useEffect(() => {
     if (externalMessages.length > 0) {
-      // First, find if we have a "Thinking..." message to replace
-      const thinkingMessage = externalMessages.find(msg => msg.text === "Thinking...");
-      const explanationMessage = externalMessages.find(msg => msg.text !== "Thinking...");
+      const lastMessage = externalMessages[externalMessages.length - 1];
       
-      if (explanationMessage) {
-        // For explanation messages (like from "Explain Further"), clear the chat first
-        setMessages([explanationMessage]);
-      } else if (thinkingMessage) {
-        // For "Thinking..." message, just add it to existing messages
-        setMessages(prev => [...prev, thinkingMessage]);
+      if (lastMessage.text === "CLEAR_CHAT") {
+        // Special message to clear the chat
+        setMessages([]);
+      } else if (lastMessage.text === "Thinking...") {
+        // For "Thinking..." message, just add it as the only message
+        setMessages([lastMessage]);
+      } else {
+        // For other messages, replace any existing messages
+        setMessages([lastMessage]);
       }
       
       // Schedule scroll after state update is complete
@@ -554,9 +555,9 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOp
           height: '100vh'
         } : {
           right: 20,
-          top: 60,
           bottom: 20,
-          width: `${width}px`
+          width: `${width}px`,
+          height: 'calc(100vh - 80px)', // Leave space for navbar only
         }),
         display: 'flex',
         flexDirection: 'column',
@@ -626,9 +627,11 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOp
         ref={chatMessagesRef}
         sx={{
           flex: 1,
-          minHeight: '320px', // Force minimum height for overflow
-          maxHeight: isFullscreen ? 'calc(100vh - 120px)' : '480px', // Limit height so overflow is possible
+          minHeight: '200px',
+          height: '100%',
+          maxHeight: isFullscreen ? 'calc(100vh - 120px)' : 'calc(100vh - 140px)',
           overflowY: 'auto',
+          overflowX: 'hidden',
           p: 2,
           display: 'flex',
           flexDirection: 'column',

@@ -66,7 +66,12 @@ const processQuestionHtml = (html: string, answerVisible: boolean, showFeedback:
   return html;
 };
 
-export const SkillsRefresherDetail = () => {  
+export interface SkillsRefresherDetailProps {
+  onChatToggle?: () => void;
+  isChatOpen?: boolean;
+}
+
+export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false }: SkillsRefresherDetailProps) {  
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation(); // Get current location
@@ -105,7 +110,7 @@ export const SkillsRefresherDetail = () => {
   const [currentSkill, setCurrentSkill] = useState<Skill | undefined>();
 
   // Chat functionality
-  const [isChatOpen, setIsChatOpen] = useState(true);  
+
   const [showAnswer, setShowAnswer] = useState(false); // Added state for answer visibility
   const [isSlideDeck, setIsSlideDeck] = useState(false); // Added state for slide deck
   const [youtubeContent, setYoutubeContent] = useState(''); // Added state for YouTube resources content
@@ -463,7 +468,7 @@ export const SkillsRefresherDetail = () => {
     if (!currentSkill || !question) return;
     
     // Ensure chat is open
-    setIsChatOpen(true);
+    onChatToggle?.();
     
     // Add "thinking" message to chat
     const thinkingMessage = {
@@ -638,7 +643,7 @@ export const SkillsRefresherDetail = () => {
                 {!isSlideDeck && startCourse !== 1 && (
                   <Tooltip title={`Ask questions about ${currentSkill?.title || 'this topic'}`}>
                     <IconButton
-                      onClick={() => setIsChatOpen(!isChatOpen)}
+                      onClick={onChatToggle}
                       sx={{
                         color: 'primary.light',
                         backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -1114,9 +1119,9 @@ export const SkillsRefresherDetail = () => {
                       <PictureAsPdfIcon />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title={`Ask questions about ${currentSkill?.title || 'this topic'}`}> 
+                  <Tooltip title={`Ask questions about ${currentSkill?.title || 'this topic'}`}>
                     <IconButton
-                      onClick={() => setIsChatOpen(!isChatOpen)}
+                      onClick={onChatToggle}
                       sx={{
                         color: 'primary.light',
                         backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -1208,14 +1213,9 @@ export const SkillsRefresherDetail = () => {
       )}
       
       {/* Chat Component */} 
-      <Chat 
-        isOpen={isChatOpen} 
-        onClose={() => setIsChatOpen(false)} 
-      />
+      {/* Chat component is now rendered in App.tsx */}
         </>
       )}
     </Container>
   );
 };
-
-export default SkillsRefresherDetail;
