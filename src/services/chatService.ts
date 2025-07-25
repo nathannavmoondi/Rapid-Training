@@ -58,6 +58,8 @@ class ChatService {
             {              role: "system",
               content: `You are a helpful assistant focused on ${skill}. Your name is Mr. Buddy. Only answer questions related to ${skill}. If the question is not related to ${skill}, politely redirect the user to ask about ${skill} instead.
 
+IMPORTANT: Do NOT start your responses with greetings, introductions, or phrases like "Hello", "Hi", "As Mr. Buddy", etc. Get straight to answering the question directly.
+
 When providing code examples or explanations:
 1. All code snippets MUST be wrapped in <pre><code class="language-xxx">...code here...</code></pre> tags.
 2. ANY JSX, HTML, or markup code MUST be put inside code blocks using language-markup.
@@ -72,13 +74,12 @@ When providing code examples or explanations:
    - language-csharp
 4. NEVER show JSX or HTML code outside of code blocks.
 5. If you need to reference HTML tags in explanations, use descriptive text instead of showing the actual tags.
-3. Indent code properly inside the code block.
-4. Make code examples practical, focused, and properly formatted.
-5. Never use markdown code blocks, always use the HTML structure above.
-6. Choose the most appropriate language class for the code being shown.
-7. If ${skill} is not a programming language, do not use CODE ELEMENTS OR BLOCKS AT ALL!!
-8. Return response in the language of $
-`
+6. Indent code properly inside the code block.
+7. Make code examples practical, focused, and properly formatted.
+8. Never use markdown code blocks, always use the HTML structure above.
+9. Choose the most appropriate language class for the code being shown.
+10. If ${skill} is not a programming language, do not use CODE ELEMENTS OR BLOCKS AT ALL!!
+11. Return response in the language requested.`
             },
             ...conversationMessages // Include conversation history
           ]
@@ -92,6 +93,14 @@ When providing code examples or explanations:
       const data = await response.json();
       let aiResponse = data.choices?.[0]?.message?.content || 'No response received';
 
+      // Remove specific greeting lines and introductions
+      aiResponse = aiResponse.replace(/Hello!\s*I\s*am\s*Mr\.\s*Buddy\.\s*I'm\s*here\s*to\s*help\s*with\s*your\s*.*?\s*questions\./gi, '');
+      aiResponse = aiResponse.replace(/^(Hello!?\s*|Hi!?\s*|Greetings!?\s*)/gim, '');
+      aiResponse = aiResponse.replace(/^As\s+Mr\.\s*Buddy,?\s*/gim, '');
+      aiResponse = aiResponse.replace(/^I'm\s+here\s+to\s+help.*?[\.\!]\s*/gim, '');
+      
+      // Remove all backticks
+      aiResponse = aiResponse.replace(/`+/g, '');
 
       return {
         id: Math.random().toString(36).substring(7),
@@ -135,6 +144,8 @@ When providing code examples or explanations:
               role: "system",
               content: `You are a helpful assistant focused on ${skill}. Provide an in-depth explanation of the quiz answer. Include relevant concepts, background information, and practical applications.
 
+IMPORTANT: Do NOT start your responses with greetings, introductions, or phrases like "Hello", "Hi", "As Mr. Buddy", etc. Get straight to explaining the answer directly.
+
 When providing code examples or explanations:
 1. All code snippets MUST be wrapped in <pre><code class="language-xxx">...code here...</code></pre> tags.
 2. ANY JSX, HTML, or markup code MUST be put inside code blocks using language-markup.
@@ -174,6 +185,12 @@ When providing code examples or explanations:
       const data = await response.json();
       let aiResponse = data.choices?.[0]?.message?.content || 'No response received';
 
+      // Remove specific greeting lines and introductions
+      aiResponse = aiResponse.replace(/Hello!\s*I\s*am\s*Mr\.\s*Buddy\.\s*I'm\s*here\s*to\s*help\s*with\s*your\s*.*?\s*questions\./gi, '');
+      aiResponse = aiResponse.replace(/^(Hello!?\s*|Hi!?\s*|Greetings!?\s*)/gim, '');
+      aiResponse = aiResponse.replace(/^As\s+Mr\.\s*Buddy,?\s*/gim, '');
+      aiResponse = aiResponse.replace(/^I'm\s+here\s+to\s+help.*?[\.\!]\s*/gim, '');
+      
       // Remove all backticks
       aiResponse = aiResponse.replace(/`+/g, '');
       // Remove all '* ' at the start of a line
