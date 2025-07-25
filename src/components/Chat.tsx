@@ -522,23 +522,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOp
         transition: isResizing ? 'none' : 'transform 0.3s ease-in-out'
       }}
     >
-      {/* DEBUG BUTTON: Add test messages to force overflow */}
-      <Box sx={{ p: 1, bgcolor: '#fffae6', borderBottom: '1px solid #eee', display: 'flex', gap: 1 }}>
-        <button
-          style={{ padding: '4px 12px', fontSize: '14px', borderRadius: '6px', border: '1px solid #0053A7', background: '#fff', color: '#0053A7', cursor: 'pointer' }}
-          onClick={() => {
-            setMessages(prev => [
-              ...prev,
-              ...Array.from({ length: 20 }, (_, i) => ({
-                id: 'debug-' + Math.random().toString(36).substring(7),
-                text: `Test message ${i + 1}`,
-                isUser: false,
-                timestamp: new Date()
-              }))
-            ]);
-          }}
-        >Add 20 test messages</button>
-      </Box>
+
       {/* Resize Handle */}
       {!isFullscreen && (
         <Box
@@ -603,7 +587,6 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOp
           flexDirection: 'column',
           gap: 2,
           position: 'relative',
-          border: '2px dashed #0053A7', // Debug border, remove later
           background: '#fff',
         }}
       >
@@ -672,24 +655,37 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOp
         <div ref={messagesEndRef} />
       </Box>
 
-      {/* Down arrow icon for overflow - now outside scrollable container */}
+      {/* Down arrow icon for overflow - positioned above scroll container border */}
       {showScrollDown && (
         <Box
           sx={{
             position: 'absolute',
             left: 0,
             right: 0,
-            bottom: isFullscreen ? 24 : 32,
+            bottom: isFullscreen ? 90 : 100,
             display: 'flex',
             justifyContent: 'center',
             pointerEvents: 'none',
             opacity: arrowOpacity,
             transition: 'opacity 0.3s',
-            zIndex: 100,
+            zIndex: 2000,
             userSelect: 'none',
           }}
         >
-          <ArrowDownwardIcon sx={{ fontSize: 36, color: '#0053A7', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }} />
+          <Box
+            sx={{
+              backgroundColor: '#0053A7',
+              borderRadius: '50%',
+              width: 40,
+              height: 40,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+            }}
+          >
+            <ArrowDownwardIcon sx={{ fontSize: 28, color: '#fff' }} />
+          </Box>
         </Box>
       )}
 
