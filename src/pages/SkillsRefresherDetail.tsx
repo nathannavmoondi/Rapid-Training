@@ -66,7 +66,12 @@ const processQuestionHtml = (html: string, answerVisible: boolean, showFeedback:
   return html;
 };
 
-export const SkillsRefresherDetail = () => {  
+export interface SkillsRefresherDetailProps {
+  onChatToggle?: () => void;
+  isChatOpen?: boolean;
+}
+
+export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false }: SkillsRefresherDetailProps) {  
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation(); // Get current location
@@ -105,11 +110,12 @@ export const SkillsRefresherDetail = () => {
   const [currentSkill, setCurrentSkill] = useState<Skill | undefined>();
 
   // Chat functionality
-  const [isChatOpen, setIsChatOpen] = useState(true);  
+
   const [showAnswer, setShowAnswer] = useState(false); // Added state for answer visibility
   const [isSlideDeck, setIsSlideDeck] = useState(false); // Added state for slide deck
   const [youtubeContent, setYoutubeContent] = useState(''); // Added state for YouTube resources content
   const [isLoadingYoutube, setIsLoadingYoutube] = useState(false); // Added loading state for YouTube  
+  const [isExplainingFurther, setIsExplainingFurther] = useState(false); // Added loading state for Explain Further  
 
   const skillTitle = searchParams.get('skill');    
   const contentRef = useRef<HTMLDivElement>(null);
@@ -460,23 +466,27 @@ export const SkillsRefresherDetail = () => {
   }; 
   
   const handleExplainFurther = async () => {
-    if (!currentSkill || !question) return;
+    if (!currentSkill || !question || isExplainingFurther) return;
     
-    // Open chat if not already open
-    if (!isChatOpen) {
-      setIsChatOpen(true);
-    }
-    
-    // Add "thinking" message to chat
-    const thinkingMessage = {
-      id: Math.random().toString(36).substring(7),
-      text: "Thinking...",
-      isUser: false,
-      timestamp: new Date()
-    };
-    addExternalMessage(thinkingMessage);
+    setIsExplainingFurther(true);
     
     try {
+      // Ensure chat is open only if it's not already open
+      if (!isChatOpen) {
+        onChatToggle?.();
+        // Wait a bit for the chat to fully open before adding messages
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // Add "thinking" message to chat
+      const thinkingMessage = {
+        id: Math.random().toString(36).substring(7),
+        text: "Thinking...",
+        isUser: false,
+        timestamp: new Date()
+      };
+      addExternalMessage(thinkingMessage);
+      
       // Call AI with the explain further prompt
       const aiResponse = await chatService.explainQuizInDepth(
         currentSkill.title,
@@ -486,6 +496,14 @@ export const SkillsRefresherDetail = () => {
       
       // Add AI response to chat
       addExternalMessage(aiResponse);
+
+      // Force scroll to top after a small delay to ensure the message is rendered
+      setTimeout(() => {
+        const chatContainer = document.querySelector('.chat-messages');
+        if (chatContainer) {
+          chatContainer.scrollTop = 0;
+        }
+      }, 100);
     } catch (error) {
       console.error('Failed to explain further:', error);
       const errorMessage = {
@@ -495,6 +513,8 @@ export const SkillsRefresherDetail = () => {
         timestamp: new Date()
       };
       addExternalMessage(errorMessage);
+    } finally {
+      setIsExplainingFurther(false);
     }
   };
   
@@ -632,7 +652,7 @@ export const SkillsRefresherDetail = () => {
                 {!isSlideDeck && startCourse !== 1 && (
                   <Tooltip title={`Ask questions about ${currentSkill?.title || 'this topic'}`}>
                     <IconButton
-                      onClick={() => setIsChatOpen(!isChatOpen)}
+                      onClick={onChatToggle}
                       sx={{
                         color: 'primary.light',
                         backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -882,14 +902,14 @@ export const SkillsRefresherDetail = () => {
                     <Button
                       variant="contained"
                       onClick={handleExplainFurther}
-                      disabled={isLoading}
+                      disabled={isLoading || isExplainingFurther}
                       sx={{ 
                         backgroundColor: '#9C27B0', 
                         color: 'white',
                         '&:hover': { backgroundColor: '#7B1FA2'}
                       }}
                     >
-                      Explain Further
+                      {isExplainingFurther ? 'Explaining...' : 'Explain Further'}
                     </Button>
                   )}
                   
@@ -1108,9 +1128,9 @@ export const SkillsRefresherDetail = () => {
                       <PictureAsPdfIcon />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title={`Ask questions about ${currentSkill?.title || 'this topic'}`}> 
+                  <Tooltip title={`Ask questions about ${currentSkill?.title || 'this topic'}`}>
                     <IconButton
-                      onClick={() => setIsChatOpen(!isChatOpen)}
+                      onClick={onChatToggle}
                       sx={{
                         color: 'primary.light',
                         backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -1202,14 +1222,9 @@ export const SkillsRefresherDetail = () => {
       )}
       
       {/* Chat Component */} 
-      <Chat 
-        isOpen={isChatOpen} 
-        onClose={() => setIsChatOpen(false)} 
-      />
+      {/* Chat component is now rendered in App.tsx */}
         </>
       )}
     </Container>
   );
 };
-
-export default SkillsRefresherDetail;

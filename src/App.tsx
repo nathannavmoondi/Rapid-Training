@@ -13,7 +13,7 @@ import { AlgorithmList } from './pages/AlgorithmList';
 import { AlgorithmDetail } from './pages/AlgorithmDetail';
 import { Details } from './pages/Details';
 import { SkillsRefresher } from './pages/SkillsRefresher';
-import { SkillsRefresherDetail } from './pages/SkillsRefresherDetail';
+import SkillsRefresherDetail from './pages/SkillsRefresherDetail';
 import { QuizResults } from './pages/QuizResults';
 import { QuizProvider } from './contexts/quizContext';
 import { ChatProvider, UserProvider } from './contexts/chatContext';
@@ -33,8 +33,17 @@ function App() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
 
+  // Centralized chat state management
   const handleChatToggle = () => {
     setIsChatOpen(!isChatOpen);
+  };
+
+  const openChat = () => {
+    setIsChatOpen(true);
+  };
+
+  const closeChat = () => {
+    setIsChatOpen(false);
   };
 
   const handleSplashClose = () => {
@@ -81,7 +90,7 @@ function App() {
                     <Routes>
                       <Route path="/" element={<Navigate to="/topics" replace />} />
                       <Route path="/topics" element={<SkillsRefresher />} />
-                      <Route path="/topics/:id" element={<SkillsRefresherDetail />} />
+                      <Route path="/topics/:id" element={<SkillsRefresherDetail onChatToggle={handleChatToggle} isChatOpen={isChatOpen} />} />
                       <Route path="/algorithms" element={<AlgorithmList />} />
                       <Route path="/algorithm/:id" element={<AlgorithmDetail />} />
                       <Route path="/item/:id" element={<Details />} />

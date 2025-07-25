@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { Box, TextField, IconButton, Typography, Avatar, Tooltip } from '@mui/material';
 import { useChat } from '../contexts/chatContext';
 import SendIcon from '@mui/icons-material/Send';
@@ -266,21 +267,38 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
   return <Box>{renderContentWithSyntaxHighlighting(text)}</Box>;
 };
 
-export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ isOpen, onClose }) => 
- {
+export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+  // ...existing code...
+  // Only one declaration of messages and setMessages should exist below:
+
+  // ...existing code...
+  // ...existing code...
   const { chatboxSkill, externalMessages, clearExternalMessages } = useChat();
-  const {   language  } = useQuiz();
-  
-  var firstMessage = chatService.getFirstPromptInRightLanguage(chatboxSkill, language);
-  // Function to get initial message
+  const { language } = useQuiz();
+
+  // Function to get initial message (now after hooks)
   const getInitialMessage = () => ({
     id: '1',
-    text: firstMessage,
+    text: chatService.getFirstPromptInRightLanguage(chatboxSkill, language),
     isUser: false,
     timestamp: new Date()
   });
-
   const [messages, setMessages] = useState<ChatMessage[]>([getInitialMessage()]);
+  // Scroll to the bottom when new messages arrive from external sources
+  useEffect(() => {
+    if (chatMessagesRef.current && externalMessages.length > 0) {
+      // Use a small delay to ensure the new content is rendered
+      setTimeout(() => {
+        if (chatMessagesRef.current) {
+          chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+        }
+      }, 100);
+    }
+  }, [messages, externalMessages.length]);
+  const [showScrollDown, setShowScrollDown] = useState(false);
+  const [arrowOpacity, setArrowOpacity] = useState(1);
+  // ...existing code...
+  
   const [input, setInput] = useState('');
   const [width, setWidth] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
@@ -336,21 +354,33 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
     }
   }, [isOpen, chatboxSkill]);
 
-  // Handle external messages
+  // Handle external messages (like "Explain Further")
   useEffect(() => {
     if (externalMessages.length > 0) {
-      setMessages(prev => {
-        let updatedMessages = [...prev];
-        
-        // Check if any external message is not "Thinking..." - if so, remove existing "Thinking..." messages
-        const hasNonThinkingMessage = externalMessages.some(msg => msg.text !== "Thinking...");
-        if (hasNonThinkingMessage) {
-          updatedMessages = updatedMessages.filter(msg => msg.text !== "Thinking...");
+      const lastMessage = externalMessages[externalMessages.length - 1];
+      
+      if (lastMessage.text === "CLEAR_CHAT") {
+        // Special message to clear the chat
+        setMessages([]);
+      } else if (lastMessage.text === "Thinking...") {
+        // For "Thinking..." message, just add it as the only message
+        setMessages([lastMessage]);
+      } else {
+        // For other messages, replace any existing messages
+        setMessages([lastMessage]);
+      }
+      
+      // Schedule scroll after state update is complete
+      setTimeout(() => {
+        if (chatMessagesRef.current) {
+          chatMessagesRef.current.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
         }
-        
-        return [...updatedMessages, ...externalMessages];
-      });
-      clearExternalMessages(); // Clear external messages after adding them
+      }, 100);
+      
+      clearExternalMessages();
     }
   }, [externalMessages, clearExternalMessages]);
 
@@ -401,16 +431,33 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
     };
   }, [isResizing]);
 
-  // Scroll to top of chat messages when a new response is sent
-  const scrollToTop = useCallback(() => {
-    if (chatMessagesRef.current) {
-      chatMessagesRef.current.scrollTop = 0;
-    }
-  }, []);
+  // Do not auto-scroll to bottom on new messages. User stays at top of new message and sees down arrow if overflow.
 
+  // Show/hide/fade scroll down arrow
   useEffect(() => {
-    scrollToTop();
-  }, [messages, scrollToTop]);
+    const handleScroll = () => {
+      if (!chatMessagesRef.current) return;
+      const { scrollTop, scrollHeight, clientHeight } = chatMessagesRef.current;
+      const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+      const hasOverflow = scrollHeight > clientHeight + 2; // allow for rounding
+      // Arrow disappears when within 4px of bottom
+      if (hasOverflow && distanceFromBottom > 4) {
+        setShowScrollDown(true);
+        setArrowOpacity(Math.max(0, Math.min(1, distanceFromBottom / 80)));
+      } else {
+        setShowScrollDown(false);
+        setArrowOpacity(0);
+      }
+    };
+    const ref = chatMessagesRef.current;
+    if (ref) {
+      ref.addEventListener('scroll', handleScroll);
+      handleScroll();
+    }
+    return () => {
+      if (ref) ref.removeEventListener('scroll', handleScroll);
+    };
+  }, [messages]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -432,6 +479,20 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
     setMessages(prev => [...prev, userMessage, loadingMessage]);
     setInput('');
 
+    // Only scroll to bottom if user was already at bottom
+    if (chatMessagesRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = chatMessagesRef.current;
+      const isAtBottom = scrollHeight - (scrollTop + clientHeight) < 30;
+      
+      if (isAtBottom) {
+        setTimeout(() => {
+          if (chatMessagesRef.current) {
+            chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+          }
+        }, 100);
+      }
+    }
+
     try {
       // Get conversation history (excluding the current loading message)
       const conversationHistory = messages.filter(msg => msg.text !== "Thinking...");
@@ -441,6 +502,23 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
           msg.id === loadingMessage.id ? response : msg
         )
       );
+      
+      // Scroll to top after receiving AI response with a slight delay to ensure render
+      setTimeout(() => {
+        if (chatMessagesRef.current) {
+          chatMessagesRef.current.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
+      
+      // Scroll to the response after it's received
+      setTimeout(() => {
+        if (chatMessagesRef.current) {
+          chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+        }
+      }, 100);
     } catch (error) {
       console.error('Failed to send message:', error);
       setMessages(prev => 
@@ -477,9 +555,9 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
           height: '100vh'
         } : {
           right: 20,
-          top: 60,
           bottom: 20,
-          width: `${width}px`
+          width: `${width}px`,
+          height: 'calc(100vh - 80px)', // Leave space for navbar only
         }),
         display: 'flex',
         flexDirection: 'column',
@@ -492,6 +570,7 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
         transition: isResizing ? 'none' : 'transform 0.3s ease-in-out'
       }}
     >
+
       {/* Resize Handle */}
       {!isFullscreen && (
         <Box
@@ -541,27 +620,41 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
             <CloseIcon />
           </IconButton>
         </Box>
-      </Box>      {/* Messages */}
+      </Box>
+      {/* Messages */}
       <Box
         className="chat-messages"
         ref={chatMessagesRef}
         sx={{
           flex: 1,
-          overflow: 'auto',
+          minHeight: '200px',
+          height: '100%',
+          maxHeight: isFullscreen ? 'calc(100vh - 120px)' : 'calc(100vh - 140px)',
+          overflowY: 'auto',
+          overflowX: 'hidden',
           p: 2,
           display: 'flex',
           flexDirection: 'column',
-          gap: 2
+          gap: 2,
+          position: 'relative',
+          background: '#fff',
         }}
       >
         {messages.map((message) => (
           <Box
             key={message.id}
+            data-message-id={message.id}
             sx={{
               display: 'flex',
               gap: 1,
               alignItems: 'flex-start',
-              flexDirection: message.isUser ? 'row-reverse' : 'row'
+              flexDirection: message.isUser ? 'row-reverse' : 'row',
+              opacity: 0,
+              animation: message.text === "Thinking..." ? 'fadeIn 0.3s ease forwards' : 'fadeIn 0.5s ease forwards',
+              '@keyframes fadeIn': {
+                from: { opacity: 0, transform: 'translateY(10px)' },
+                to: { opacity: 1, transform: 'translateY(0)' }
+              }
             }}
           >
             {!message.isUser && (
@@ -569,7 +662,6 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
                 <BuddyIcon />
               </Avatar>
             )}
-            
             <Box
               sx={{
                 backgroundColor: message.isUser ? '#007AFF' : '#F1F2F6',
@@ -587,9 +679,9 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
                   wordBreak: 'break-word'
                 }
               }}
-            >            <MessageContent text={message.text} isUser={message.isUser} />
+            >
+              <MessageContent text={message.text} isUser={message.isUser} />
             </Box>
-            
             {/* Copy button for AI messages positioned outside and to the right of bubble */}
             {!message.isUser && message.text !== "Thinking..." && (
               <Tooltip 
@@ -619,6 +711,55 @@ export const Chat: React.FC<{   isOpen: boolean;  onClose: () => void; }> = ({ i
         ))}
         <div ref={messagesEndRef} />
       </Box>
+
+      {/* Down arrow icon for overflow - positioned above scroll container border */}
+      {showScrollDown && (
+        <Box
+          sx={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: isFullscreen ? 90 : 100,
+            display: 'flex',
+            justifyContent: 'center',
+            opacity: arrowOpacity,
+            transition: 'opacity 0.3s',
+            zIndex: 2000,
+          }}
+        >
+          <Box
+            onClick={() => {
+              if (chatMessagesRef.current) {
+                chatMessagesRef.current.scrollTo({
+                  top: chatMessagesRef.current.scrollHeight,
+                  behavior: 'smooth'
+                });
+              }
+            }}
+            sx={{
+              backgroundColor: '#0053A7',
+              borderRadius: '50%',
+              width: 40,
+              height: 40,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                backgroundColor: '#003E7D',
+                transform: 'translateY(2px)',
+              },
+              '&:active': {
+                transform: 'translateY(4px)',
+              }
+            }}
+          >
+            <ArrowDownwardIcon sx={{ fontSize: 28, color: '#fff' }} />
+          </Box>
+        </Box>
+      )}
 
       {/* Input */}
       <Box
