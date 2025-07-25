@@ -578,4 +578,65 @@ export const GetIWantToLearn = async (topic: string): Promise<void> => {
   return;
 };
 
+export const getSubTopics = async (skillTitle: string): Promise<string[]> => {
+  try {
+    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+    
+    if (!apiKey) {
+      throw new Error('API key not found in environment variables!');
+    }
+
+    const prompt = `Give me up to 10 important subtopics of ${skillTitle}. Just the list nothing more. Return each subtopic on a new line without numbering or bullet points.`;
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://rapidskilltrain.com',
+        'X-Title': 'RapidSkillTrain'
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-3.5-sonnet',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 500,
+        temperature: 0.7
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+    
+    // Split by lines and filter out empty lines
+    const topics = content
+      .split('\n')
+      .map((line: string) => line.trim())
+      .filter((line: string) => line.length > 0)
+      .slice(0, 10); // Ensure max 10 topics
+
+    return topics;
+  } catch (error) {
+    console.error('Error fetching sub topics:', error);
+    return [
+      'Basic Concepts',
+      'Advanced Techniques',
+      'Real-world Applications',
+      'Common Patterns',
+      'Best Practices',
+      'Performance Optimization',
+      'Debugging Tips',
+      'Related Technologies'
+    ]; // Fallback topics
+  }
+};
+
 
