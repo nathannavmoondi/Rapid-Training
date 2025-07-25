@@ -284,12 +284,17 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOp
     timestamp: new Date()
   });
   const [messages, setMessages] = useState<ChatMessage[]>([getInitialMessage()]);
-  // Always scroll to top when new messages arrive so arrow appears if overflow
+  // Scroll to the bottom when new messages arrive from external sources
   useEffect(() => {
-    if (chatMessagesRef.current) {
-      chatMessagesRef.current.scrollTop = 0;
+    if (chatMessagesRef.current && externalMessages.length > 0) {
+      // Use a small delay to ensure the new content is rendered
+      setTimeout(() => {
+        if (chatMessagesRef.current) {
+          chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+        }
+      }, 100);
     }
-  }, [messages]);
+  }, [messages, externalMessages.length]);
   const [showScrollDown, setShowScrollDown] = useState(false);
   const [arrowOpacity, setArrowOpacity] = useState(1);
   // ...existing code...
@@ -349,21 +354,32 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOp
     }
   }, [isOpen, chatboxSkill]);
 
-  // Handle external messages
+  // Handle external messages (like "Explain Further")
   useEffect(() => {
     if (externalMessages.length > 0) {
-      setMessages(prev => {
-        let updatedMessages = [...prev];
-        
-        // Check if any external message is not "Thinking..." - if so, remove existing "Thinking..." messages
-        const hasNonThinkingMessage = externalMessages.some(msg => msg.text !== "Thinking...");
-        if (hasNonThinkingMessage) {
-          updatedMessages = updatedMessages.filter(msg => msg.text !== "Thinking...");
+      // First, find if we have a "Thinking..." message to replace
+      const thinkingMessage = externalMessages.find(msg => msg.text === "Thinking...");
+      const explanationMessage = externalMessages.find(msg => msg.text !== "Thinking...");
+      
+      if (explanationMessage) {
+        // For explanation messages (like from "Explain Further"), clear the chat first
+        setMessages([explanationMessage]);
+      } else if (thinkingMessage) {
+        // For "Thinking..." message, just add it to existing messages
+        setMessages(prev => [...prev, thinkingMessage]);
+      }
+      
+      // Schedule scroll after state update is complete
+      setTimeout(() => {
+        if (chatMessagesRef.current) {
+          chatMessagesRef.current.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
         }
-        
-        return [...updatedMessages, ...externalMessages];
-      });
-      clearExternalMessages(); // Clear external messages after adding them
+      }, 100);
+      
+      clearExternalMessages();
     }
   }, [externalMessages, clearExternalMessages]);
 
@@ -462,6 +478,20 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOp
     setMessages(prev => [...prev, userMessage, loadingMessage]);
     setInput('');
 
+    // Only scroll to bottom if user was already at bottom
+    if (chatMessagesRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = chatMessagesRef.current;
+      const isAtBottom = scrollHeight - (scrollTop + clientHeight) < 30;
+      
+      if (isAtBottom) {
+        setTimeout(() => {
+          if (chatMessagesRef.current) {
+            chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+          }
+        }, 100);
+      }
+    }
+
     try {
       // Get conversation history (excluding the current loading message)
       const conversationHistory = messages.filter(msg => msg.text !== "Thinking...");
@@ -471,6 +501,23 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOp
           msg.id === loadingMessage.id ? response : msg
         )
       );
+      
+      // Scroll to top after receiving AI response with a slight delay to ensure render
+      setTimeout(() => {
+        if (chatMessagesRef.current) {
+          chatMessagesRef.current.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
+      
+      // Scroll to the response after it's received
+      setTimeout(() => {
+        if (chatMessagesRef.current) {
+          chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+        }
+      }, 100);
     } catch (error) {
       console.error('Failed to send message:', error);
       setMessages(prev => 
@@ -593,11 +640,18 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOp
         {messages.map((message) => (
           <Box
             key={message.id}
+            data-message-id={message.id}
             sx={{
               display: 'flex',
               gap: 1,
               alignItems: 'flex-start',
-              flexDirection: message.isUser ? 'row-reverse' : 'row'
+              flexDirection: message.isUser ? 'row-reverse' : 'row',
+              opacity: 0,
+              animation: message.text === "Thinking..." ? 'fadeIn 0.3s ease forwards' : 'fadeIn 0.5s ease forwards',
+              '@keyframes fadeIn': {
+                from: { opacity: 0, transform: 'translateY(10px)' },
+                to: { opacity: 1, transform: 'translateY(0)' }
+              }
             }}
           >
             {!message.isUser && (
@@ -665,14 +719,20 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOp
             bottom: isFullscreen ? 90 : 100,
             display: 'flex',
             justifyContent: 'center',
-            pointerEvents: 'none',
             opacity: arrowOpacity,
             transition: 'opacity 0.3s',
             zIndex: 2000,
-            userSelect: 'none',
           }}
         >
           <Box
+            onClick={() => {
+              if (chatMessagesRef.current) {
+                chatMessagesRef.current.scrollTo({
+                  top: chatMessagesRef.current.scrollHeight,
+                  behavior: 'smooth'
+                });
+              }
+            }}
             sx={{
               backgroundColor: '#0053A7',
               borderRadius: '50%',
@@ -681,7 +741,16 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOp
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                backgroundColor: '#003E7D',
+                transform: 'translateY(2px)',
+              },
+              '&:active': {
+                transform: 'translateY(4px)',
+              }
             }}
           >
             <ArrowDownwardIcon sx={{ fontSize: 28, color: '#fff' }} />

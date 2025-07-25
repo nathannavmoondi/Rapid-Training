@@ -462,10 +462,8 @@ export const SkillsRefresherDetail = () => {
   const handleExplainFurther = async () => {
     if (!currentSkill || !question) return;
     
-    // Open chat if not already open
-    if (!isChatOpen) {
-      setIsChatOpen(true);
-    }
+    // Ensure chat is open
+    setIsChatOpen(true);
     
     // Add "thinking" message to chat
     const thinkingMessage = {
@@ -486,6 +484,14 @@ export const SkillsRefresherDetail = () => {
       
       // Add AI response to chat
       addExternalMessage(aiResponse);
+
+      // Force scroll to top after a small delay to ensure the message is rendered
+      setTimeout(() => {
+        const chatContainer = document.querySelector('.chat-messages');
+        if (chatContainer) {
+          chatContainer.scrollTop = 0;
+        }
+      }, 100);
     } catch (error) {
       console.error('Failed to explain further:', error);
       const errorMessage = {
