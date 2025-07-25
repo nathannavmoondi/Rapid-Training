@@ -20,6 +20,11 @@ import { ChatProvider, UserProvider } from './contexts/chatContext';
 import { PromptDB } from './pages/PromptDB';
 import { MarketingAI } from './pages/MarketingAI';
 import { YouTubeQuizGenerator } from './pages/YouTubeQuizGenerator';
+import MyQuizzes from './pages/MyQuizzes';
+import MySlidedecks from './pages/MySlidedecks';
+import MyTraining from './pages/MyTraining';
+import CustomQuizzes from './pages/CustomQuizzes';
+import Explore from './pages/Explore';
 import { Sidebar } from './components/Sidebar';
 import './styles/mobile.css';
 import './App.css';
@@ -76,7 +81,7 @@ function App() {
                   onChatToggle={handleChatToggle} 
                   isChatOpen={isChatOpen}
                 />
-                <Sidebar />
+                <Sidebar onChatToggle={handleChatToggle} isChatOpen={isChatOpen} />
                 <Box 
                   sx={{ 
                     flex: 1,
@@ -95,6 +100,11 @@ function App() {
                       <Route path="/algorithm/:id" element={<AlgorithmDetail />} />
                       <Route path="/item/:id" element={<Details />} />
                       <Route path="/quiz-results" element={<QuizResults />} />
+                      <Route path="/my-quizzes" element={<MyQuizzes />} />
+                      <Route path="/my-slidedecks" element={<MySlidedecks />} />
+                      <Route path="/my-training" element={<MyTraining />} />
+                      <Route path="/custom-quizzes" element={<CustomQuizzes />} />
+                      <Route path="/explore" element={<Explore />} />
                       <Route path="/failed-questions-primer" element={<React.Suspense fallback={<div>Loading...</div>}><FailedQuestionsPrimer /></React.Suspense>} />
                       <Route path="/promptdb" element={<PromptDB />} />
                       <Route path="/marketing-ai" element={<MarketingAI />} />

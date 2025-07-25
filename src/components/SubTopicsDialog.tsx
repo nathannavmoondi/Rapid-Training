@@ -222,13 +222,17 @@ export const SubTopicsDialog: React.FC<SubTopicsDialogProps> = ({
       >
         <Button
           onClick={onClose}
-          variant="outlined"
+          variant="contained"
           sx={{
-            color: 'rgba(255, 255, 255, 0.7)',
-            borderColor: 'rgba(255, 255, 255, 0.3)',
+            backgroundColor: '#d32f2f',
+            color: 'white',
+            fontWeight: 'bold',
             '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              borderColor: 'rgba(255, 255, 255, 0.5)'
+              backgroundColor: '#c62828'
+            },
+            '&:disabled': {
+              backgroundColor: 'rgba(211, 47, 47, 0.3)',
+              color: 'rgba(255, 255, 255, 0.5)'
             }
           }}
         >

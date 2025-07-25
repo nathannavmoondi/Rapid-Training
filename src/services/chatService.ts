@@ -233,14 +233,15 @@ When providing code examples or explanations:
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "google/gemini-2.0-flash-001:floor",
+          model: "anthropic/claude-3.5-sonnet",
           temperature: 0.7,
           messages: [
             {
               role: "system",
               content: `You are a helpful assistant focused on ${skill}. Provide an in-depth explanation of this topic. Include relevant concepts, background information, and practical applications.
 
-IMPORTANT: Do NOT start your responses with greetings, introductions, or phrases like "Hello", "Hi", "As Mr. Buddy", etc. Get straight to explaining the answer directly.
+IMPORTANT: Do NOT start your responses with greetings, introductions, or phrases like "Hello", "Hi", "As Mr. Buddy", etc.
+ Get straight to explaining the answer directly.
 
 When providing code examples or explanations:
 1. All code snippets MUST be wrapped in <pre><code class="language-xxx">...code here...</code></pre> tags.

@@ -12,6 +12,9 @@ import WorkspacesIcon from '@mui/icons-material/Workspaces';
 import StarIcon from '@mui/icons-material/Star';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import { useNavigate } from 'react-router-dom';
+import { IWantToLearnDialog } from './IWantToLearnDialog';
+import { useChat } from '../contexts/chatContext';
+import { chatService } from '../services/chatService';
 
 const menuItems = [
   { label: 'Topics', path: '/topics', icon: <SchoolIcon />, external: false },
@@ -31,12 +34,19 @@ const SIDEBAR_MAX_WIDTH = 235;
 const TEXT_VISIBILITY_THRESHOLD = 130; // Width below which text will be hidden
 const WIDTH_BREAKPOINT = 1100;
 
-export const Sidebar = () => {
+interface SidebarProps {
+  onChatToggle?: () => void;
+  isChatOpen?: boolean;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = false }) => {
   const navigate = useNavigate();
   const theme = useTheme();
+  const { addExternalMessage } = useChat();
   const [width, setWidth] = useState(window.innerWidth < WIDTH_BREAKPOINT ? SIDEBAR_MIN_WIDTH : SIDEBAR_MAX_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
   const [shouldShowHamburger, setShouldShowHamburger] = useState(window.innerWidth < WIDTH_BREAKPOINT);
+  const [iWantToLearnOpen, setIWantToLearnOpen] = useState(false);
   const showText = width >= TEXT_VISIBILITY_THRESHOLD;
 
   useEffect(() => {
@@ -86,6 +96,53 @@ export const Sidebar = () => {
       document.removeEventListener('mouseup', handleMouseUp);
     };
   }, [isResizing]);
+
+  const handleIWantToLearn = async (topic: string) => {
+    try {
+      // Add "thinking" message to chat BEFORE opening chat
+      const thinkingMessage = {
+        id: Math.random().toString(36).substring(7),
+        text: "Thinking...",
+        isUser: false,
+        timestamp: new Date()
+      };
+      addExternalMessage(thinkingMessage);
+      
+      // Ensure chat is open only if it's not already open
+      if (!isChatOpen) {
+        onChatToggle?.();
+        // Wait a bit for the chat to fully open before making API call
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // Call AI with the explain topic prompt - we'll use a generic "Learning" skill
+      const aiResponse = await chatService.explainTopicInDepth(
+        "General Learning",
+        topic,
+        "english"
+      );
+      
+      // Add AI response to chat
+      addExternalMessage(aiResponse);
+
+      // Force scroll to top after a small delay to ensure the message is rendered
+      setTimeout(() => {
+        const chatContainer = document.querySelector('.chat-messages');
+        if (chatContainer) {
+          chatContainer.scrollTop = 0;
+        }
+      }, 100);
+    } catch (error) {
+      console.error('Failed to explain topic:', error);
+      const errorMessage = {
+        id: Math.random().toString(36).substring(7),
+        text: "Sorry, I encountered an error while trying to explain this topic. Please try again.",
+        isUser: false,
+        timestamp: new Date()
+      };
+      addExternalMessage(errorMessage);
+    }
+  };
 
   return (
     <Box
@@ -161,7 +218,9 @@ export const Sidebar = () => {
                 justifyContent: showText ? 'flex-start' : 'center'
               }}
               onClick={() => {
-                if (item.external) {
+                if (item.label === 'I want to learn') {
+                  setIWantToLearnOpen(true);
+                } else if (item.external) {
                   window.open(item.path, '_blank');
                 } else {
                   navigate(item.path);
@@ -244,6 +303,13 @@ export const Sidebar = () => {
           },
         }}
         onMouseDown={handleMouseDown}
+      />
+      
+      {/* I Want to Learn Dialog */}
+      <IWantToLearnDialog
+        open={iWantToLearnOpen}
+        onClose={() => setIWantToLearnOpen(false)}
+        onLearnMore={handleIWantToLearn}
       />
     </Box>
   );
