@@ -8,6 +8,7 @@ import type { Skill } from '../data/skills';
 import { requestRefresher } from '../services/aiService';
 import { getYoutubeResources } from '../services/resourceService';
 import { Chat } from '../components/Chat';
+import { SubTopicsDialog } from '../components/SubTopicsDialog';
 import { useChat } from '../contexts/chatContext';
 import { chatService } from '../services/chatService';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -115,7 +116,9 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
   const [isSlideDeck, setIsSlideDeck] = useState(false); // Added state for slide deck
   const [youtubeContent, setYoutubeContent] = useState(''); // Added state for YouTube resources content
   const [isLoadingYoutube, setIsLoadingYoutube] = useState(false); // Added loading state for YouTube  
-  const [isExplainingFurther, setIsExplainingFurther] = useState(false); // Added loading state for Explain Further  
+  const [isExplainingFurther, setIsExplainingFurther] = useState(false); // Added loading state for Explain Further
+  const [showSubTopics, setShowSubTopics] = useState(false); // Added state for Sub Topics
+  const [subTopicsDialogOpen, setSubTopicsDialogOpen] = useState(false); // Added state for Sub Topics Dialog  
 
   const skillTitle = searchParams.get('skill');    
   const contentRef = useRef<HTMLDivElement>(null);
@@ -515,6 +518,59 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
       addExternalMessage(errorMessage);
     } finally {
       setIsExplainingFurther(false);
+    }
+  };
+
+  const handleSubTopics = () => {
+    setSubTopicsDialogOpen(true);
+  };
+
+  const handleSubTopicLearnMore = async (subTopic: string) => {
+    if (!currentSkill || !subTopic) return;
+    
+    try {
+      // Add "thinking" message to chat BEFORE opening chat
+      const thinkingMessage = {
+        id: Math.random().toString(36).substring(7),
+        text: "Thinking...",
+        isUser: false,
+        timestamp: new Date()
+      };
+      addExternalMessage(thinkingMessage);
+      
+      // Ensure chat is open only if it's not already open
+      if (!isChatOpen) {
+        onChatToggle?.();
+        // Wait a bit for the chat to fully open before making API call
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // Call AI with the explain topic prompt
+      const aiResponse = await chatService.explainTopicInDepth(
+        currentSkill.title,
+        subTopic,
+        language
+      );
+      
+      // Add AI response to chat
+      addExternalMessage(aiResponse);
+
+      // Force scroll to top after a small delay to ensure the message is rendered
+      setTimeout(() => {
+        const chatContainer = document.querySelector('.chat-messages');
+        if (chatContainer) {
+          chatContainer.scrollTop = 0;
+        }
+      }, 100);
+    } catch (error) {
+      console.error('Failed to explain sub topic:', error);
+      const errorMessage = {
+        id: Math.random().toString(36).substring(7),
+        text: "Sorry, I encountered an error while trying to explain this topic. Please try again.",
+        isUser: false,
+        timestamp: new Date()
+      };
+      addExternalMessage(errorMessage);
     }
   };
   
@@ -1077,6 +1133,22 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
             {/* Third row: language dropdown with icons on right */}
             {!isSlideDeck && startCourse !== 1 && !showYoutubeResources && !isLoading && !isLoadingYoutube && (
               <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '7px' }}>
+                {/* Sub Topics Button */}
+                <Button
+                  variant="contained"
+                  onClick={handleSubTopics}
+                  sx={{
+                    backgroundColor: '#9C27B0',
+                    color: 'white',
+                    fontWeight: 700,
+                    fontSize: '1rem',
+                    borderRadius: '6px',
+                    '&:hover': { backgroundColor: '#7B1FA2' }
+                  }}
+                >
+                  Sub Topics
+                </Button>
+                
                 {/* Language dropdown */}
                 <FormControl size="small" sx={{ minWidth: 160 }}>
                   
@@ -1223,6 +1295,14 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
       
       {/* Chat Component */} 
       {/* Chat component is now rendered in App.tsx */}
+
+      {/* Sub Topics Dialog */}
+      <SubTopicsDialog
+        open={subTopicsDialogOpen}
+        onClose={() => setSubTopicsDialogOpen(false)}
+        skillTitle={currentSkill?.title || ''}
+        onLearnMore={handleSubTopicLearnMore}
+      />
         </>
       )}
     </Container>
