@@ -4,7 +4,6 @@ import MenuIcon from '@mui/icons-material/Menu';
 import SchoolIcon from '@mui/icons-material/School';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import FunctionsIcon from '@mui/icons-material/Functions';
-import CampaignIcon from '@mui/icons-material/Campaign';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import SettingsIcon from '@mui/icons-material/Settings';
 import QuizIcon from '@mui/icons-material/Quiz';
@@ -17,7 +16,6 @@ import { useNavigate } from 'react-router-dom';
 const menuItems = [
   { label: 'Topics', path: '/topics', icon: <SchoolIcon />, external: false },
   { label: 'Algorithms', path: '/algorithms', icon: <FunctionsIcon />, external: false },
-  { label: 'Marketing AI', path: '/marketing-ai', icon: <CampaignIcon />, external: false },
   { label: 'My Quizzes', path: '/my-quizzes', icon: <QuizIcon />, external: false },
   { label: 'My Slidedecks', path: '/my-slidedecks', icon: <WysiwygIcon />, external: false },
   { label: 'My Training', path: '/my-training', icon: <WorkspacesIcon />, external: false },
