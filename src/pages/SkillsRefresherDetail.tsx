@@ -471,14 +471,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
     setIsExplainingFurther(true);
     
     try {
-      // Ensure chat is open only if it's not already open
-      if (!isChatOpen) {
-        onChatToggle?.();
-        // Wait a bit for the chat to fully open before adding messages
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-      
-      // Add "thinking" message to chat
+      // Add "thinking" message to chat BEFORE opening chat
       const thinkingMessage = {
         id: Math.random().toString(36).substring(7),
         text: "Thinking...",
@@ -486,6 +479,13 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
         timestamp: new Date()
       };
       addExternalMessage(thinkingMessage);
+      
+      // Ensure chat is open only if it's not already open
+      if (!isChatOpen) {
+        onChatToggle?.();
+        // Wait a bit for the chat to fully open before making API call
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
       
       // Call AI with the explain further prompt
       const aiResponse = await chatService.explainQuizInDepth(

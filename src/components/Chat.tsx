@@ -348,9 +348,15 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
     // Reset messages when chatbox opens
   useEffect(() => {
     if (isOpen) {
-      setMessages([getInitialMessage()]);
+      // Only show initial welcome message if there are no external messages pending
+      if (externalMessages.length === 0) {
+        setMessages([getInitialMessage()]);
+      } else {
+        // If there are external messages, start with empty array to avoid showing welcome message
+        setMessages([]);
+      }
       setInput('');
-      clearExternalMessages(); // Clear any pending external messages when opening
+      // Don't clear external messages here since we want to process them
     }
   }, [isOpen, chatboxSkill]);
 
