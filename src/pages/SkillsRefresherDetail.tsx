@@ -115,6 +115,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
   const [isSlideDeck, setIsSlideDeck] = useState(false); // Added state for slide deck
   const [youtubeContent, setYoutubeContent] = useState(''); // Added state for YouTube resources content
   const [isLoadingYoutube, setIsLoadingYoutube] = useState(false); // Added loading state for YouTube  
+  const [isExplainingFurther, setIsExplainingFurther] = useState(false); // Added loading state for Explain Further  
 
   const skillTitle = searchParams.get('skill');    
   const contentRef = useRef<HTMLDivElement>(null);
@@ -465,21 +466,27 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
   }; 
   
   const handleExplainFurther = async () => {
-    if (!currentSkill || !question) return;
+    if (!currentSkill || !question || isExplainingFurther) return;
     
-    // Ensure chat is open
-    onChatToggle?.();
-    
-    // Add "thinking" message to chat
-    const thinkingMessage = {
-      id: Math.random().toString(36).substring(7),
-      text: "Thinking...",
-      isUser: false,
-      timestamp: new Date()
-    };
-    addExternalMessage(thinkingMessage);
+    setIsExplainingFurther(true);
     
     try {
+      // Ensure chat is open only if it's not already open
+      if (!isChatOpen) {
+        onChatToggle?.();
+        // Wait a bit for the chat to fully open before adding messages
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // Add "thinking" message to chat
+      const thinkingMessage = {
+        id: Math.random().toString(36).substring(7),
+        text: "Thinking...",
+        isUser: false,
+        timestamp: new Date()
+      };
+      addExternalMessage(thinkingMessage);
+      
       // Call AI with the explain further prompt
       const aiResponse = await chatService.explainQuizInDepth(
         currentSkill.title,
@@ -506,6 +513,8 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
         timestamp: new Date()
       };
       addExternalMessage(errorMessage);
+    } finally {
+      setIsExplainingFurther(false);
     }
   };
   
@@ -893,14 +902,14 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
                     <Button
                       variant="contained"
                       onClick={handleExplainFurther}
-                      disabled={isLoading}
+                      disabled={isLoading || isExplainingFurther}
                       sx={{ 
                         backgroundColor: '#9C27B0', 
                         color: 'white',
                         '&:hover': { backgroundColor: '#7B1FA2'}
                       }}
                     >
-                      Explain Further
+                      {isExplainingFurther ? 'Explaining...' : 'Explain Further'}
                     </Button>
                   )}
                   
