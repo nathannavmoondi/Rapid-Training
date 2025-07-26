@@ -726,7 +726,7 @@ Important guidelines:
 10. IMPORTANT: Keep all text lines under 80 characters to prevent horizontal scrolling
 11. Break long sentences into shorter ones for better readability
 12. Use concise explanations - prioritize clarity over lengthy descriptions
-13. Make explanation party easy to follow but also very indepth`;
+13. Make explanation section easy to follow but also very indepth and detailed`;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
