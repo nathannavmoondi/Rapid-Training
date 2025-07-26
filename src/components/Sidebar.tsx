@@ -12,6 +12,7 @@ import WorkspacesIcon from '@mui/icons-material/Workspaces';
 import StarIcon from '@mui/icons-material/Star';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import AssessmentIcon from '@mui/icons-material/Assessment';
+import CodeIcon from '@mui/icons-material/Code';
 import { useNavigate } from 'react-router-dom';
 import { IWantToLearnDialog } from './IWantToLearnDialog';
 import { useChat } from '../contexts/chatContext';
@@ -25,6 +26,7 @@ const menuItems = [
   { label: 'My Training', path: '/my-training', icon: <WorkspacesIcon />, external: false },
   { label: 'Custom Quizzes', path: '/custom-quizzes', icon: <StarIcon />, external: false },
   { label: 'Review Quizzes', path: '/review-quizzes', icon: <AssessmentIcon />, external: false },
+  { label: 'Coder Test', path: '/coder-test', icon: <CodeIcon />, external: false },
   { label: 'YT Generator', path: '/yt-generator', icon: <YouTubeIcon />, external: false },
   { label: 'I want to learn', path: '/learn', icon: <MenuBookIcon />, external: false },
   { label: 'Explore', path: '/explore', icon: <SettingsIcon />, external: false },
