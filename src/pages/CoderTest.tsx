@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -9,16 +9,253 @@ import {
   FormControl,
   Select,
   MenuItem,
-  InputLabel
+  InputLabel,
+  CircularProgress
 } from '@mui/material';
+import { getCoderTestQuestion } from '../services/aiService';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+// Component to render content with syntax highlighting (similar to Chat.tsx)
+const MessageContent: React.FC<{ 
+  text: string; 
+  showAnswer: boolean;
+  onToggleAnswer: () => void;
+}> = ({ text, showAnswer, onToggleAnswer }) => {
+  // Parse the message to identify code blocks and apply syntax highlighting
+  const renderContentWithSyntaxHighlighting = (content: string) => {
+    // First, handle HTML code blocks (<pre><code class="language-xxx">)
+    let processedContent = content.replace(
+      /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g,
+      (match, language, code) => {
+        // Decode HTML entities and convert to markdown format
+        const decodedCode = code
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&amp;/g, '&')
+          .replace(/&quot;/g, '"')
+          .replace(/&#x27;/g, "'");
+        return `\`\`\`${language}\n${decodedCode}\n\`\`\``;
+      }
+    );
+
+    // Also handle plain <pre><code> without language class
+    processedContent = processedContent.replace(
+      /<pre><code>([\s\S]*?)<\/code><\/pre>/g,
+      (match, code) => {
+        const decodedCode = code
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&amp;/g, '&')
+          .replace(/&quot;/g, '"')
+          .replace(/&#x27;/g, "'");
+        return `\`\`\`javascript\n${decodedCode}\n\`\`\``;
+      }
+    );
+
+    // Split content into question and answer sections
+    // Look for common answer section patterns
+    const answerPatterns = [
+      /([\s\S]*?)(<div class="answer-section"[\s\S]*)/,  // Explicit answer section
+      /([\s\S]*?)(<h[3-6][^>]*>.*?(?:solution|answer|explanation|approach).*?<\/h[3-6]>[\s\S]*)/i,  // Headers with solution words
+      /([\s\S]*?)(<p[^>]*>.*?<strong>.*?(?:solution|answer|explanation|approach).*?<\/strong>[\s\S]*)/i,  // Bold solution text
+      /([\s\S]*?)(<h[3-6][^>]*>.*?step.*?<\/h[3-6]>[\s\S]*)/i,  // Step-by-step solutions
+    ];
+    
+    let questionContent = processedContent;
+    let answerContent = '';
+    
+    for (const pattern of answerPatterns) {
+      const match = processedContent.match(pattern);
+      if (match) {
+        questionContent = match[1];
+        answerContent = match[2];
+        break;
+      }
+    }
+
+    // Split content by code blocks (```language...```)
+    const processContentParts = (contentToProcess: string) => {
+      const parts = contentToProcess.split(/(```[\w]*\n[\s\S]*?\n```)/g);
+      
+      // Language mapping for better syntax highlighting
+      const mapLanguage = (lang: string): string => {
+        const languageMap: { [key: string]: string } = {
+          'language-jsx': 'jsx',
+          'language-tsx': 'tsx',
+          'language-javascript': 'javascript',
+          'language-typescript': 'typescript',
+          'language-html': 'markup',
+          'language-xml': 'markup',
+          'language-markup': 'markup',
+          'jsx': 'jsx',
+          'tsx': 'tsx',
+          'js': 'javascript',
+          'ts': 'typescript',
+          'html': 'markup',
+          'xml': 'markup',
+          'py': 'python',
+          'cs': 'csharp',
+          'cpp': 'cpp',
+          'c++': 'cpp',
+          'java': 'java',
+          'php': 'php',
+          'ruby': 'ruby',
+          'go': 'go',
+          'rust': 'rust',
+          'swift': 'swift',
+          'kotlin': 'kotlin',
+          'scala': 'scala',
+          'sql': 'sql',
+          'json': 'json',
+          'yaml': 'yaml',
+          'yml': 'yaml',
+          'toml': 'toml',
+          'ini': 'ini',
+          'bash': 'bash',
+          'sh': 'bash',
+          'shell': 'bash',
+          'powershell': 'powershell',
+          'ps1': 'powershell'
+        };
+        
+        return languageMap[lang.toLowerCase()] || lang || 'javascript';
+      };
+      
+      return parts.map((part, index) => {
+        // Check if this part is a code block
+        const codeMatch = part.match(/^```(\w*)\n([\s\S]*?)\n```$/);
+        
+        if (codeMatch) {
+          const [, language, code] = codeMatch;
+          const mappedLang = mapLanguage(language);
+          
+          return (
+            <Box key={index} sx={{ my: 2 }}>
+              <SyntaxHighlighter
+                language={mappedLang}
+                style={vscDarkPlus}
+                showLineNumbers={false}
+                customStyle={{
+                  margin: 0,
+                  padding: '16px',
+                  background: '#1E1E1E',
+                  fontSize: '14px',
+                  lineHeight: '1.4',
+                  borderRadius: '6px',
+                  fontFamily: "'Fira Code', 'Consolas', monospace",
+                }}
+                codeTagProps={{
+                  style: {
+                    fontFamily: "'Fira Code', 'Consolas', monospace",
+                  }
+                }}
+              >
+                {code.trim()}
+              </SyntaxHighlighter>
+            </Box>
+          );
+        } else {
+          // Regular HTML content
+          return (
+            <Typography
+              key={index}
+              component="div"
+              sx={{
+                color: 'white',
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
+                wordBreak: 'break-word',
+                '& h3': { color: '#f500ff', mb: 2, fontSize: '1.5rem', fontWeight: 'bold' },
+                '& h4': { color: '#00FF00', mb: 1, fontSize: '1.2rem', fontWeight: 'bold' },
+                '& p': { color: 'white', mb: 1, lineHeight: '1.6' },
+                '& li': { color: 'white', mb: 0.5, lineHeight: '1.5' },
+                '& ul': { paddingLeft: '1.5em', mb: 2 },
+                '& strong': { fontWeight: 'bold', color: 'lightcyan' },
+                '& em': { fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.9)' }
+              }}
+              dangerouslySetInnerHTML={{ __html: part }}
+            />
+          );
+        }
+      });
+    };
+    
+    return (
+      <>
+        {/* Question Section */}
+        <div>
+          {processContentParts(questionContent)}
+        </div>
+        
+        {/* Show/Hide Answer Button */}
+        {answerContent && (
+          <Box sx={{ my: 3, textAlign: 'center' }}>
+            <Button
+              variant="contained"
+              onClick={onToggleAnswer}
+              sx={{
+                backgroundColor: showAnswer ? '#f44336' : '#4CAF50',
+                color: 'white',
+                '&:hover': { 
+                  backgroundColor: showAnswer ? '#d32f2f' : '#388E3C' 
+                }
+              }}
+            >
+              {showAnswer ? 'Hide Answer' : 'Show Answer'}
+            </Button>
+          </Box>
+        )}
+        
+        {/* Answer Section (conditionally rendered) */}
+        {showAnswer && answerContent && (
+          <div style={{ marginTop: '20px', borderTop: '2px solid #333', paddingTop: '20px' }}>
+            {processContentParts(answerContent)}
+          </div>
+        )}
+      </>
+    );
+  };
+
+  return <Box>{renderContentWithSyntaxHighlighting(text)}</Box>;
+};
 
 const CoderTest: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const language = searchParams.get('language') || 'Unknown';
+  const language = searchParams.get('language') || 'javascript';
   const initialLevel = searchParams.get('level') || 'basic';
   
   const [level, setLevel] = useState(initialLevel);
+  const [questionContent, setQuestionContent] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [showAnswer, setShowAnswer] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+
+  // Load coding question when component mounts or when language/level changes
+  useEffect(() => {
+    loadQuestion();
+  }, [language, level]);
+
+  const loadQuestion = async () => {
+    setIsLoading(true);
+    setError('');
+    setShowAnswer(false);
+    
+    try {
+      const response = await getCoderTestQuestion(language, level);
+      setQuestionContent(response);
+    } catch (err) {
+      console.error('Error loading question:', err);
+      setError('Failed to load coding question. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleAnswer = () => {
+    setShowAnswer(!showAnswer);
+  };
 
   const getLanguageDisplayName = (lang: string) => {
     switch (lang) {
@@ -32,7 +269,7 @@ const CoderTest: React.FC = () => {
   };
 
   const handleCancel = () => {
-    navigate(-1); // Go back to previous page
+    navigate('/'); // Go back to home page
   };
 
   const handlePrevious = () => {
@@ -41,15 +278,15 @@ const CoderTest: React.FC = () => {
   };
 
   const handleNext = () => {
-    // TODO: Implement next question logic
-    console.log('Next question');
+    // Load a new question
+    loadQuestion();
   };
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom color="primary.main">
-          Coder Test - {getLanguageDisplayName(language)}
+          Coder Test - {getLanguageDisplayName(language)} ({level})
         </Typography>
       </Box>
 
@@ -64,22 +301,43 @@ const CoderTest: React.FC = () => {
       >
         {/* Content Area */}
         <Box sx={{ 
-          minHeight: '400px', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
+          minHeight: '400px',
           mb: 4
         }}>
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 'bold',
-              color: '#9C27B0',
-              textAlign: 'center'
-            }}
-          >
-            Coming Soon
-          </Typography>
+          {isLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+              <CircularProgress sx={{ color: '#9C27B0' }} />
+              <Typography sx={{ ml: 2, color: 'white' }}>Loading coding question...</Typography>
+            </Box>
+          ) : error ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography variant="h6" sx={{ color: '#f44336', mb: 2 }}>
+                Error Loading Question
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}>
+                {error}
+              </Typography>
+              <Button 
+                variant="contained" 
+                onClick={loadQuestion}
+                sx={{ 
+                  backgroundColor: '#9C27B0',
+                  '&:hover': { backgroundColor: '#7B1FA2' }
+                }}
+              >
+                Try Again
+              </Button>
+            </Box>
+          ) : (
+            <Box>
+              {/* AI Generated Content with Syntax Highlighting */}
+              <MessageContent 
+                text={questionContent} 
+                showAnswer={showAnswer}
+                onToggleAnswer={toggleAnswer}
+              />
+            </Box>
+          )}
         </Box>
 
         {/* Bottom Buttons */}

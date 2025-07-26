@@ -639,4 +639,110 @@ export const getSubTopics = async (skillTitle: string): Promise<string[]> => {
   }
 };
 
+// Coder Test AI call
+export const getCoderTestQuestion = async (language: string, level: string): Promise<string> => {
+  try {
+    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+    if (!apiKey) throw new Error('API key not found in environment variables!');
+
+    const prompt = `Give me a LeetCode style coding question for programming language ${language} at ${level} skill level.
+
+Then underneath provide a detailed answer with code blocks. Code must have comments.
+
+Format the response in this exact HTML structure:
+
+<div class="coding-question-container">
+    <div class="question-section">
+        <h3>Coding Challenge</h3>
+        <div class="problem-statement">
+            [Problem description here - make it clear and detailed]
+        </div>
+        <div class="requirements">
+            <h4>Requirements:</h4>
+            <ul>
+                <li>[Requirement 1]</li>
+                <li>[Requirement 2]</li>
+                <li>[Requirement 3]</li>
+            </ul>
+        </div>
+        <div class="examples">
+            <h4>Example:</h4>
+            <pre><code class="language-${language.toLowerCase()}">
+Input: [example input]
+Output: [example output]
+Explanation: [brief explanation]
+            </code></pre>
+        </div>
+    </div>
+    
+    <div class="answer-section" style="display: none;">
+        <h3>Solution</h3>
+        <div class="approach">
+            <h4>Approach:</h4>
+            <p>[Explanation of the approach]</p>
+        </div>
+        <div class="solution-code">
+            <h4>Implementation:</h4>
+            <pre><code class="language-${language.toLowerCase()}">
+[Complete solution code with detailed comments]
+            </code></pre>
+        </div>
+        <div class="complexity">
+            <h4>Complexity Analysis:</h4>
+            <p><strong>Time Complexity:</strong> [time complexity]</p>
+            <p><strong>Space Complexity:</strong> [space complexity]</p>
+        </div>
+        <div class="explanation">
+            <h4>Step-by-step Explanation:</h4>
+            <ul>
+                <li>[Step 1 explanation]</li>
+                <li>[Step 2 explanation]</li>
+                <li>[Step 3 explanation]</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+Important guidelines:
+1. Make the problem appropriate for ${level} level (${level === 'basic' ? 'focus on fundamental concepts like arrays, strings, basic loops' : 'include more complex algorithms, data structures, optimization'})
+2. Use proper ${language} syntax in code examples
+3. All code must be wrapped in <pre><code class="language-${language.toLowerCase()}"> tags
+4. Include detailed comments in the solution code
+5. Make the problem realistic and practical
+6. Content will be displayed on a dark background, use light colors for text
+7. Keep explanations clear and educational
+8. Do not use backticks or markdown formatting
+9. Use only the supported language classes: language-javascript, language-typescript, language-python, language-java, language-csharp, language-cpp`;
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://github.com/russelltchang/autodidactic',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.0-flash-001:floor',
+        temperature: 0.8,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    let content = data.choices?.[0]?.message?.content;
+    
+    if (content) {
+      content = content.replace(/^```html\s*/i, '');
+      content = content.replace(/```\s*$/, '');
+      content = content.replace(/`/g, '');
+      content = content.trim();
+    }
+    
+    return content;
+  } catch (error) {
+    console.error('Error getting coder test question:', error);
+    throw error;
+  }
+};
+
 
