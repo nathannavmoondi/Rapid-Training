@@ -15,6 +15,7 @@ import AssessmentIcon from '@mui/icons-material/Assessment';
 import CodeIcon from '@mui/icons-material/Code';
 import { useNavigate } from 'react-router-dom';
 import { IWantToLearnDialog } from './IWantToLearnDialog';
+import { CoderTestDialog } from './CoderTestDialog';
 import { useChat } from '../contexts/chatContext';
 import { chatService } from '../services/chatService';
 
@@ -51,6 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
   const [isResizing, setIsResizing] = useState(false);
   const [shouldShowHamburger, setShouldShowHamburger] = useState(window.innerWidth < WIDTH_BREAKPOINT);
   const [iWantToLearnOpen, setIWantToLearnOpen] = useState(false);
+  const [coderTestOpen, setCoderTestOpen] = useState(false);
   const showText = width >= TEXT_VISIBILITY_THRESHOLD;
 
   useEffect(() => {
@@ -148,6 +150,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
     }
   };
 
+  const handleCoderTest = (language: string, level: string) => {
+    navigate(`/coder-test?language=${encodeURIComponent(language)}&level=${encodeURIComponent(level)}`);
+    setCoderTestOpen(false);
+  };
+
   return (
     <Box
       sx={{
@@ -224,6 +231,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
               onClick={() => {
                 if (item.label === 'I want to learn') {
                   setIWantToLearnOpen(true);
+                } else if (item.label === 'Coder Test') {
+                  setCoderTestOpen(true);
                 } else if (item.external) {
                   window.open(item.path, '_blank');
                 } else {
@@ -314,6 +323,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
         open={iWantToLearnOpen}
         onClose={() => setIWantToLearnOpen(false)}
         onLearnMore={handleIWantToLearn}
+      />
+      
+      {/* Coder Test Dialog */}
+      <CoderTestDialog
+        open={coderTestOpen}
+        onClose={() => setCoderTestOpen(false)}
+        onBegin={handleCoderTest}
       />
     </Box>
   );
