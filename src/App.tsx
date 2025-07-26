@@ -25,6 +25,7 @@ import MySlidedecks from './pages/MySlidedecks';
 import MyTraining from './pages/MyTraining';
 import CustomQuizzes from './pages/CustomQuizzes';
 import Explore from './pages/Explore';
+import ReviewQuizzes from './pages/ReviewQuizzes';
 import { Sidebar } from './components/Sidebar';
 import './styles/mobile.css';
 import './App.css';
@@ -105,6 +106,7 @@ function App() {
                       <Route path="/my-training" element={<MyTraining />} />
                       <Route path="/custom-quizzes" element={<CustomQuizzes />} />
                       <Route path="/explore" element={<Explore />} />
+                      <Route path="/review-quizzes" element={<ReviewQuizzes />} />
                       <Route path="/failed-questions-primer" element={<React.Suspense fallback={<div>Loading...</div>}><FailedQuestionsPrimer /></React.Suspense>} />
                       <Route path="/promptdb" element={<PromptDB />} />
                       <Route path="/marketing-ai" element={<MarketingAI />} />
