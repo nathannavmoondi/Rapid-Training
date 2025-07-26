@@ -1,28 +1,24 @@
-import React from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
   Container,
   Paper,
-  Card,
-  CardContent
+  Button,
+  FormControl,
+  Select,
+  MenuItem,
+  InputLabel
 } from '@mui/material';
-import {
-  Code as CodeIcon,
-  Construction as ConstructionIcon,
-  Psychology as PsychologyIcon
-} from '@mui/icons-material';
 
 const CoderTest: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const language = searchParams.get('language') || 'Unknown';
-  const level = searchParams.get('level') || 'Unknown';
-
-  // Capitalize first letter for display
-  const formatText = (text: string) => {
-    return text.charAt(0).toUpperCase() + text.slice(1);
-  };
+  const initialLevel = searchParams.get('level') || 'basic';
+  
+  const [level, setLevel] = useState(initialLevel);
 
   const getLanguageDisplayName = (lang: string) => {
     switch (lang) {
@@ -31,203 +27,147 @@ const CoderTest: React.FC = () => {
       case 'cpp': return 'C++';
       case 'python': return 'Python';
       case 'java': return 'Java';
-      default: return formatText(lang);
+      default: return lang.charAt(0).toUpperCase() + lang.slice(1);
     }
+  };
+
+  const handleCancel = () => {
+    navigate(-1); // Go back to previous page
+  };
+
+  const handlePrevious = () => {
+    // TODO: Implement previous question logic
+    console.log('Previous question');
+  };
+
+  const handleNext = () => {
+    // TODO: Implement next question logic
+    console.log('Next question');
   };
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="h3"
-          component="h1"
-          sx={{
-            fontWeight: 'bold',
-            background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            color: 'transparent',
-            textAlign: 'center',
-            mb: 2
-          }}
-        >
-          Coder Test
-        </Typography>
-        
-        <Typography
-          variant="h5"
-          sx={{
-            textAlign: 'center',
-            color: 'text.secondary',
-            fontWeight: 'medium'
-          }}
-        >
-          {getLanguageDisplayName(language)} • {formatText(level)}
+        <Typography variant="h4" component="h1" gutterBottom color="primary.main">
+          Coder Test - {getLanguageDisplayName(language)}
         </Typography>
       </Box>
 
-      <Card
-        sx={{
-          maxWidth: 600,
-          mx: 'auto',
-          background: 'linear-gradient(135deg, rgba(156, 39, 176, 0.1) 0%, rgba(123, 31, 162, 0.1) 100%)',
-          border: '1px solid rgba(156, 39, 176, 0.2)',
-          borderRadius: 3,
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-          backdropFilter: 'blur(10px)'
+      {/* Main Paper */}
+      <Paper 
+        elevation={3} 
+        sx={{ 
+          p: 4,
+          backgroundColor: 'rgba(45, 45, 45, 0.7)', 
+          borderRadius: 2 
         }}
       >
-        <CardContent sx={{ p: 4, textAlign: 'center' }}>
-          {/* Icons */}
-          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
-            <ConstructionIcon sx={{ fontSize: 48, color: '#9C27B0' }} />
-            <CodeIcon sx={{ fontSize: 48, color: '#7B1FA2' }} />
-            <PsychologyIcon sx={{ fontSize: 48, color: '#9C27B0' }} />
-          </Box>
-
-          {/* Main Status */}
+        {/* Content Area */}
+        <Box sx={{ 
+          minHeight: '400px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          mb: 4
+        }}>
           <Typography
             variant="h4"
             sx={{
               fontWeight: 'bold',
               color: '#9C27B0',
-              mb: 3,
-              fontSize: { xs: '1.8rem', sm: '2.2rem' }
+              textAlign: 'center'
             }}
           >
             Coming Soon
           </Typography>
-
-          {/* Divider */}
-          <Box
-            sx={{
-              width: 60,
-              height: 3,
-              background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
-              borderRadius: 2,
-              mx: 'auto',
-              mb: 3
-            }}
-          />
-
-          {/* Selected Parameters */}
-          <Typography
-            variant="body1"
-            sx={{
-              color: 'text.secondary',
-              lineHeight: 1.6,
-              fontSize: '1.1rem',
-              fontWeight: 'medium',
-              mb: 2
-            }}
-          >
-            Selected Configuration:
-          </Typography>
-          
-          <Box sx={{ mb: 3 }}>
-            <Typography
-              variant="body1"
-              sx={{
-                color: '#9C27B0',
-                fontWeight: 'bold',
-                fontSize: '1.2rem'
-              }}
-            >
-              Language: {getLanguageDisplayName(language)}
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                color: '#7B1FA2',
-                fontWeight: 'bold',
-                fontSize: '1.2rem'
-              }}
-            >
-              Level: {formatText(level)}
-            </Typography>
-          </Box>
-
-          {/* Description */}
-          <Typography
-            variant="body2"
-            sx={{
-              color: 'text.secondary',
-              lineHeight: 1.6,
-              fontSize: '1rem',
-              fontStyle: 'italic'
-            }}
-          >
-            LeetCode-style coding challenges will be available here soon!
-          </Typography>
-
-          {/* Coming Soon Badge */}
-          <Paper
-            sx={{
-              display: 'inline-block',
-              mt: 3,
-              px: 3,
-              py: 1,
-              background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
-              color: 'white',
-              borderRadius: 20,
-              fontWeight: 'bold',
-              fontSize: '0.9rem',
-              letterSpacing: '0.5px',
-              textTransform: 'uppercase'
-            }}
-          >
-            Under Development
-          </Paper>
-        </CardContent>
-      </Card>
-
-      {/* Future Features Preview */}
-      <Box sx={{ mt: 4, textAlign: 'center' }}>
-        <Typography
-          variant="h6"
-          sx={{
-            color: 'text.secondary',
-            mb: 2,
-            fontWeight: 'medium'
-          }}
-        >
-          Upcoming Features
-        </Typography>
-        
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: 2,
-            maxWidth: 500,
-            mx: 'auto'
-          }}
-        >
-          {[
-            'LeetCode Problems',
-            'Show Answer Feature',
-            'Copy to Editor',
-            'Progress Tracking'
-          ].map((feature, index) => (
-            <Paper
-              key={index}
-              sx={{
-                px: 2,
-                py: 1,
-                backgroundColor: 'rgba(156, 39, 176, 0.1)',
-                border: '1px solid rgba(156, 39, 176, 0.2)',
-                borderRadius: 2,
-                color: '#9C27B0',
-                fontSize: '0.9rem',
-                fontWeight: 'medium'
-              }}
-            >
-              {feature}
-            </Paper>
-          ))}
         </Box>
-      </Box>
+
+        {/* Bottom Buttons */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
+          {/* Left side - Cancel */}
+          <Button
+            variant="contained"
+            onClick={handleCancel}
+            sx={{ 
+              backgroundColor: '#f44336',
+              color: 'white',
+              '&:hover': { backgroundColor: '#d32f2f' }
+            }}
+          >
+            Cancel
+          </Button>
+
+          {/* Right side - Previous and Next */}
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="contained"
+              onClick={handlePrevious}
+              sx={{ 
+                backgroundColor: '#2196F3',
+                color: 'white',
+                '&:hover': { backgroundColor: '#1976D2' }
+              }}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleNext}
+              sx={{ 
+                backgroundColor: '#2196F3',
+                color: 'white',
+                '&:hover': { backgroundColor: '#1976D2' }
+              }}
+            >
+              Next
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Level Dropdown - Bottom Row */}
+        <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-start' }}>
+          <Typography variant="body1" sx={{ color: 'white', mr: 1 }}>Level:</Typography>
+          <FormControl sx={{ minWidth: 150 }} size="small">
+            <InputLabel id="level-select-label" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}></InputLabel>
+            <Select
+              labelId="level-select-label"
+              id="level-select"
+              value={level}
+              label=""
+              displayEmpty
+              renderValue={(selected) => {
+                if (!selected) {
+                  return <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>Select option</span>;
+                }
+                return selected;
+              }}
+              onChange={(e) => setLevel(e.target.value as string)}
+              sx={{
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#2E7D32',
+                },
+                '& .MuiSvgIcon-root': {
+                  color: 'white',
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#1B5E20',
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#388E3C',
+                },
+              }}
+            >
+              <MenuItem value="">
+                <em>Select option</em>
+              </MenuItem>
+              <MenuItem value="basic">Basic</MenuItem>
+              <MenuItem value="intermediate">Intermediate</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+      </Paper>
     </Container>
   );
 };
