@@ -88,7 +88,7 @@ const MyQuizzes: React.FC = () => {
               fontWeight: 'medium'
             }}
           >
-            Here you will see list of all quizzes, from various topics, that you have saved
+            Here you will see list of all quizzes & slidedecks, from various topics, that you have saved
           </Typography>
 
           {/* Coming Soon Badge */}
