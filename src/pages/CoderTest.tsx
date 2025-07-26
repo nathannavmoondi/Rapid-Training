@@ -329,7 +329,14 @@ const CoderTest: React.FC = () => {
               </Button>
             </Box>
           ) : (
-            <Box>
+            <Box 
+              sx={{ 
+                backgroundColor: 'rgba(255, 255, 255, 0.05)', 
+                borderRadius: 2,
+                p: 3,
+                mb: 3
+              }}
+            >
               {/* AI Generated Content with Syntax Highlighting */}
               <MessageContent 
                 text={questionContent} 
