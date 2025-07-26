@@ -639,4 +639,149 @@ export const getSubTopics = async (skillTitle: string): Promise<string[]> => {
   }
 };
 
+// Coder Test AI call
+export const getCoderTestQuestion = async (language: string, level: string, previousQuestions: string[] = []): Promise<string> => {
+  try {
+    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+    if (!apiKey) throw new Error('API key not found in environment variables!');
+
+    // Build the base prompt
+    let prompt = `Give me a random LeetCode style coding question for programming language ${language} at ${level} skill level.
+
+Then underneath provide a detailed answer with code blocks. Code must have comments.`;
+
+    // Add previous questions avoidance logic if there are previous questions
+    if (previousQuestions.length > 0) {
+      prompt = `Do not use any of the questions that have already been asked. ${prompt}
+
+Previous questions: ${previousQuestions.join('\n\n---\n\n')}`;
+    }
+
+    prompt += `
+
+Format the response in this exact HTML structure:
+
+<div class="coding-question-container">
+    <div class="question-section">
+        <h3>Coding Challenge</h3>
+        <div class="problem-statement">
+            [Problem description here - make it clear and detailed]
+        </div>
+        <div class="requirements">
+            <h4>Requirements:</h4>
+            <ul>
+                <li>[Requirement 1]</li>
+                <li>[Requirement 2]</li>
+                <li>[Requirement 3]</li>
+            </ul>
+        </div>
+        <div class="examples">
+            <h4>Example:</h4>
+            <pre><code class="language-${language.toLowerCase()}">
+Input: [example input]
+Output: [example output]
+Explanation: [brief explanation - keep under 80 characters per line]
+            </code></pre>
+        </div>
+    </div>
+    
+    <div class="tips-section" style="display: none;">
+        <h3>Tips & Hints</h3>
+        <div class="hints">
+            <h4>Approach Hints:</h4>
+            <ul>
+                <li>[Hint 1 - guide thinking without giving away solution]</li>
+                <li>[Hint 2 - suggest data structure or pattern to consider]</li>
+                <li>[Hint 3 - edge case to think about]</li>
+            </ul>
+        </div>
+        <div class="strategy">
+            <h4>Problem-Solving Strategy:</h4>
+            <p>[General strategy guidance - help think through the problem step by step]</p>
+        </div>
+        <div class="common-pitfalls">
+            <h4>Common Pitfalls:</h4>
+            <ul>
+                <li>[Pitfall 1 - common mistake to avoid]</li>
+                <li>[Pitfall 2 - edge case consideration]</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="answer-section" style="display: none;">
+        <h3>Solution</h3>
+        <div class="approach">
+            <h4>Approach:</h4>
+            <p>[Concise explanation of the approach - 2-3 short sentences max]</p>
+        </div>
+        <div class="solution-code">
+            <h4>Implementation:</h4>
+            <pre><code class="language-${language.toLowerCase()}">
+[Complete solution code with detailed comments]
+            </code></pre>
+        </div>
+        <div class="complexity">
+            <h4>Complexity Analysis:</h4>
+            <p><strong>Time Complexity:</strong> [time complexity]</p>
+            <p><strong>Space Complexity:</strong> [space complexity]</p>
+        </div>
+        <div class="explanation">
+            <h4>Step-by-step Explanation:</h4>
+            <ul>
+                <li>[Step 1 - keep concise, under 80 chars]</li>
+                <li>[Step 2 - keep concise, under 80 chars]</li>
+                <li>[Step 3 - keep concise, under 80 chars]</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+Important guidelines:
+1. Make the problem appropriate for ${level} level (${level === 'basic' ? 'focus on fundamental concepts like arrays, strings, basic loops' : 'include more complex algorithms, data structures, optimization'})
+2. Use proper ${language} syntax in code examples
+3. All code must be wrapped in <pre><code class="language-${language.toLowerCase()}"> tags
+4. Include detailed comments in the solution code
+5. Make the problem realistic and practical
+6. Content will be displayed on a dark background, use light colors for text
+7. Keep explanations clear and educational
+8. Do not use backticks or markdown formatting
+9. Use only the supported language classes: language-javascript, language-typescript, language-python, language-java, language-csharp, language-cpp
+10. IMPORTANT: Keep all text lines under 80 characters to prevent horizontal scrolling
+11. Break long sentences into shorter ones for better readability
+12. Use concise explanations - prioritize clarity over lengthy descriptions
+13. Make explanation section easy to follow but also very indepth and detailed
+14. Tips section should provide helpful hints without revealing the solution
+15. Focus tips on problem-solving approach and common considerations`;
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://github.com/russelltchang/autodidactic',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.0-flash-001:floor',
+        temperature: 0.8,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    let content = data.choices?.[0]?.message?.content;
+    
+    if (content) {
+      content = content.replace(/^```html\s*/i, '');
+      content = content.replace(/```\s*$/, '');
+      content = content.replace(/`/g, '');
+      content = content.trim();
+    }
+    
+    return content;
+  } catch (error) {
+    console.error('Error getting coder test question:', error);
+    throw error;
+  }
+};
+
 

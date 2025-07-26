@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import { Box, TextField, IconButton, Typography, Avatar, Tooltip } from '@mui/material';
+import { Box, TextField, IconButton, Typography, Avatar, Tooltip, CircularProgress } from '@mui/material';
 import { useChat } from '../contexts/chatContext';
 import SendIcon from '@mui/icons-material/Send';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -181,11 +181,13 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
         const mappedLang = mapLanguage(language);
         
         return (
-          <Box key={index} sx={{ my: 2 }}>
+          <Box key={index} sx={{ my: 2, width: '100%', overflow: 'hidden' }}>
             <SyntaxHighlighter
               language={mappedLang}
               style={vscDarkPlus}
               showLineNumbers={false}
+              wrapLines={true}
+              wrapLongLines={true}
               customStyle={{
                 margin: 0,
                 padding: '16px',
@@ -194,10 +196,18 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
                 lineHeight: '1.4',
                 borderRadius: '6px',
                 fontFamily: "'Fira Code', 'Consolas', monospace",
+                maxWidth: '100%',
+                overflow: 'auto',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
               }}
               codeTagProps={{
                 style: {
                   fontFamily: "'Fira Code', 'Consolas', monospace",
+                  whiteSpace: 'pre-wrap',
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
                 }
               }}
             >
@@ -304,6 +314,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
   const [isResizing, setIsResizing] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   
   // Speech-to-text functionality hook
   const { isListening, isSupported, toggleListening } = useSpeechToText({
@@ -371,9 +382,11 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
       } else if (lastMessage.text === "Thinking...") {
         // For "Thinking..." message, just add it as the only message
         setMessages([lastMessage]);
+        setIsWaitingForResponse(true); // Set waiting state for external thinking messages
       } else {
         // For other messages, replace any existing messages
         setMessages([lastMessage]);
+        setIsWaitingForResponse(false); // Clear waiting state for regular messages
       }
       
       // Schedule scroll after state update is complete
@@ -484,6 +497,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
     
     setMessages(prev => [...prev, userMessage, loadingMessage]);
     setInput('');
+    setIsWaitingForResponse(true); // Set waiting state
 
     // Only scroll to bottom if user was already at bottom
     if (chatMessagesRef.current) {
@@ -508,6 +522,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
           msg.id === loadingMessage.id ? response : msg
         )
       );
+      setIsWaitingForResponse(false); // Clear waiting state
       
       // Scroll to top after receiving AI response with a slight delay to ensure render
       setTimeout(() => {
@@ -537,6 +552,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
           } : msg
         )
       );
+      setIsWaitingForResponse(false); // Clear waiting state on error
     }
   };
 
@@ -675,6 +691,8 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
                 borderRadius: '12px',
                 p: 2,
                 maxWidth: '85%',
+                minWidth: 0, // Allow shrinking
+                overflow: 'hidden', // Prevent horizontal overflow
                 wordWrap: 'break-word',
                 overflowWrap: 'break-word',
                 wordBreak: 'break-word',
@@ -683,6 +701,10 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
                   wordWrap: 'break-word',
                   overflowWrap: 'break-word',
                   wordBreak: 'break-word'
+                },
+                '& > div': {
+                  maxWidth: '100%',
+                  overflow: 'hidden'
                 }
               }}
             >
@@ -819,7 +841,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
           />
           
           {/* Microphone button for speech-to-text */}
-          {isSupported && (
+          {isSupported && !isWaitingForResponse && (
             <Tooltip title={isListening ? "Stop recording" : "Start voice input"}>
               <IconButton
                 onClick={toggleListening}
@@ -837,23 +859,31 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
             </Tooltip>
           )}
           
-          <IconButton
-            onClick={handleSend}
-            disabled={!input.trim()}
-            sx={{
-              bgcolor: '#0053A7',
-              color: '#fff',
-              '&:hover': {
-                bgcolor: '#003E7D'
-              },
-              '&.Mui-disabled': {
-                bgcolor: '#E5E5E5',
-                color: '#999'
-              }
-            }}
-          >
-            <SendIcon />
-          </IconButton>
+          {!isWaitingForResponse && (
+            <IconButton
+              onClick={handleSend}
+              disabled={!input.trim()}
+              sx={{
+                bgcolor: '#0053A7',
+                color: '#fff',
+                '&:hover': {
+                  bgcolor: '#003E7D'
+                },
+                '&.Mui-disabled': {
+                  bgcolor: '#E5E5E5',
+                  color: '#999'
+                }
+              }}
+            >
+              <SendIcon />
+            </IconButton>
+          )}
+          
+          {isWaitingForResponse && (
+            <Box sx={{ display: 'flex', alignItems: 'center', px: 2 }}>
+              <CircularProgress size={24} sx={{ color: '#0053A7' }} />
+            </Box>
+          )}
         </Box>
       </Box>
     </Box>

@@ -15,18 +15,19 @@ import AssessmentIcon from '@mui/icons-material/Assessment';
 import CodeIcon from '@mui/icons-material/Code';
 import { useNavigate } from 'react-router-dom';
 import { IWantToLearnDialog } from './IWantToLearnDialog';
+import { CoderTestDialog } from './CoderTestDialog';
 import { useChat } from '../contexts/chatContext';
 import { chatService } from '../services/chatService';
 
 const menuItems = [
   { label: 'Topics', path: '/topics', icon: <SchoolIcon />, external: false },
   { label: 'Algorithms', path: '/algorithms', icon: <FunctionsIcon />, external: false },
+  { label: 'Coder Test', path: '/coder-test', icon: <CodeIcon />, external: false },
   { label: 'My Quizzes', path: '/my-quizzes', icon: <QuizIcon />, external: false },
   { label: 'My Slidedecks', path: '/my-slidedecks', icon: <WysiwygIcon />, external: false },
   { label: 'My Training', path: '/my-training', icon: <WorkspacesIcon />, external: false },
   { label: 'Custom Quizzes', path: '/custom-quizzes', icon: <StarIcon />, external: false },
   { label: 'Review Quizzes', path: '/review-quizzes', icon: <AssessmentIcon />, external: false },
-  { label: 'Coder Test', path: '/coder-test', icon: <CodeIcon />, external: false },
   { label: 'YT Generator', path: '/yt-generator', icon: <YouTubeIcon />, external: false },
   { label: 'I want to learn', path: '/learn', icon: <MenuBookIcon />, external: false },
   { label: 'Explore', path: '/explore', icon: <SettingsIcon />, external: false },
@@ -51,6 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
   const [isResizing, setIsResizing] = useState(false);
   const [shouldShowHamburger, setShouldShowHamburger] = useState(window.innerWidth < WIDTH_BREAKPOINT);
   const [iWantToLearnOpen, setIWantToLearnOpen] = useState(false);
+  const [coderTestOpen, setCoderTestOpen] = useState(false);
   const showText = width >= TEXT_VISIBILITY_THRESHOLD;
 
   useEffect(() => {
@@ -148,6 +150,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
     }
   };
 
+  const handleCoderTest = (language: string, level: string) => {
+    navigate(`/coder-test?language=${encodeURIComponent(language)}&level=${encodeURIComponent(level)}`);
+    setCoderTestOpen(false);
+  };
+
   return (
     <Box
       sx={{
@@ -224,6 +231,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
               onClick={() => {
                 if (item.label === 'I want to learn') {
                   setIWantToLearnOpen(true);
+                } else if (item.label === 'Coder Test') {
+                  setCoderTestOpen(true);
                 } else if (item.external) {
                   window.open(item.path, '_blank');
                 } else {
@@ -314,6 +323,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
         open={iWantToLearnOpen}
         onClose={() => setIWantToLearnOpen(false)}
         onLearnMore={handleIWantToLearn}
+      />
+      
+      {/* Coder Test Dialog */}
+      <CoderTestDialog
+        open={coderTestOpen}
+        onClose={() => setCoderTestOpen(false)}
+        onBegin={handleCoderTest}
       />
     </Box>
   );
