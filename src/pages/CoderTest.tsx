@@ -21,8 +21,10 @@ import { useQuiz } from '../contexts/quizContext';
 const MessageContent: React.FC<{ 
   text: string; 
   showAnswer: boolean;
+  showTips: boolean;
   onToggleAnswer: () => void;
-}> = ({ text, showAnswer, onToggleAnswer }) => {
+  onToggleTips: () => void;
+}> = ({ text, showAnswer, showTips, onToggleAnswer, onToggleTips }) => {
   // Parse the message to identify code blocks and apply syntax highlighting
   const renderContentWithSyntaxHighlighting = (content: string) => {
     // First, handle HTML code blocks (<pre><code class="language-xxx">)
@@ -54,24 +56,40 @@ const MessageContent: React.FC<{
       }
     );
 
-    // Split content into question and answer sections
-    // Look for common answer section patterns
-    const answerPatterns = [
-      /([\s\S]*?)(<div class="answer-section"[\s\S]*)/,  // Explicit answer section
-      /([\s\S]*?)(<h[3-6][^>]*>.*?(?:solution|answer|explanation|approach).*?<\/h[3-6]>[\s\S]*)/i,  // Headers with solution words
-      /([\s\S]*?)(<p[^>]*>.*?<strong>.*?(?:solution|answer|explanation|approach).*?<\/strong>[\s\S]*)/i,  // Bold solution text
-      /([\s\S]*?)(<h[3-6][^>]*>.*?step.*?<\/h[3-6]>[\s\S]*)/i,  // Step-by-step solutions
-    ];
-    
+    // Split content into question, tips, and answer sections
+    // Look for the specific div sections in the AI response
     let questionContent = processedContent;
     let answerContent = '';
+    let tipsContent = '';
     
-    for (const pattern of answerPatterns) {
-      const match = processedContent.match(pattern);
-      if (match) {
-        questionContent = match[1];
-        answerContent = match[2];
-        break;
+    // Debug logging
+    console.log('Processing content:', processedContent.substring(0, 500));
+    
+    // Extract tips section
+    const tipsMatch = processedContent.match(/([\s\S]*?)(<div class="tips-section"[\s\S]*?)(<div class="answer-section"[\s\S]*)/);
+    if (tipsMatch) {
+      questionContent = tipsMatch[1];
+      tipsContent = tipsMatch[2];
+      answerContent = tipsMatch[3];
+      
+      // Remove inline display:none styles from tips and answer content
+      tipsContent = tipsContent.replace(/style="display:\s*none;?"/, '').replace(/style='display:\s*none;?'/, '');
+      answerContent = answerContent.replace(/style="display:\s*none;?"/, '').replace(/style='display:\s*none;?'/, '');
+      
+      console.log('Found tips content:', tipsContent.substring(0, 200));
+    } else {
+      // Fallback: try to extract just answer section if no tips
+      const answerMatch = processedContent.match(/([\s\S]*?)(<div class="answer-section"[\s\S]*)/);
+      if (answerMatch) {
+        questionContent = answerMatch[1];
+        answerContent = answerMatch[2];
+        
+        // Remove inline display:none style from answer content
+        answerContent = answerContent.replace(/style="display:\s*none;?"/, '').replace(/style='display:\s*none;?'/, '');
+        
+        console.log('No tips found, only answer section');
+      } else {
+        console.log('No structured sections found in content');
       }
     }
 
@@ -189,23 +207,48 @@ const MessageContent: React.FC<{
           {processContentParts(questionContent)}
         </div>
         
-        {/* Show/Hide Answer Button */}
-        {answerContent && (
-          <Box sx={{ my: 3, textAlign: 'center' }}>
-            <Button
-              variant="contained"
-              onClick={onToggleAnswer}
-              sx={{
-                backgroundColor: showAnswer ? '#f44336' : '#4CAF50',
-                color: 'white',
-                '&:hover': { 
-                  backgroundColor: showAnswer ? '#d32f2f' : '#388E3C' 
-                }
-              }}
-            >
-              {showAnswer ? 'Hide Answer' : 'Show Answer'}
-            </Button>
+        {/* Show/Hide Buttons */}
+        {(answerContent || tipsContent) && (
+          <Box sx={{ my: 3, textAlign: 'center', display: 'flex', gap: 2, justifyContent: 'center' }}>
+            {tipsContent && (
+              <Button
+                variant="contained"
+                onClick={onToggleTips}
+                sx={{
+                  backgroundColor: showTips ? '#ff9800' : '#2196F3',
+                  color: 'white',
+                  '&:hover': { 
+                    backgroundColor: showTips ? '#f57c00' : '#1976D2' 
+                  }
+                }}
+              >
+                {showTips ? 'Hide Tips' : 'Show Tips'}
+              </Button>
+            )}
+            
+            {answerContent && (
+              <Button
+                variant="contained"
+                onClick={onToggleAnswer}
+                sx={{
+                  backgroundColor: showAnswer ? '#f44336' : '#4CAF50',
+                  color: 'white',
+                  '&:hover': { 
+                    backgroundColor: showAnswer ? '#d32f2f' : '#388E3C' 
+                  }
+                }}
+              >
+                {showAnswer ? 'Hide Answer' : 'Show Answer'}
+              </Button>
+            )}
           </Box>
+        )}
+        
+        {/* Tips Section (conditionally rendered) */}
+        {showTips && tipsContent && (
+          <div style={{ marginTop: '20px', borderTop: '2px solid #2196F3', paddingTop: '20px' }}>
+            {processContentParts(tipsContent)}
+          </div>
         )}
         
         {/* Answer Section (conditionally rendered) */}
@@ -231,6 +274,7 @@ const CoderTest: React.FC = () => {
   const [questionContent, setQuestionContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [showAnswer, setShowAnswer] = useState<boolean>(false);
+  const [showTips, setShowTips] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
   // Quiz context for tracking coder test questions
@@ -254,6 +298,7 @@ const CoderTest: React.FC = () => {
     setIsLoading(true);
     setError('');
     setShowAnswer(false);
+    setShowTips(false);
     
     try {
       const response = await getCoderTestQuestion(language, level, coderTestQuestions);
@@ -270,6 +315,12 @@ const CoderTest: React.FC = () => {
 
   const toggleAnswer = () => {
     setShowAnswer(!showAnswer);
+    setShowTips(false); // Hide tips when showing answer
+  };
+
+  const toggleTips = () => {
+    setShowTips(!showTips);
+    setShowAnswer(false); // Hide answer when showing tips
   };
 
   const handleLevelChange = (newLevel: string) => {
@@ -362,7 +413,9 @@ const CoderTest: React.FC = () => {
               <MessageContent 
                 text={questionContent} 
                 showAnswer={showAnswer}
+                showTips={showTips}
                 onToggleAnswer={toggleAnswer}
+                onToggleTips={toggleTips}
               />
             </Box>
           )}

@@ -685,6 +685,29 @@ Explanation: [brief explanation - keep under 80 characters per line]
         </div>
     </div>
     
+    <div class="tips-section" style="display: none;">
+        <h3>Tips & Hints</h3>
+        <div class="hints">
+            <h4>Approach Hints:</h4>
+            <ul>
+                <li>[Hint 1 - guide thinking without giving away solution]</li>
+                <li>[Hint 2 - suggest data structure or pattern to consider]</li>
+                <li>[Hint 3 - edge case to think about]</li>
+            </ul>
+        </div>
+        <div class="strategy">
+            <h4>Problem-Solving Strategy:</h4>
+            <p>[General strategy guidance - help think through the problem step by step]</p>
+        </div>
+        <div class="common-pitfalls">
+            <h4>Common Pitfalls:</h4>
+            <ul>
+                <li>[Pitfall 1 - common mistake to avoid]</li>
+                <li>[Pitfall 2 - edge case consideration]</li>
+            </ul>
+        </div>
+    </div>
+    
     <div class="answer-section" style="display: none;">
         <h3>Solution</h3>
         <div class="approach">
@@ -726,7 +749,9 @@ Important guidelines:
 10. IMPORTANT: Keep all text lines under 80 characters to prevent horizontal scrolling
 11. Break long sentences into shorter ones for better readability
 12. Use concise explanations - prioritize clarity over lengthy descriptions
-13. Make explanation section easy to follow but also very indepth and detailed`;
+13. Make explanation section easy to follow but also very indepth and detailed
+14. Tips section should provide helpful hints without revealing the solution
+15. Focus tips on problem-solving approach and common considerations`;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',

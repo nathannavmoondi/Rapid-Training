@@ -22,12 +22,12 @@ import { chatService } from '../services/chatService';
 const menuItems = [
   { label: 'Topics', path: '/topics', icon: <SchoolIcon />, external: false },
   { label: 'Algorithms', path: '/algorithms', icon: <FunctionsIcon />, external: false },
+  { label: 'Coder Test', path: '/coder-test', icon: <CodeIcon />, external: false },
   { label: 'My Quizzes', path: '/my-quizzes', icon: <QuizIcon />, external: false },
   { label: 'My Slidedecks', path: '/my-slidedecks', icon: <WysiwygIcon />, external: false },
   { label: 'My Training', path: '/my-training', icon: <WorkspacesIcon />, external: false },
   { label: 'Custom Quizzes', path: '/custom-quizzes', icon: <StarIcon />, external: false },
   { label: 'Review Quizzes', path: '/review-quizzes', icon: <AssessmentIcon />, external: false },
-  { label: 'Coder Test', path: '/coder-test', icon: <CodeIcon />, external: false },
   { label: 'YT Generator', path: '/yt-generator', icon: <YouTubeIcon />, external: false },
   { label: 'I want to learn', path: '/learn', icon: <MenuBookIcon />, external: false },
   { label: 'Explore', path: '/explore', icon: <SettingsIcon />, external: false },
