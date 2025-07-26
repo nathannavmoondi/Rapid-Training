@@ -675,6 +675,18 @@ Format the response in this exact HTML structure:
                 <li>[Requirement 3]</li>
             </ul>
         </div>
+        <div class="function-signature">
+            <h4>Function Signature:</h4>
+            <pre><code class="language-${language.toLowerCase()}">
+[Sample function declaration with parameters - e.g., /**
+ * @param {number[]} nums
+ * @param {number} target
+ * @return {number[]}
+ */
+
+var twoSum = function(nums, target) { }; ]
+            </code></pre>
+        </div>
         <div class="examples">
             <h4>Example:</h4>
             <pre><code class="language-${language.toLowerCase()}">
@@ -751,9 +763,10 @@ Important guidelines:
 12. Use concise explanations - prioritize clarity over lengthy descriptions
 13. Make explanation section easy to follow but also very indepth and detailed
 14. Tips section should provide helpful hints without revealing the solution
-15. Focus tips on problem-solving approach and common considerations`;
+15. Focus tips on problem-solving approach and common considerations
+16. IMPORTANT: Include a sample function declaration with parameters in the Function Signature section (e.g., "var twoSum = function(nums, target) { };" for JavaScript, "def two_sum(nums, target):" for Python, etc.)`;
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
