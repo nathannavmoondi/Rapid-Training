@@ -115,14 +115,7 @@ export const CoderTestDialog: React.FC<CoderTestDialogProps> = ({
 
         {/* Language Dropdown */}
         <FormControl fullWidth sx={{ mb: 3 }}>
-          <InputLabel 
-            sx={{ 
-              color: 'rgba(255, 255, 255, 0.7)',
-              '&.Mui-focused': { color: '#ba68c8' }
-            }}
-          >
-            Programming Language
-          </InputLabel>
+      
           <Select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
@@ -179,14 +172,7 @@ export const CoderTestDialog: React.FC<CoderTestDialogProps> = ({
 
         {/* Level Dropdown */}
         <FormControl fullWidth sx={{ mb: 4 }}>
-          <InputLabel 
-            sx={{ 
-              color: 'rgba(255, 255, 255, 0.7)',
-              '&.Mui-focused': { color: '#ba68c8' }
-            }}
-          >
-            Difficulty Level
-          </InputLabel>
+         
           <Select
             value={level}
             onChange={(e) => setLevel(e.target.value)}

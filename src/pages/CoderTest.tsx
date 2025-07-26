@@ -10,8 +10,11 @@ import {
   Select,
   MenuItem,
   InputLabel,
-  CircularProgress
+  CircularProgress,
+  IconButton,
+  Tooltip
 } from '@mui/material';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { getCoderTestQuestion } from '../services/aiService';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -276,9 +279,42 @@ const CoderTest: React.FC = () => {
   const [showAnswer, setShowAnswer] = useState<boolean>(false);
   const [showTips, setShowTips] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [copySuccess, setCopySuccess] = useState<boolean>(false);
 
   // Quiz context for tracking coder test questions
   const { setCoderTestQuestions, setInCoderTest, coderTestQuestions, setLevel: setQuizLevel } = useQuiz();
+
+  // Copy to clipboard function
+  const handleCopyToClipboard = async () => {
+    try {
+      // Extract just the question text from the HTML content
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = questionContent;
+      
+      // Remove answer and tips sections for copying
+      const answerSections = tempDiv.querySelectorAll('.answer-section, .tips-section');
+      answerSections.forEach(section => section.remove());
+      
+      // Get clean text content
+      const questionText = tempDiv.textContent || tempDiv.innerText || '';
+      
+      // Create header with programming language and skill level
+      const header = `Coder Test - ${getLanguageDisplayName(language)} (${level})\n\n`;
+      
+      // Combine header with question content
+      const fullContent = header + questionText.trim();
+      
+      await navigator.clipboard.writeText(fullContent);
+      setCopySuccess(true);
+      
+      // Reset success message after 2 seconds
+      setTimeout(() => {
+        setCopySuccess(false);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy question: ', err);
+    }
+  };
 
   // Set inCoderTest to true when entering the page, false when leaving
   useEffect(() => {
@@ -356,10 +392,32 @@ const CoderTest: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom color="primary.main">
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h4" component="h1" gutterBottom color="primary.main" sx={{ mb: 0 }}>
           Coder Test - {getLanguageDisplayName(language)} ({level})
         </Typography>
+        
+        {/* Copy to Clipboard Button */}
+        {questionContent && !isLoading && (
+          <Tooltip 
+            title={copySuccess ? "Question copied!" : "Copy question to clipboard"}
+            open={copySuccess || undefined}
+            arrow
+          >
+            <IconButton
+              onClick={handleCopyToClipboard}
+              sx={{
+                color: 'primary.light',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)'
+                }
+              }}
+            >
+              <ContentCopyIcon />
+            </IconButton>
+          </Tooltip>
+        )}
       </Box>
 
       {/* Main Paper */}
@@ -421,91 +479,95 @@ const CoderTest: React.FC = () => {
           )}
         </Box>
 
-        {/* Bottom Buttons */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
-          {/* Left side - Cancel */}
-          <Button
-            variant="contained"
-            onClick={handleCancel}
-            sx={{ 
-              backgroundColor: '#f44336',
-              color: 'white',
-              '&:hover': { backgroundColor: '#d32f2f' }
-            }}
-          >
-            Cancel
-          </Button>
-
-          {/* Right side - Previous and Next */}
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button
-              variant="contained"
-              onClick={handlePrevious}
-              sx={{ 
-                backgroundColor: '#2196F3',
-                color: 'white',
-                '&:hover': { backgroundColor: '#1976D2' }
-              }}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleNext}
-              sx={{ 
-                backgroundColor: '#2196F3',
-                color: 'white',
-                '&:hover': { backgroundColor: '#1976D2' }
-              }}
-            >
-              Next
-            </Button>
-          </Box>
-        </Box>
-
-        {/* Level Dropdown - Bottom Row */}
-        <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-start' }}>
-          <Typography variant="body1" sx={{ color: 'white', mr: 1 }}>Level:</Typography>
-          <FormControl sx={{ minWidth: 150 }} size="small">
-            <InputLabel id="level-select-label" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}></InputLabel>
-            <Select
-              labelId="level-select-label"
-              id="level-select"
-              value={level}
-              label=""
-              displayEmpty
-              renderValue={(selected) => {
-                if (!selected) {
-                  return <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>Select option</span>;
-                }
-                return selected;
-              }}
-              onChange={(e) => handleLevelChange(e.target.value as string)}
-              sx={{
-                backgroundColor: '#4CAF50',
-                color: 'white',
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#2E7D32',
-                },
-                '& .MuiSvgIcon-root': {
+        {/* Bottom Buttons - Hidden during loading */}
+        {!isLoading && (
+          <>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
+              {/* Left side - Cancel */}
+              <Button
+                variant="contained"
+                onClick={handleCancel}
+                sx={{ 
+                  backgroundColor: '#f44336',
                   color: 'white',
-                },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#1B5E20',
-                },
-                '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#388E3C',
-                },
-              }}
-            >
-              <MenuItem value="">
-                <em>Select option</em>
-              </MenuItem>
-              <MenuItem value="basic">Basic</MenuItem>
-              <MenuItem value="intermediate">Intermediate</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
+                  '&:hover': { backgroundColor: '#d32f2f' }
+                }}
+              >
+                Cancel
+              </Button>
+
+              {/* Right side - Previous and Next */}
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  variant="contained"
+                  onClick={handlePrevious}
+                  sx={{ 
+                    backgroundColor: '#2196F3',
+                    color: 'white',
+                    '&:hover': { backgroundColor: '#1976D2' }
+                  }}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleNext}
+                  sx={{ 
+                    backgroundColor: '#2196F3',
+                    color: 'white',
+                    '&:hover': { backgroundColor: '#1976D2' }
+                  }}
+                >
+                  Next
+                </Button>
+              </Box>
+            </Box>
+
+            {/* Level Dropdown - Bottom Row */}
+            <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-start' }}>
+              <Typography variant="body1" sx={{ color: 'white', mr: 1 }}>Level:</Typography>
+              <FormControl sx={{ minWidth: 150 }} size="small">
+                <InputLabel id="level-select-label" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}></InputLabel>
+                <Select
+                  labelId="level-select-label"
+                  id="level-select"
+                  value={level}
+                  label=""
+                  displayEmpty
+                  renderValue={(selected) => {
+                    if (!selected) {
+                      return <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>Select option</span>;
+                    }
+                    return selected;
+                  }}
+                  onChange={(e) => handleLevelChange(e.target.value as string)}
+                  sx={{
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#2E7D32',
+                    },
+                    '& .MuiSvgIcon-root': {
+                      color: 'white',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#1B5E20',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#388E3C',
+                    },
+                  }}
+                >
+                  <MenuItem value="">
+                    <em>Select option</em>
+                  </MenuItem>
+                  <MenuItem value="basic">Basic</MenuItem>
+                  <MenuItem value="intermediate">Intermediate</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </>
+        )}
       </Paper>
     </Container>
   );
