@@ -640,14 +640,24 @@ export const getSubTopics = async (skillTitle: string): Promise<string[]> => {
 };
 
 // Coder Test AI call
-export const getCoderTestQuestion = async (language: string, level: string): Promise<string> => {
+export const getCoderTestQuestion = async (language: string, level: string, previousQuestions: string[] = []): Promise<string> => {
   try {
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
     if (!apiKey) throw new Error('API key not found in environment variables!');
 
-    const prompt = `Give me a LeetCode style coding question for programming language ${language} at ${level} skill level.
+    // Build the base prompt
+    let prompt = `Give me a random LeetCode style coding question for programming language ${language} at ${level} skill level.
 
-Then underneath provide a detailed answer with code blocks. Code must have comments.
+Then underneath provide a detailed answer with code blocks. Code must have comments.`;
+
+    // Add previous questions avoidance logic if there are previous questions
+    if (previousQuestions.length > 0) {
+      prompt = `Do not use any of the questions that have already been asked. ${prompt}
+
+Previous questions: ${previousQuestions.join('\n\n---\n\n')}`;
+    }
+
+    prompt += `
 
 Format the response in this exact HTML structure:
 
@@ -670,7 +680,7 @@ Format the response in this exact HTML structure:
             <pre><code class="language-${language.toLowerCase()}">
 Input: [example input]
 Output: [example output]
-Explanation: [brief explanation]
+Explanation: [brief explanation - keep under 80 characters per line]
             </code></pre>
         </div>
     </div>
@@ -679,7 +689,7 @@ Explanation: [brief explanation]
         <h3>Solution</h3>
         <div class="approach">
             <h4>Approach:</h4>
-            <p>[Explanation of the approach]</p>
+            <p>[Concise explanation of the approach - 2-3 short sentences max]</p>
         </div>
         <div class="solution-code">
             <h4>Implementation:</h4>
@@ -695,9 +705,9 @@ Explanation: [brief explanation]
         <div class="explanation">
             <h4>Step-by-step Explanation:</h4>
             <ul>
-                <li>[Step 1 explanation]</li>
-                <li>[Step 2 explanation]</li>
-                <li>[Step 3 explanation]</li>
+                <li>[Step 1 - keep concise, under 80 chars]</li>
+                <li>[Step 2 - keep concise, under 80 chars]</li>
+                <li>[Step 3 - keep concise, under 80 chars]</li>
             </ul>
         </div>
     </div>
@@ -712,7 +722,11 @@ Important guidelines:
 6. Content will be displayed on a dark background, use light colors for text
 7. Keep explanations clear and educational
 8. Do not use backticks or markdown formatting
-9. Use only the supported language classes: language-javascript, language-typescript, language-python, language-java, language-csharp, language-cpp`;
+9. Use only the supported language classes: language-javascript, language-typescript, language-python, language-java, language-csharp, language-cpp
+10. IMPORTANT: Keep all text lines under 80 characters to prevent horizontal scrolling
+11. Break long sentences into shorter ones for better readability
+12. Use concise explanations - prioritize clarity over lengthy descriptions
+13. Make explanation party easy to follow but also very indepth`;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',

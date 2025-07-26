@@ -15,6 +15,7 @@ import {
 import { getCoderTestQuestion } from '../services/aiService';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useQuiz } from '../contexts/quizContext';
 
 // Component to render content with syntax highlighting (similar to Chat.tsx)
 const MessageContent: React.FC<{ 
@@ -232,10 +233,22 @@ const CoderTest: React.FC = () => {
   const [showAnswer, setShowAnswer] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  // Load coding question when component mounts or when language/level changes
+  // Quiz context for tracking coder test questions
+  const { setCoderTestQuestions, setInCoderTest, coderTestQuestions, setLevel: setQuizLevel } = useQuiz();
+
+  // Set inCoderTest to true when entering the page, false when leaving
+  useEffect(() => {
+    setInCoderTest(true);
+    return () => {
+      setInCoderTest(false);
+      setCoderTestQuestions([]); // Clear questions when leaving page
+    };
+  }, [setInCoderTest, setCoderTestQuestions]);
+
+  // Load coding question when component mounts or when language changes (but not level)
   useEffect(() => {
     loadQuestion();
-  }, [language, level]);
+  }, [language]); // Removed level dependency to prevent auto-loading on level change
 
   const loadQuestion = async () => {
     setIsLoading(true);
@@ -243,8 +256,10 @@ const CoderTest: React.FC = () => {
     setShowAnswer(false);
     
     try {
-      const response = await getCoderTestQuestion(language, level);
+      const response = await getCoderTestQuestion(language, level, coderTestQuestions);
       setQuestionContent(response);
+      // Add the new question to the array
+      setCoderTestQuestions(prev => [...prev, response]);
     } catch (err) {
       console.error('Error loading question:', err);
       setError('Failed to load coding question. Please try again.');
@@ -255,6 +270,12 @@ const CoderTest: React.FC = () => {
 
   const toggleAnswer = () => {
     setShowAnswer(!showAnswer);
+  };
+
+  const handleLevelChange = (newLevel: string) => {
+    setLevel(newLevel);
+    setQuizLevel(newLevel); // Update quiz context level
+    setCoderTestQuestions([]); // Clear previous questions
   };
 
   const getLanguageDisplayName = (lang: string) => {
@@ -406,7 +427,7 @@ const CoderTest: React.FC = () => {
                 }
                 return selected;
               }}
-              onChange={(e) => setLevel(e.target.value as string)}
+              onChange={(e) => handleLevelChange(e.target.value as string)}
               sx={{
                 backgroundColor: '#4CAF50',
                 color: 'white',
