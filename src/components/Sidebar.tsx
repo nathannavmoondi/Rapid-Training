@@ -13,6 +13,7 @@ import StarIcon from '@mui/icons-material/Star';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import CodeIcon from '@mui/icons-material/Code';
+import PeopleIcon from '@mui/icons-material/People';
 import { useNavigate } from 'react-router-dom';
 import { IWantToLearnDialog } from './IWantToLearnDialog';
 import { CoderTestDialog } from './CoderTestDialog';
@@ -24,13 +25,13 @@ const menuItems = [
   { label: 'Algorithms', path: '/algorithms', icon: <FunctionsIcon />, external: false },
   { label: 'Coder Test', path: '/coder-test', icon: <CodeIcon />, external: false },
   { label: 'My Quizzes', path: '/my-quizzes', icon: <QuizIcon />, external: false },
-  
   { label: 'Custom Quizzes', path: '/custom-quizzes', icon: <StarIcon />, external: false },
   { label: 'Review Quizzes', path: '/review-quizzes', icon: <AssessmentIcon />, external: false },
   { label: 'My Training', path: '/my-training', icon: <WorkspacesIcon />, external: false },
   { label: 'YT Generator', path: '/yt-generator', icon: <YouTubeIcon />, external: false },
   { label: 'I want to learn', path: '/learn', icon: <MenuBookIcon />, external: false },
   { label: 'Explore', path: '/explore', icon: <SettingsIcon />, external: false },
+  { label: 'Interview\nCandidates', path: '/interview-candidates', icon: <PeopleIcon />, external: false, fullWidth: true },
   { label: 'Github', path: 'https://github.com/nathannavmoondi', icon: <GitHubIcon />, external: true }
 ];
 
@@ -226,7 +227,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
                 transition: 'background 0.2s',
                 borderRadius: '4px',
                 mx: 0.5,
-                justifyContent: showText ? 'flex-start' : 'center'
+                justifyContent: showText ? 'flex-start' : 'center',
+                ...(item.fullWidth && showText && {
+                  alignItems: 'flex-start',
+                  py: 1.5,
+                  minHeight: '50px'
+                })
               }}
               onClick={() => {
                 if (item.label === 'I want to learn') {
@@ -248,7 +254,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
                     color: '#e3f2fd', 
                     fontWeight: 500,
                     opacity: Math.min((width - TEXT_VISIBILITY_THRESHOLD) / 30, 1),
-                    whiteSpace: 'nowrap'
+                    whiteSpace: item.fullWidth ? 'pre-line' : 'nowrap',
+                    lineHeight: item.fullWidth ? 1.2 : 'normal'
                   }}
                 >
                   {item.label}

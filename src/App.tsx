@@ -27,11 +27,11 @@ import CustomQuizzes from './pages/CustomQuizzes';
 import Explore from './pages/Explore';
 import ReviewQuizzes from './pages/ReviewQuizzes';
 import CoderTest from './pages/CoderTest';
+import InterviewCandidates from './pages/InterviewCandidates';
 import { Sidebar } from './components/Sidebar';
 import './styles/mobile.css';
 import './App.css';
 import FailedQuestionsPrimer from './pages/FailedQuestionsPrimer';
-import Test2 from './pages/Test2';
 import { IWantToLearn } from './pages/IWantToLearn';
 import SplashPage from './components/SplashPage';
 
@@ -103,6 +103,7 @@ function App() {
                       <Route path="/item/:id" element={<Details />} />
                       <Route path="/quiz-results" element={<QuizResults />} />
                       <Route path="/my-quizzes" element={<MyQuizzes />} />
+                      <Route path="/interview-candidates" element={<InterviewCandidates />} />
                       <Route path="/my-slidedecks" element={<MySlidedecks />} />
                       <Route path="/my-training" element={<MyTraining />} />
                       <Route path="/custom-quizzes" element={<CustomQuizzes />} />
@@ -113,8 +114,7 @@ function App() {
                       <Route path="/promptdb" element={<PromptDB />} />
                       <Route path="/marketing-ai" element={<MarketingAI />} />
                       <Route path="/yt-generator" element={<YouTubeQuizGenerator />} />
-                      <Route path="/learn" element={<IWantToLearn />} />
-                      <Route path="/test2" element={<Test2 />} />
+                      <Route path="/learn" element={<IWantToLearn />} />                      
                     </Routes>
                   </Container>
                 </Box>

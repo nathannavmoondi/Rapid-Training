@@ -168,7 +168,8 @@ When providing code examples or explanations:
 11. Do not use backticks.
 12. Never start any line, list item, or point with * or - (asterisk or dash). Always use <ul> and <li> HTML tags for lists, or use icons. Strictly avoid * or - at the beginning of any line.
 13. When providing further learning resources or links, always use <a href="URL" target="_blank">Link Text</a> HTML tags for each resource, so links open in a new tab.
-14. Any headline or section title (such as 'Further learning resources') must be either bolded using <b> tags or wrapped in a <h1> tag.`
+14. Any headline or section title (such as 'Further learning resources') must be either bolded using <b> tags or wrapped in a <h1> tag.
+15. Feel free to use icons or emmojis to enhance the explanation and make it more engaging. Use them sparingly and only where appropriate to clarify concepts or highlight important points.`
             },
             {
               role: "user",
@@ -265,7 +266,8 @@ When providing code examples or explanations:
 11. Do not use backticks.
 12. Never start any line, list item, or point with * or - (asterisk or dash). Always use <ul> and <li> HTML tags for lists, or use icons. Strictly avoid * or - at the beginning of any line.
 13. When providing further learning resources or links, always use <a href="URL" target="_blank">Link Text</a> HTML tags for each resource, so links open in a new tab.
-14. Any headline or section title (such as 'Further learning resources') must be either bolded using <b> tags or wrapped in a <h1> tag.`
+14. Any headline or section title (such as 'Further learning resources') must be either bolded using <b> tags or wrapped in a <h1> tag.
+15. Feel free to use icons or emmojis to enhance the explanation and make it more engaging. Use them sparingly and only where appropriate to clarify concepts or highlight important points.`
             },
             {
               role: "user",

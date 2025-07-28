@@ -144,7 +144,7 @@ export const Navbar = ({ onChatToggle, isChatOpen }: NavbarProps) => {
               fontSize: '0.875rem'
             }}
           >
-            Rapid Skill - AI Based Training (Nathan Moondi DEMO)
+            Rapid Skill - AI Learning Tool (Nathan Moondi DEMO)
           </Typography>
         </Box>
 

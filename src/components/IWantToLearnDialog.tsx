@@ -33,7 +33,7 @@ export const IWantToLearnDialog: React.FC<IWantToLearnDialogProps> = ({
     try {
       await onLearnMore(topic.trim());
       setTopic(''); // Clear the input
-      onClose(); // Close the dialog
+      // Keep dialog open after learning
     } catch (error) {
       console.error('Failed to start learning:', error);
     } finally {
@@ -122,7 +122,7 @@ export const IWantToLearnDialog: React.FC<IWantToLearnDialogProps> = ({
             fontStyle: 'italic'
           }}
         >
-          (e.g: dog walking, hvac basics, .net logging)
+          (e.g: dog walking, hvac basics, .net logging, difference between interface and type in typescript)
         </Typography>
 
         <TextField
@@ -205,14 +205,7 @@ export const IWantToLearnDialog: React.FC<IWantToLearnDialogProps> = ({
             }
           }}
         >
-          {loading ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <CircularProgress size={20} sx={{ color: 'white' }} />
-              Learning...
-            </Box>
-          ) : (
-            'Learn More'
-          )}
+          {loading ? 'Learning...' : 'Learn More'}
         </Button>
       </DialogActions>
     </Dialog>
