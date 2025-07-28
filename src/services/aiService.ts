@@ -648,6 +648,8 @@ export const getCoderTestQuestion = async (language: string, level: string, prev
     // Build the base prompt
     let prompt = `Give me a random LeetCode style coding question for programming language ${language} at ${level} skill level.
 
+Create an appropriate title for this coding test problem.
+
 Then underneath provide a detailed answer with code blocks. Code must have comments.`;
 
     // Add previous questions avoidance logic if there are previous questions
@@ -662,6 +664,9 @@ Previous questions: ${previousQuestions.join('\n\n---\n\n')}`;
 Format the response in this exact HTML structure:
 
 <div class="coding-question-container">
+    <div class="title-section">
+        <h2>Title - [Your creative and descriptive title for this coding problem]</h2>
+    </div>
     <div class="question-section">
         <h3>Coding Challenge</h3>
         <div class="problem-statement">
@@ -749,7 +754,9 @@ Explanation: [brief explanation - keep under 80 characters per line]
 </div>
 
 Important guidelines:
-1. Make the problem appropriate for ${level} level (${level === 'basic' ? 'focus on fundamental concepts like arrays, strings, basic loops' : 'include more complex algorithms, data structures, optimization'})
+1. Create a clear, descriptive title that reflects the problem's core concept
+2. Title should be in format: "Title - [Problem Name]" (e.g., "Title - Two Sum Problem")
+3. Make the problem appropriate for ${level} level (${level === 'basic' ? 'focus on fundamental concepts like arrays, strings, basic loops' : 'include more complex algorithms, data structures, optimization'})
 2. Use proper ${language} syntax in code examples
 3. All code must be wrapped in <pre><code class="language-${language.toLowerCase()}"> tags
 4. Include detailed comments in the solution code

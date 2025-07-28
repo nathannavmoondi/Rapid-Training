@@ -15,6 +15,8 @@ import {
   Tooltip
 } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import LaunchIcon from '@mui/icons-material/Launch';
+import CodeIcon from '@mui/icons-material/Code';
 import { getCoderTestQuestion } from '../services/aiService';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -280,6 +282,7 @@ const CoderTest: React.FC = () => {
   const [showTips, setShowTips] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
+  const [copyCodeSuccess, setCopyCodeSuccess] = useState<boolean>(false);
 
   // Quiz context for tracking coder test questions
   const { setCoderTestQuestions, setInCoderTest, coderTestQuestions, setLevel: setQuizLevel } = useQuiz();
@@ -314,6 +317,66 @@ const CoderTest: React.FC = () => {
     } catch (err) {
       console.error('Failed to copy question: ', err);
     }
+  };
+
+  // Copy code function (function signature and example)
+  const handleCopyCode = async () => {
+    try {
+      // Extract function signature and example sections from the HTML content
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = questionContent;
+      
+      // Get function signature section
+      const functionSection = tempDiv.querySelector('.function-signature') as HTMLElement;
+      const exampleSection = tempDiv.querySelector('.examples') as HTMLElement;
+      
+      let codeContent = '';
+      
+      if (functionSection) {
+        // Get only the code content, skip the "Function Signature:" heading
+        const codeElement = functionSection.querySelector('pre code') as HTMLElement;
+        if (codeElement) {
+          const functionText = codeElement.textContent || codeElement.innerText || '';
+          codeContent += functionText.trim() + '\n\n';
+        }
+      }
+      
+      if (exampleSection) {
+        // Get only the code content, skip the "Example:" heading
+        const codeElement = exampleSection.querySelector('pre code') as HTMLElement;
+        if (codeElement) {
+          const exampleText = codeElement.textContent || codeElement.innerText || '';
+          codeContent += '/*\n' + exampleText.trim() + '\n*/';
+        }
+      }
+      
+      if (codeContent) {
+        await navigator.clipboard.writeText(codeContent);
+        setCopyCodeSuccess(true);
+        
+        // Reset success message after 2 seconds
+        setTimeout(() => {
+          setCopyCodeSuccess(false);
+        }, 2000);
+      }
+    } catch (err) {
+      console.error('Failed to copy code: ', err);
+    }
+  };
+
+  // Open coding playground function
+  const handleOpenPlayground = () => {
+    let playgroundUrl = '';
+    
+    // Determine URL based on programming language
+    if (language.toLowerCase() === 'c#' || language.toLowerCase() === 'csharp' || language.toLowerCase() === 'c++' || language.toLowerCase() === 'cpp') {
+      playgroundUrl = 'https://dotnetfiddle.net/';
+    } else {
+      playgroundUrl = 'https://jsfiddle.net/';
+    }
+    
+    // Open in new tab
+    window.open(playgroundUrl, '_blank');
   };
 
   // Set inCoderTest to true when entering the page, false when leaving
@@ -397,26 +460,75 @@ const CoderTest: React.FC = () => {
           Coder Test - {getLanguageDisplayName(language)} ({level})
         </Typography>
         
-        {/* Copy to Clipboard Button */}
+        {/* Action Buttons */}
         {questionContent && !isLoading && (
-          <Tooltip 
-            title={copySuccess ? "Question copied!" : "Copy question to clipboard"}
-            open={copySuccess || undefined}
-            arrow
-          >
-            <IconButton
-              onClick={handleCopyToClipboard}
-              sx={{
-                color: 'primary.light',
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.2)'
-                }
-              }}
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {/* Open Playground Button */}
+            <Tooltip title="Open in coding playground">
+              <Button
+                onClick={handleOpenPlayground}
+                variant="contained"
+                sx={{
+                  backgroundColor: '#1976d2',
+                  color: 'white',
+                  minWidth: 'auto',
+                  px: 2,
+                  py: 1,
+                  '&:hover': {
+                    backgroundColor: '#1565c0'
+                  }
+                }}
+                startIcon={<LaunchIcon />}
+              >
+                Playground
+              </Button>
+            </Tooltip>
+            
+            {/* Copy Code Button */}
+            <Tooltip 
+              title={copyCodeSuccess ? "Code copied!" : "Copy function signature and example"}
+              open={copyCodeSuccess || undefined}
+              arrow
             >
-              <ContentCopyIcon />
-            </IconButton>
-          </Tooltip>
+              <Button
+                onClick={handleCopyCode}
+                variant="contained"
+                sx={{
+                  backgroundColor: '#1976d2',
+                  color: 'white',
+                  minWidth: 'auto',
+                  px: 2,
+                  py: 1,
+                  '&:hover': {
+                    backgroundColor: '#1565c0'
+                  }
+                }}
+                startIcon={<CodeIcon />}
+              >
+                Copy Code
+              </Button>
+            </Tooltip>
+            
+            {/* Copy to Clipboard Button */}
+            <Tooltip 
+              title={copySuccess ? "Question copied!" : "Copy question to clipboard"}
+              open={copySuccess || undefined}
+              arrow
+            >
+              <IconButton
+                onClick={handleCopyToClipboard}
+                sx={{
+                  color: 'primary.light',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)'
+                  }
+                }}
+              >
+                <ContentCopyIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
         )}
       </Box>
 
