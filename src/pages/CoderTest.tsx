@@ -668,20 +668,21 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
         {!isLoading && (
           <>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
-              {/* Left side - Cancel and Explain Further */}
+              {/* Left side - Cancel */}
+              <Button
+                variant="contained"
+                onClick={handleCancel}
+                sx={{ 
+                  backgroundColor: '#f44336',
+                  color: 'white',
+                  '&:hover': { backgroundColor: '#d32f2f' }
+                }}
+              >
+                Cancel
+              </Button>
+
+              {/* Right side - Explain Further, Previous and Next */}
               <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button
-                  variant="contained"
-                  onClick={handleCancel}
-                  sx={{ 
-                    backgroundColor: '#f44336',
-                    color: 'white',
-                    '&:hover': { backgroundColor: '#d32f2f' }
-                  }}
-                >
-                  Cancel
-                </Button>
-                
                 {/* Explain Further Button */}
                 {questionContent && (
                   <Button
@@ -701,10 +702,7 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
                     {isExplaining ? 'Explaining...' : 'Explain Further'}
                   </Button>
                 )}
-              </Box>
-
-              {/* Right side - Previous and Next */}
-              <Box sx={{ display: 'flex', gap: 1 }}>
+                
                 <Button
                   variant="contained"
                   onClick={handlePrevious}
