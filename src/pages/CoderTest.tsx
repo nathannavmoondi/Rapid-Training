@@ -18,9 +18,11 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import LaunchIcon from '@mui/icons-material/Launch';
 import CodeIcon from '@mui/icons-material/Code';
 import { getCoderTestQuestion } from '../services/aiService';
+import { chatService } from '../services/chatService';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useQuiz } from '../contexts/quizContext';
+import { useChat } from '../contexts/chatContext';
 
 // Component to render content with syntax highlighting (similar to Chat.tsx)
 const MessageContent: React.FC<{ 
@@ -269,7 +271,7 @@ const MessageContent: React.FC<{
   return <Box>{renderContentWithSyntaxHighlighting(text)}</Box>;
 };
 
-const CoderTest: React.FC = () => {
+const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> = ({ onChatToggle, isChatOpen = false }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const language = searchParams.get('language') || 'javascript';
@@ -283,9 +285,13 @@ const CoderTest: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
   const [copyCodeSuccess, setCopyCodeSuccess] = useState<boolean>(false);
+  const [isExplaining, setIsExplaining] = useState<boolean>(false);
 
   // Quiz context for tracking coder test questions
   const { setCoderTestQuestions, setInCoderTest, coderTestQuestions, setLevel: setQuizLevel } = useQuiz();
+  
+  // Chat context for explain further functionality
+  const { addExternalMessage } = useChat();
 
   // Copy to clipboard function
   const handleCopyToClipboard = async () => {
@@ -377,6 +383,73 @@ const CoderTest: React.FC = () => {
     
     // Open in new tab
     window.open(playgroundUrl, '_blank');
+  };
+
+  // Explain further function - similar to "I want to learn" dialog
+  const handleExplainFurther = async () => {
+    if (!questionContent) return;
+    
+    setIsExplaining(true);
+    
+    try {
+      // Extract title and solution from the question content
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = questionContent;
+      
+      // Get the title from the title-section
+      const titleSection = tempDiv.querySelector('.title-section') as HTMLElement;
+      const title = titleSection ? (titleSection.textContent || titleSection.innerText || '') : `${getLanguageDisplayName(language)} Coding Challenge`;
+      
+      // Get the solution from the answer-section
+      const answerSection = tempDiv.querySelector('.answer-section') as HTMLElement;
+      const solution = answerSection ? (answerSection.textContent || answerSection.innerText || '') : '';
+      
+      // Add "thinking" message to chat BEFORE opening chat
+      const thinkingMessage = {
+        id: Math.random().toString(36).substring(7),
+        text: "Thinking...",
+        isUser: false,
+        timestamp: new Date()
+      };
+      addExternalMessage(thinkingMessage);
+      
+      // Ensure chat is open only if it's not already open
+      if (!isChatOpen) {
+        onChatToggle?.();
+        // Wait a bit for the chat to fully open before making API call
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // Call AI with the explain topic prompt using the title and solution
+      const combinedContent = `${title.trim()}\n\n${solution.trim()}`;
+      const aiResponse = await chatService.explainTopicInDepth(
+        "Coding",
+        combinedContent,
+        "english"
+      );
+      
+      // Add AI response to chat
+      addExternalMessage(aiResponse);
+
+      // Force scroll to top after a small delay to ensure the message is rendered
+      setTimeout(() => {
+        const chatContainer = document.querySelector('.chat-messages');
+        if (chatContainer) {
+          chatContainer.scrollTop = 0;
+        }
+      }, 100);
+    } catch (error) {
+      console.error('Failed to explain further:', error);
+      const errorMessage = {
+        id: Math.random().toString(36).substring(7),
+        text: "Sorry, I encountered an error while trying to explain this topic further. Please try again.",
+        isUser: false,
+        timestamp: new Date()
+      };
+      addExternalMessage(errorMessage);
+    } finally {
+      setIsExplaining(false);
+    }
   };
 
   // Set inCoderTest to true when entering the page, false when leaving
@@ -595,18 +668,40 @@ const CoderTest: React.FC = () => {
         {!isLoading && (
           <>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
-              {/* Left side - Cancel */}
-              <Button
-                variant="contained"
-                onClick={handleCancel}
-                sx={{ 
-                  backgroundColor: '#f44336',
-                  color: 'white',
-                  '&:hover': { backgroundColor: '#d32f2f' }
-                }}
-              >
-                Cancel
-              </Button>
+              {/* Left side - Cancel and Explain Further */}
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  variant="contained"
+                  onClick={handleCancel}
+                  sx={{ 
+                    backgroundColor: '#f44336',
+                    color: 'white',
+                    '&:hover': { backgroundColor: '#d32f2f' }
+                  }}
+                >
+                  Cancel
+                </Button>
+                
+                {/* Explain Further Button */}
+                {questionContent && (
+                  <Button
+                    variant="contained"
+                    onClick={handleExplainFurther}
+                    disabled={isExplaining}
+                    sx={{ 
+                      backgroundColor: '#9C27B0',
+                      color: 'white',
+                      '&:hover': { backgroundColor: '#7B1FA2' },
+                      '&:disabled': {
+                        backgroundColor: 'rgba(156, 39, 176, 0.3)',
+                        color: 'rgba(255, 255, 255, 0.5)'
+                      }
+                    }}
+                  >
+                    {isExplaining ? 'Explaining...' : 'Explain Further'}
+                  </Button>
+                )}
+              </Box>
 
               {/* Right side - Previous and Next */}
               <Box sx={{ display: 'flex', gap: 1 }}>

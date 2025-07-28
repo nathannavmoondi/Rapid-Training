@@ -109,7 +109,7 @@ function App() {
                       <Route path="/custom-quizzes" element={<CustomQuizzes />} />
                       <Route path="/explore" element={<Explore />} />
                       <Route path="/review-quizzes" element={<ReviewQuizzes />} />
-                      <Route path="/coder-test" element={<CoderTest />} />
+                      <Route path="/coder-test" element={<CoderTest onChatToggle={handleChatToggle} isChatOpen={isChatOpen} />} />
                       <Route path="/failed-questions-primer" element={<React.Suspense fallback={<div>Loading...</div>}><FailedQuestionsPrimer /></React.Suspense>} />
                       <Route path="/promptdb" element={<PromptDB />} />
                       <Route path="/marketing-ai" element={<MarketingAI />} />

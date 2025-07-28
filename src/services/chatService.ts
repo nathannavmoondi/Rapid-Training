@@ -45,6 +45,8 @@ class ChatService {
         content: message
       });
 
+      const restriction = "Only answer questions related to ${skill}. If the question is not related to ${skill}, politely redirect the user to ask about ${skill} instead."
+
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -56,7 +58,7 @@ class ChatService {
           temperature: 0.7,
           messages: [
             {              role: "system",
-              content: `You are a helpful assistant focused on ${skill}. Your name is Mr. Buddy. Only answer questions related to ${skill}. If the question is not related to ${skill}, politely redirect the user to ask about ${skill} instead.
+              content: `You are a helpful assistant focused on ${skill}. Your name is Mr. Buddy. ${restriction}
 
 IMPORTANT: Do NOT start your responses with greetings, introductions, or phrases like "Hello", "Hi", "As Mr. Buddy", etc. Get straight to answering the question directly.
 
@@ -267,7 +269,8 @@ When providing code examples or explanations:
 12. Never start any line, list item, or point with * or - (asterisk or dash). Always use <ul> and <li> HTML tags for lists, or use icons. Strictly avoid * or - at the beginning of any line.
 13. When providing further learning resources or links, always use <a href="URL" target="_blank">Link Text</a> HTML tags for each resource, so links open in a new tab.
 14. Any headline or section title (such as 'Further learning resources') must be either bolded using <b> tags or wrapped in a <h1> tag.
-15. Feel free to use icons or emmojis to enhance the explanation and make it more engaging. Use them sparingly and only where appropriate to clarify concepts or highlight important points.`
+15. Feel free to use icons or emmojis to enhance the explanation and make it more engaging. Use them sparingly and only where appropriate to clarify concepts or highlight important points.
+16. If there is comments in the code, keep the comments. Also don't add too many extra blank lines.`
             },
             {
               role: "user",
