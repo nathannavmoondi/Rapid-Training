@@ -425,7 +425,7 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
       const aiResponse = await chatService.explainTopicInDepth(
         "Coding",
         combinedContent,
-        "english"
+        "english", true
       );
       
       // Add AI response to chat
