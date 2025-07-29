@@ -19,7 +19,7 @@ import { downloadHtmlAsPdf } from '../services/pdfService';
 import 'react-toastify/dist/ReactToastify.css';
 
 import '../styles/answer-section.css';
-import { useQuiz, languages } from '../contexts/quizContext'; // Import useQuiz and languages
+import { useQuiz, languages, generateLabelFromHtml } from '../contexts/quizContext'; // Import useQuiz and languages
 
 
 // Helper function to process HTML for answer visibility and quiz status.  Add or remove sections.
@@ -651,13 +651,18 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
   };
 
   // Handler for saving quiz
-  const handleSaveQuiz = () => {
+  const handleSaveQuiz = () => {    
     try {
-      // Create a formatted string with title and question content
-      const header = `${currentSkill?.title || 'Quiz'} - ${level}\n\n`;
-      const fullContent = header + question.trim();
+      // Just use the question content directly, the label generator will extract what it needs
+      const content = question.trim();
+      console.log('Question content length:', content.length);
       
-      setSavedUserQuizzes(prev => [...prev, fullContent]);
+      // Create a label with topic, skill level, and title
+      const baseLabel = generateLabelFromHtml(content, 'Quiz');
+      const label = `${currentSkill?.title || 'Topic'} - (${level}) - ${baseLabel}`;
+      console.log('Generated label:', label);
+      const savedItem = { label, html: content };
+      setSavedUserQuizzes(prev => [...prev, savedItem]);
       setSaveQuizSuccess(true);
       
       // Reset success message after 2 seconds
@@ -676,7 +681,9 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
       const header = `${currentSkill?.title || 'Slide Deck'} - Slide Deck\n\n`;
       const fullContent = header + question.trim();
       
-      setSavedUserSlidedecks(prev => [...prev, fullContent]);
+      const label = generateLabelFromHtml(fullContent, 'Slide Deck');
+      const savedItem = { label, html: fullContent };
+      setSavedUserSlidedecks(prev => [...prev, savedItem]);
       setSaveSlideDeckSuccess(true);
       
       // Reset success message after 2 seconds
@@ -751,7 +758,13 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
                 {/* Save button - show for both Practice Question and Slide Deck */}
                 <Tooltip title={isSlideDeck ? (saveSlideDeckSuccess ? "Slide deck saved!" : "Save slide deck") : (saveQuizSuccess ? "Quiz saved!" : "Save quiz")}>
                   <IconButton
-                    onClick={isSlideDeck ? handleSaveSlideDeck : handleSaveQuiz}
+                    onClick={() => {
+                      if (isSlideDeck) {
+                        handleSaveSlideDeck();
+                      } else {
+                        handleSaveQuiz();
+                      }
+                    }}
                     sx={{
                       color: isSlideDeck ? (saveSlideDeckSuccess ? '#4caf50' : 'primary.light') : (saveQuizSuccess ? '#4caf50' : 'primary.light'),
                       backgroundColor: 'rgba(255, 255, 255, 0.1)',

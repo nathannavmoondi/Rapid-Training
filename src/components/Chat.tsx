@@ -16,6 +16,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useSpeechToText } from '../hooks/useSpeechToText';
 import { useQuiz } from '../contexts/quizContext'; // Import useQuiz
+import { generateLabelFromHtml } from '../contexts/quizContext';
 
 
 
@@ -440,7 +441,32 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
   // Save snippet function
   const handleSaveSnippet = async (text: string, messageId: string) => {
     try {
-      setUserSavedSnippets(prev => [...prev, text]);
+      console.log('Saving content - Raw HTML:', text);
+      
+      // Determine content type based on HTML structure
+      let contentType = 'Snippet';
+      if (text.includes('class="coding-question-container"')) {
+        contentType = 'Coder Test';
+      } else if (text.includes('class="slide"')) {
+        contentType = 'Slide Deck';
+      } else if (text.includes('class="option"')) {
+        contentType = 'Quiz';
+      }
+      
+      console.log('Content type detected:', contentType);
+      const label = generateLabelFromHtml(text, contentType);
+      console.log('Generated label:', label);
+      
+      // Save to appropriate collection based on type
+      const savedItem = { label, html: text };
+      console.log('Saving item:', savedItem);
+      
+      if (contentType === 'Coder Test') {
+        setUserSavedSnippets(prev => [...prev.filter(item => item.label !== label), savedItem]);
+      } else {
+        setUserSavedSnippets(prev => [...prev, savedItem]);
+      }
+      
       setSavedMessageId(messageId);
       
       // Reset tooltip after 2 seconds

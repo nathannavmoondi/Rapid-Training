@@ -24,7 +24,7 @@ import {
   Save as SaveIcon,
   Slideshow as SlideshowIcon
 } from '@mui/icons-material';
-import { useQuiz } from '../contexts/quizContext';
+import { useQuiz, SavedItem, generateLabelFromHtml } from '../contexts/quizContext';
 import { useChat } from '../contexts/chatContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -55,12 +55,12 @@ const MyQuizzes: React.FC = () => {
     setUserSavedSnippets(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleViewSnippet = async (snippet: string) => {
+  const handleViewSnippet = async (snippet: SavedItem) => {
     try {
       // Create a message directly with the saved snippet content
       const snippetMessage = {
         id: Math.random().toString(36).substring(7),
-        text: snippet,
+        text: snippet.html,
         isUser: false,
         timestamp: new Date(),
         isFromLearnDialog: true, // Mark as from learn dialog so save button appears
@@ -85,11 +85,11 @@ const MyQuizzes: React.FC = () => {
     setSavedUserCoderTests(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleViewCoderTest = async (test: string) => {
+  const handleViewCoderTest = async (test: SavedItem) => {
     try {
       const testMessage = {
         id: Math.random().toString(36).substring(7),
-        text: test,
+        text: test.html,
         isUser: false,
         timestamp: new Date(),
         isViewingQuizContent: false,  // Coder tests should NOT use quiz styling
@@ -108,11 +108,11 @@ const MyQuizzes: React.FC = () => {
     setSavedUserQuizzes(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleViewQuiz = async (quiz: string) => {
+  const handleViewQuiz = async (quiz: SavedItem) => {
     try {
       const quizMessage = {
         id: Math.random().toString(36).substring(7),
-        text: quiz,
+        text: quiz.html,
         isUser: false,
         timestamp: new Date(),
         isViewingQuizContent: true,
@@ -131,11 +131,11 @@ const MyQuizzes: React.FC = () => {
     setSavedUserSlidedecks(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleViewSlidedeck = async (slidedeck: string) => {
+  const handleViewSlidedeck = async (slidedeck: SavedItem) => {
     try {
       const slidedeckMessage = {
         id: Math.random().toString(36).substring(7),
-        text: slidedeck,
+        text: slidedeck.html,
         isUser: false,
         timestamp: new Date(),
         isViewingQuizContent: false,  // Slidedecks should have code highlighting, not quiz styling
@@ -269,7 +269,7 @@ const MyQuizzes: React.FC = () => {
                 }
               }}
             >
-              Start Coding Tests
+              Visit Coder Test Page
             </Button>
           </CardContent>
         </Card>
@@ -310,7 +310,7 @@ const MyQuizzes: React.FC = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <CodeIcon sx={{ fontSize: 24, color: '#1976d2', mr: 1 }} />
                 <Chip
-                  label={`Coder Test ${index + 1}`}
+                  label={test.label}
                   size="small"
                   sx={{
                     backgroundColor: 'rgba(25, 118, 210, 0.2)',
@@ -331,7 +331,7 @@ const MyQuizzes: React.FC = () => {
                   lineHeight: 1.4
                 }}
               >
-                {test.substring(0, 150)}...
+                {test.html.substring(0, 150)}...
               </Typography>
             </CardContent>
             <Box sx={{ p: 2, pt: 0, display: 'flex', gap: 1 }}>
@@ -386,7 +386,7 @@ const MyQuizzes: React.FC = () => {
                 lineHeight: 1.6
               }}
             >
-              Use the Skills Refresher feature and save quizzes to see them here.
+              Use the Topics feature and save quizzes to see them here.
             </Typography>
             <Button
               variant="contained"
@@ -399,7 +399,7 @@ const MyQuizzes: React.FC = () => {
                 }
               }}
             >
-              Start Skills Refresher
+              Visit Topics Page
             </Button>
           </CardContent>
         </Card>
@@ -440,7 +440,7 @@ const MyQuizzes: React.FC = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <QuizIcon sx={{ fontSize: 24, color: '#9c27b0', mr: 1 }} />
                 <Chip
-                  label={`Quiz ${index + 1}`}
+                  label={quiz.label}
                   size="small"
                   sx={{
                     backgroundColor: 'rgba(156, 39, 176, 0.2)',
@@ -461,7 +461,7 @@ const MyQuizzes: React.FC = () => {
                   lineHeight: 1.4
                 }}
               >
-                {quiz.substring(0, 150)}...
+                {quiz.html.substring(0, 150)}...
               </Typography>
             </CardContent>
             <Box sx={{ p: 2, pt: 0, display: 'flex', gap: 1 }}>
@@ -516,11 +516,11 @@ const MyQuizzes: React.FC = () => {
                 lineHeight: 1.6
               }}
             >
-              Use the Skills Refresher slide deck feature and save slidedecks to see them here.
+              Use the Topics Slide Deck feature and save slidedecks to see them here.
             </Typography>
             <Button
               variant="contained"
-              onClick={() => navigate('/skills-refresher')}
+              onClick={() => navigate('/topics')}
               sx={{
                 mt: 3,
                 background: 'linear-gradient(135deg, #ff9800 0%, #ffc107 100%)',
@@ -529,7 +529,7 @@ const MyQuizzes: React.FC = () => {
                 }
               }}
             >
-              Start Skills Refresher
+              Visit Topics Page
             </Button>
           </CardContent>
         </Card>
@@ -570,7 +570,7 @@ const MyQuizzes: React.FC = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <SlideshowIcon sx={{ fontSize: 24, color: '#ff9800', mr: 1 }} />
                 <Chip
-                  label={`Slide Deck ${index + 1}`}
+                  label={slidedeck.label}
                   size="small"
                   sx={{
                     backgroundColor: 'rgba(255, 152, 0, 0.2)',
@@ -591,7 +591,7 @@ const MyQuizzes: React.FC = () => {
                   lineHeight: 1.4
                 }}
               >
-                {slidedeck.substring(0, 150)}...
+                {slidedeck.html.substring(0, 150)}...
               </Typography>
             </CardContent>
             <Box sx={{ p: 2, pt: 0, display: 'flex', gap: 1 }}>
@@ -653,7 +653,7 @@ const MyQuizzes: React.FC = () => {
                 lineHeight: 1.6
               }}
             >
-              Use the "I Want to Learn" feature and save AI responses to see them here.
+              Use the "I Want to Learn" feature (or use chatbox) and save AI responses to see them here.
             </Typography>
             <Button
               variant="contained"
@@ -666,7 +666,7 @@ const MyQuizzes: React.FC = () => {
                 }
               }}
             >
-              Start Learning
+              Visit "I Want to Learn" Page
             </Button>
           </CardContent>
         </Card>
@@ -707,11 +707,7 @@ const MyQuizzes: React.FC = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <SchoolIcon sx={{ fontSize: 24, color: '#4caf50', mr: 1 }} />
                   <Chip
-                    label={
-                      snippet.startsWith('Topic: ') 
-                        ? snippet.split('\n')[0].replace('Topic: ', '')
-                        : `Snippet ${index + 1}`
-                    }
+                    label={snippet.label}
                     size="small"
                     sx={{
                       backgroundColor: 'rgba(76, 175, 80, 0.2)',
@@ -737,9 +733,9 @@ const MyQuizzes: React.FC = () => {
                 >
                   {(() => {
                     // Extract content after "Topic: xxx" if it exists
-                    const content = snippet.startsWith('Topic: ') 
-                      ? snippet.split('\n\n').slice(1).join('\n\n')
-                      : snippet;
+                    const content = snippet.html.startsWith('Topic: ') 
+                      ? snippet.html.split('\n\n').slice(1).join('\n\n')
+                      : snippet.html;
                     return content.replace(/<[^>]*>/g, '').substring(0, 200) + '...';
                   })()}
                 </Typography>
