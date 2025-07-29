@@ -17,6 +17,7 @@ interface QuizContextType {
   previousQuizzes: string[];
   failedQuizzes: string[];
   coderTestQuestions: string[];
+  currentCoderTestIndex: number;
   inCoderTest: boolean;
   setStartCourse: (value: number) => void;
   setMaxQuizzes: (value: number) => void;
@@ -31,6 +32,7 @@ interface QuizContextType {
   setPreviousQuizzes: React.Dispatch<React.SetStateAction<string[]>>;
   setFailedQuizzes: React.Dispatch<React.SetStateAction<string[]>>;
   setCoderTestQuestions: React.Dispatch<React.SetStateAction<string[]>>;
+  setCurrentCoderTestIndex: (index: number) => void;
   setInCoderTest: (inTest: boolean) => void;
   language: string;
   setLanguage: (lang: string) => void;
@@ -54,6 +56,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [previousQuizzes, setPreviousQuizzes] = useState<string[]>([]);
   const [failedQuizzes, setFailedQuizzes] = useState<string[]>([]);
   const [coderTestQuestions, setCoderTestQuestions] = useState<string[]>([]);
+  const [currentCoderTestIndex, setCurrentCoderTestIndex] = useState<number>(0);
   const [inCoderTest, setInCoderTest] = useState<boolean>(false);
   const [language, setLanguage] = useState<string>("english");
 
@@ -106,6 +109,8 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     console.log('Clearing previousQuizzes array');
     setPreviousQuizzes([]); // Reset previous quizzes when resetting quiz
     setFailedQuizzes([]); // Reset failed quizzes when resetting quiz
+    setCoderTestQuestions([]); // Reset coder test questions when resetting quiz
+    setCurrentCoderTestIndex(0); // Reset coder test index when resetting quiz
   }, []);
 
   const setPreviousPath = useCallback((path: string) => {
@@ -145,6 +150,8 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setFailedQuizzes,
     coderTestQuestions,
     setCoderTestQuestions,
+    currentCoderTestIndex,
+    setCurrentCoderTestIndex,
     inCoderTest,
     setInCoderTest,
     language,

@@ -17,6 +17,11 @@ import {
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import LaunchIcon from '@mui/icons-material/Launch';
 import CodeIcon from '@mui/icons-material/Code';
+import CancelIcon from '@mui/icons-material/Cancel';
+import HelpIcon from '@mui/icons-material/Help';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import AddIcon from '@mui/icons-material/Add';
 import { getCoderTestQuestion } from '../services/aiService';
 import { chatService } from '../services/chatService';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -288,7 +293,14 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
   const [isExplaining, setIsExplaining] = useState<boolean>(false);
 
   // Quiz context for tracking coder test questions
-  const { setCoderTestQuestions, setInCoderTest, coderTestQuestions, setLevel: setQuizLevel } = useQuiz();
+  const { 
+    setCoderTestQuestions, 
+    setInCoderTest, 
+    coderTestQuestions, 
+    currentCoderTestIndex,
+    setCurrentCoderTestIndex,
+    setLevel: setQuizLevel 
+  } = useQuiz();
   
   // Chat context for explain further functionality
   const { addExternalMessage } = useChat();
@@ -458,13 +470,23 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
     return () => {
       setInCoderTest(false);
       setCoderTestQuestions([]); // Clear questions when leaving page
+      setCurrentCoderTestIndex(0); // Reset index when leaving page
     };
-  }, [setInCoderTest, setCoderTestQuestions]);
+  }, [setInCoderTest, setCoderTestQuestions, setCurrentCoderTestIndex]);
 
   // Load coding question when component mounts or when language changes (but not level)
   useEffect(() => {
     loadQuestion();
   }, [language]); // Removed level dependency to prevent auto-loading on level change
+
+  // Update current question when index changes
+  useEffect(() => {
+    if (coderTestQuestions.length > 0 && currentCoderTestIndex < coderTestQuestions.length) {
+      setQuestionContent(coderTestQuestions[currentCoderTestIndex]);
+      setShowAnswer(false);
+      setShowTips(false);
+    }
+  }, [currentCoderTestIndex, coderTestQuestions]);
 
   const loadQuestion = async () => {
     setIsLoading(true);
@@ -475,8 +497,12 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
     try {
       const response = await getCoderTestQuestion(language, level, coderTestQuestions);
       setQuestionContent(response);
-      // Add the new question to the array
-      setCoderTestQuestions(prev => [...prev, response]);
+      // Add the new question to the array and set index to the new question
+      setCoderTestQuestions(prev => {
+        const newQuestions = [...prev, response];
+        setCurrentCoderTestIndex(newQuestions.length - 1);
+        return newQuestions;
+      });
     } catch (err) {
       console.error('Error loading question:', err);
       setError('Failed to load coding question. Please try again.');
@@ -499,6 +525,7 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
     setLevel(newLevel);
     setQuizLevel(newLevel); // Update quiz context level
     setCoderTestQuestions([]); // Clear previous questions
+    setCurrentCoderTestIndex(0); // Reset index
   };
 
   const getLanguageDisplayName = (lang: string) => {
@@ -517,92 +544,110 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
   };
 
   const handlePrevious = () => {
-    // TODO: Implement previous question logic
-    console.log('Previous question');
+    if (currentCoderTestIndex > 0) {
+      setCurrentCoderTestIndex(currentCoderTestIndex - 1);
+    }
   };
 
   const handleNext = () => {
-    // Load a new question
-    loadQuestion();
+    // If we're at the last question, load a new one
+    if (currentCoderTestIndex >= coderTestQuestions.length - 1) {
+      loadQuestion();
+    } else {
+      // Otherwise, move to the next existing question
+      setCurrentCoderTestIndex(currentCoderTestIndex + 1);
+    }
   };
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h4" component="h1" gutterBottom color="primary.main" sx={{ mb: 0 }}>
-          Coder Test - {getLanguageDisplayName(language)} ({level})
-        </Typography>
-        
-        {/* Action Buttons */}
-        {questionContent && !isLoading && (
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            {/* Open Playground Button */}
-            <Tooltip title="Open in coding playground">
-              <Button
-                onClick={handleOpenPlayground}
-                variant="contained"
-                sx={{
-                  backgroundColor: '#1976d2',
-                  color: 'white',
-                  minWidth: 'auto',
-                  px: 2,
-                  py: 1,
-                  '&:hover': {
-                    backgroundColor: '#1565c0'
-                  }
-                }}
-                startIcon={<LaunchIcon />}
-              >
-                Playground
-              </Button>
-            </Tooltip>
-            
-            {/* Copy Code Button */}
-            <Tooltip 
-              title={copyCodeSuccess ? "Code copied!" : "Copy function signature and example"}
-              open={copyCodeSuccess || undefined}
-              arrow
-            >
-              <Button
-                onClick={handleCopyCode}
-                variant="contained"
-                sx={{
-                  backgroundColor: '#1976d2',
-                  color: 'white',
-                  minWidth: 'auto',
-                  px: 2,
-                  py: 1,
-                  '&:hover': {
-                    backgroundColor: '#1565c0'
-                  }
-                }}
-                startIcon={<CodeIcon />}
-              >
-                Copy Code
-              </Button>
-            </Tooltip>
-            
-            {/* Copy to Clipboard Button */}
-            <Tooltip 
-              title={copySuccess ? "Question copied!" : "Copy question to clipboard"}
-              open={copySuccess || undefined}
-              arrow
-            >
-              <IconButton
-                onClick={handleCopyToClipboard}
-                sx={{
-                  color: 'primary.light',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)'
-                  }
-                }}
-              >
-                <ContentCopyIcon />
-              </IconButton>
-            </Tooltip>
+      <Box sx={{ mb: 4 }}>
+        {/* Header Section */}
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, mb: 2 }}>
+          <Box sx={{ mb: { xs: 2, md: 0 } }}>
+            <Typography variant="h4" component="h1" gutterBottom color="primary.main" sx={{ mb: 0 }}>
+              Coder Test - {getLanguageDisplayName(language)} ({level})
+            </Typography>
+            {coderTestQuestions.length > 0 && (
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 0.5 }}>
+                Question {currentCoderTestIndex + 1} of {coderTestQuestions.length}
+              </Typography>
+            )}
           </Box>
-        )}
+          
+          {/* Action Buttons */}
+          {questionContent && !isLoading && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {/* Open Playground Button */}
+              <Tooltip title="Open in coding playground">
+                <Button
+                  onClick={handleOpenPlayground}
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    backgroundColor: '#1976d2',
+                    color: 'white',
+                    minWidth: 'auto',
+                    px: 2,
+                    py: 1,
+                    '&:hover': {
+                      backgroundColor: '#1565c0'
+                    }
+                  }}
+                  startIcon={<LaunchIcon />}
+                >
+                  Playground
+                </Button>
+              </Tooltip>
+              
+              {/* Copy Code Button */}
+              <Tooltip 
+                title={copyCodeSuccess ? "Code copied!" : "Copy function signature and example"}
+                open={copyCodeSuccess || undefined}
+                arrow
+              >
+                <Button
+                  onClick={handleCopyCode}
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    backgroundColor: '#1976d2',
+                    color: 'white',
+                    minWidth: 'auto',
+                    px: 2,
+                    py: 1,
+                    '&:hover': {
+                      backgroundColor: '#1565c0'
+                    }
+                  }}
+                  startIcon={<CodeIcon />}
+                >
+                  Copy Code
+                </Button>
+              </Tooltip>
+              
+              {/* Copy to Clipboard Button */}
+              <Tooltip 
+                title={copySuccess ? "Question copied!" : "Copy question to clipboard"}
+                open={copySuccess || undefined}
+                arrow
+              >
+                <IconButton
+                  onClick={handleCopyToClipboard}
+                  sx={{
+                    color: 'primary.light',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.2)'
+                    }
+                  }}
+                >
+                  <ContentCopyIcon />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          )}
+        </Box>
       </Box>
 
       {/* Main Paper */}
@@ -672,6 +717,7 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
               <Button
                 variant="contained"
                 onClick={handleCancel}
+                startIcon={<CancelIcon />}
                 sx={{ 
                   backgroundColor: '#f44336',
                   color: 'white',
@@ -689,6 +735,7 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
                     variant="contained"
                     onClick={handleExplainFurther}
                     disabled={isExplaining}
+                    startIcon={<HelpIcon />}
                     sx={{ 
                       backgroundColor: '#9C27B0',
                       color: 'white',
@@ -706,10 +753,16 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
                 <Button
                   variant="contained"
                   onClick={handlePrevious}
+                  disabled={currentCoderTestIndex === 0}
+                  startIcon={<NavigateBeforeIcon />}
                   sx={{ 
                     backgroundColor: '#2196F3',
                     color: 'white',
-                    '&:hover': { backgroundColor: '#1976D2' }
+                    '&:hover': { backgroundColor: '#1976D2' },
+                    '&:disabled': {
+                      backgroundColor: 'rgba(33, 150, 243, 0.3)',
+                      color: 'rgba(255, 255, 255, 0.5)'
+                    }
                   }}
                 >
                   Previous
@@ -717,13 +770,14 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
                 <Button
                   variant="contained"
                   onClick={handleNext}
+                  startIcon={currentCoderTestIndex >= coderTestQuestions.length - 1 ? <AddIcon /> : <NavigateNextIcon />}
                   sx={{ 
                     backgroundColor: '#2196F3',
                     color: 'white',
                     '&:hover': { backgroundColor: '#1976D2' }
                   }}
                 >
-                  Next
+                  {currentCoderTestIndex >= coderTestQuestions.length - 1 ? 'Load New' : 'Next'}
                 </Button>
               </Box>
             </Box>
