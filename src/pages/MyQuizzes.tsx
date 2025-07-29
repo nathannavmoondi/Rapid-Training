@@ -22,14 +22,23 @@ import {
   Delete as DeleteIcon,
   Visibility as ViewIcon,
   Save as SaveIcon,
-  Slideshow as SlideshowIcon
+  Slideshow as SlideshowIcon,
+  Edit as EditIcon
 } from '@mui/icons-material';
 import { useQuiz, SavedItem, generateLabelFromHtml } from '../contexts/quizContext';
 import { useChat } from '../contexts/chatContext';
 import { useNavigate } from 'react-router-dom';
+import EditLabelDialog from '../components/EditLabelDialog';
 
 const MyQuizzes: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<{
+    index: number;
+    label: string;
+    type: 'snippet' | 'quiz' | 'slidedeck' | 'codertest';
+  } | null>(null);
+  
   const { 
     userSavedSnippets, 
     setUserSavedSnippets, 
@@ -53,6 +62,15 @@ const MyQuizzes: React.FC = () => {
 
   const handleDeleteSnippet = (index: number) => {
     setUserSavedSnippets(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleEditSnippet = (index: number) => {
+    setEditingItem({
+      index,
+      label: userSavedSnippets[index].label,
+      type: 'snippet'
+    });
+    setEditDialogOpen(true);
   };
 
   const handleViewSnippet = async (snippet: SavedItem) => {
@@ -85,6 +103,15 @@ const MyQuizzes: React.FC = () => {
     setSavedUserCoderTests(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleEditCoderTest = (index: number) => {
+    setEditingItem({
+      index,
+      label: savedUserCoderTests[index].label,
+      type: 'codertest'
+    });
+    setEditDialogOpen(true);
+  };
+
   const handleViewCoderTest = async (test: SavedItem) => {
     try {
       const testMessage = {
@@ -106,6 +133,15 @@ const MyQuizzes: React.FC = () => {
   // Quizzes handlers
   const handleDeleteQuiz = (index: number) => {
     setSavedUserQuizzes(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleEditQuiz = (index: number) => {
+    setEditingItem({
+      index,
+      label: savedUserQuizzes[index].label,
+      type: 'quiz'
+    });
+    setEditDialogOpen(true);
   };
 
   const handleViewQuiz = async (quiz: SavedItem) => {
@@ -131,6 +167,15 @@ const MyQuizzes: React.FC = () => {
     setSavedUserSlidedecks(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleEditSlidedeck = (index: number) => {
+    setEditingItem({
+      index,
+      label: savedUserSlidedecks[index].label,
+      type: 'slidedeck'
+    });
+    setEditDialogOpen(true);
+  };
+
   const handleViewSlidedeck = async (slidedeck: SavedItem) => {
     try {
       const slidedeckMessage = {
@@ -146,6 +191,59 @@ const MyQuizzes: React.FC = () => {
       addExternalMessage(slidedeckMessage);
     } catch (e) {
       console.error('Error viewing slidedeck:', e);
+    }
+  };
+
+  // Edit dialog handlers
+  const handleSaveLabel = (newLabel: string) => {
+    if (!editingItem) return;
+    
+    const { index, type } = editingItem;
+    
+    switch (type) {
+      case 'snippet':
+        setUserSavedSnippets(prev => 
+          prev.map((item, i) => 
+            i === index ? { ...item, label: newLabel } : item
+          )
+        );
+        break;
+      case 'codertest':
+        setSavedUserCoderTests(prev => 
+          prev.map((item, i) => 
+            i === index ? { ...item, label: newLabel } : item
+          )
+        );
+        break;
+      case 'quiz':
+        setSavedUserQuizzes(prev => 
+          prev.map((item, i) => 
+            i === index ? { ...item, label: newLabel } : item
+          )
+        );
+        break;
+      case 'slidedeck':
+        setSavedUserSlidedecks(prev => 
+          prev.map((item, i) => 
+            i === index ? { ...item, label: newLabel } : item
+          )
+        );
+        break;
+    }
+  };
+
+  const handleCloseEditDialog = () => {
+    setEditDialogOpen(false);
+    setEditingItem(null);
+  };
+
+  const getItemTypeName = (type: string) => {
+    switch (type) {
+      case 'snippet': return 'Snippet';
+      case 'codertest': return 'Coder Test';
+      case 'quiz': return 'Quiz';
+      case 'slidedeck': return 'Slide Deck';
+      default: return 'Item';
     }
   };
 
@@ -312,15 +410,21 @@ const MyQuizzes: React.FC = () => {
                 <Chip
                   label={test.label}
                   size="small"
+                  onClick={() => handleViewCoderTest(test)}
                   sx={{
                     backgroundColor: 'rgba(25, 118, 210, 0.2)',
                     color: '#1976d2',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      backgroundColor: 'rgba(25, 118, 210, 0.3)'
+                    }
                   }}
                 />
               </Box>
               <Typography
                 variant="body2"
+                onClick={() => handleViewCoderTest(test)}
                 sx={{
                   color: 'text.secondary',
                   overflow: 'hidden',
@@ -328,7 +432,11 @@ const MyQuizzes: React.FC = () => {
                   display: '-webkit-box',
                   WebkitLineClamp: 3,
                   WebkitBoxOrient: 'vertical',
-                  lineHeight: 1.4
+                  lineHeight: 1.4,
+                  cursor: 'pointer',
+                  '&:hover': {
+                    color: 'text.primary'
+                  }
                 }}
               >
                 {test.html.substring(0, 150)}...
@@ -344,6 +452,19 @@ const MyQuizzes: React.FC = () => {
               >
                 View
               </Button>
+              <Tooltip title="Edit Label">
+                <IconButton
+                  onClick={() => handleEditCoderTest(index)}
+                  sx={{
+                    color: '#2196f3',
+                    '&:hover': {
+                      backgroundColor: 'rgba(33, 150, 243, 0.1)'
+                    }
+                  }}
+                >
+                  <EditIcon />
+                </IconButton>
+              </Tooltip>
               <Button
                 variant="outlined"
                 size="small"
@@ -442,15 +563,21 @@ const MyQuizzes: React.FC = () => {
                 <Chip
                   label={quiz.label}
                   size="small"
+                  onClick={() => handleViewQuiz(quiz)}
                   sx={{
                     backgroundColor: 'rgba(156, 39, 176, 0.2)',
                     color: '#9c27b0',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      backgroundColor: 'rgba(156, 39, 176, 0.3)'
+                    }
                   }}
                 />
               </Box>
               <Typography
                 variant="body2"
+                onClick={() => handleViewQuiz(quiz)}
                 sx={{
                   color: 'text.secondary',
                   overflow: 'hidden',
@@ -458,7 +585,11 @@ const MyQuizzes: React.FC = () => {
                   display: '-webkit-box',
                   WebkitLineClamp: 3,
                   WebkitBoxOrient: 'vertical',
-                  lineHeight: 1.4
+                  lineHeight: 1.4,
+                  cursor: 'pointer',
+                  '&:hover': {
+                    color: 'text.primary'
+                  }
                 }}
               >
                 {quiz.html.substring(0, 150)}...
@@ -474,6 +605,19 @@ const MyQuizzes: React.FC = () => {
               >
                 View
               </Button>
+              <Tooltip title="Edit Label">
+                <IconButton
+                  onClick={() => handleEditQuiz(index)}
+                  sx={{
+                    color: '#2196f3',
+                    '&:hover': {
+                      backgroundColor: 'rgba(33, 150, 243, 0.1)'
+                    }
+                  }}
+                >
+                  <EditIcon />
+                </IconButton>
+              </Tooltip>
               <Button
                 variant="outlined"
                 size="small"
@@ -572,15 +716,21 @@ const MyQuizzes: React.FC = () => {
                 <Chip
                   label={slidedeck.label}
                   size="small"
+                  onClick={() => handleViewSlidedeck(slidedeck)}
                   sx={{
                     backgroundColor: 'rgba(255, 152, 0, 0.2)',
                     color: '#ff9800',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 152, 0, 0.3)'
+                    }
                   }}
                 />
               </Box>
               <Typography
                 variant="body2"
+                onClick={() => handleViewSlidedeck(slidedeck)}
                 sx={{
                   color: 'text.secondary',
                   overflow: 'hidden',
@@ -588,7 +738,11 @@ const MyQuizzes: React.FC = () => {
                   display: '-webkit-box',
                   WebkitLineClamp: 3,
                   WebkitBoxOrient: 'vertical',
-                  lineHeight: 1.4
+                  lineHeight: 1.4,
+                  cursor: 'pointer',
+                  '&:hover': {
+                    color: 'text.primary'
+                  }
                 }}
               >
                 {slidedeck.html.substring(0, 150)}...
@@ -604,6 +758,19 @@ const MyQuizzes: React.FC = () => {
               >
                 View
               </Button>
+              <Tooltip title="Edit Label">
+                <IconButton
+                  onClick={() => handleEditSlidedeck(index)}
+                  sx={{
+                    color: '#2196f3',
+                    '&:hover': {
+                      backgroundColor: 'rgba(33, 150, 243, 0.1)'
+                    }
+                  }}
+                >
+                  <EditIcon />
+                </IconButton>
+              </Tooltip>
               <Button
                 variant="outlined"
                 size="small"
@@ -709,17 +876,23 @@ const MyQuizzes: React.FC = () => {
                   <Chip
                     label={snippet.label}
                     size="small"
+                    onClick={() => handleViewSnippet(snippet)}
                     sx={{
                       backgroundColor: 'rgba(76, 175, 80, 0.2)',
                       color: '#4caf50',
                       fontWeight: 'bold',
-                      maxWidth: '200px'
+                      maxWidth: '200px',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: 'rgba(76, 175, 80, 0.3)'
+                      }
                     }}
                   />
                 </Box>
                 
                 <Typography
                   variant="body2"
+                  onClick={() => handleViewSnippet(snippet)}
                   sx={{
                     color: 'text.secondary',
                     overflow: 'hidden',
@@ -728,7 +901,11 @@ const MyQuizzes: React.FC = () => {
                     WebkitLineClamp: 4,
                     WebkitBoxOrient: 'vertical',
                     lineHeight: 1.5,
-                    minHeight: '6em'
+                    minHeight: '6em',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      color: 'text.primary'
+                    }
                   }}
                 >
                   {(() => {
@@ -766,6 +943,20 @@ const MyQuizzes: React.FC = () => {
                   >
                     View
                   </Button>
+                </Tooltip>
+                
+                <Tooltip title="Edit Label">
+                  <IconButton
+                    onClick={() => handleEditSnippet(index)}
+                    sx={{
+                      color: '#2196f3',
+                      '&:hover': {
+                        backgroundColor: 'rgba(33, 150, 243, 0.1)'
+                      }
+                    }}
+                  >
+                    <EditIcon />
+                  </IconButton>
                 </Tooltip>
                 
                 <Tooltip title="Delete Snippet">
@@ -1099,6 +1290,15 @@ const MyQuizzes: React.FC = () => {
           </Box>
         </Box>
       )}
+      
+      {/* Edit Label Dialog */}
+      <EditLabelDialog
+        open={editDialogOpen}
+        onClose={handleCloseEditDialog}
+        currentLabel={editingItem?.label || ''}
+        onSave={handleSaveLabel}
+        itemType={editingItem ? getItemTypeName(editingItem.type) : ''}
+      />
     </Container>
   );
 };
