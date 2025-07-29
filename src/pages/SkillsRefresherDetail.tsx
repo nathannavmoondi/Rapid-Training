@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'; // Added useLocation
 import { Container, Typography, Paper, Box, Button, Stack, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Select, MenuItem, InputLabel, IconButton, Tooltip } from '@mui/material'; // Added Select, MenuItem, InputLabel
-import { CheckCircleOutline, HighlightOff, Chat as ChatIcon, YouTube, PictureAsPdf as PictureAsPdfIcon } from '@mui/icons-material'; // Added icons for feedback
+import { CheckCircleOutline, HighlightOff, Chat as ChatIcon, YouTube, PictureAsPdf as PictureAsPdfIcon, Save as SaveIcon } from '@mui/icons-material'; // Added icons for feedback
 import { toast } from 'react-toastify';
 import { skills } from '../data/skills';
 import type { Skill } from '../data/skills';
@@ -99,6 +99,10 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
     startCourse,
     previousQuizzes, //most of these shoudl be local state
     setPreviousQuizzes,
+    savedUserQuizzes,
+    setSavedUserQuizzes,
+    savedUserSlidedecks,
+    setSavedUserSlidedecks,
     language,
     setLanguage
   } = useQuiz(); //from quizcontext
@@ -119,6 +123,8 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
   const [isExplainingFurther, setIsExplainingFurther] = useState(false); // Added loading state for Explain Further
   const [showSubTopics, setShowSubTopics] = useState(false); // Added state for Sub Topics
   const [subTopicsDialogOpen, setSubTopicsDialogOpen] = useState(false); // Added state for Sub Topics Dialog  
+  const [saveQuizSuccess, setSaveQuizSuccess] = useState(false); // Added state for quiz save feedback
+  const [saveSlideDeckSuccess, setSaveSlideDeckSuccess] = useState(false); // Added state for slide deck save feedback
 
   const skillTitle = searchParams.get('skill');    
   const contentRef = useRef<HTMLDivElement>(null);
@@ -644,6 +650,44 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
     }
   };
 
+  // Handler for saving quiz
+  const handleSaveQuiz = () => {
+    try {
+      // Create a formatted string with title and question content
+      const header = `${currentSkill?.title || 'Quiz'} - ${level}\n\n`;
+      const fullContent = header + question.trim();
+      
+      setSavedUserQuizzes(prev => [...prev, fullContent]);
+      setSaveQuizSuccess(true);
+      
+      // Reset success message after 2 seconds
+      setTimeout(() => {
+        setSaveQuizSuccess(false);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to save quiz: ', err);
+    }
+  };
+
+  // Handler for saving slide deck
+  const handleSaveSlideDeck = () => {
+    try {
+      // Create a formatted string with title and slide deck content
+      const header = `${currentSkill?.title || 'Slide Deck'} - Slide Deck\n\n`;
+      const fullContent = header + question.trim();
+      
+      setSavedUserSlidedecks(prev => [...prev, fullContent]);
+      setSaveSlideDeckSuccess(true);
+      
+      // Reset success message after 2 seconds
+      setTimeout(() => {
+        setSaveSlideDeckSuccess(false);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to save slide deck: ', err);
+    }
+  };
+
   //main component
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -704,6 +748,22 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
                     </IconButton>
                   </Tooltip>
                 )}
+                {/* Save button - show for both Practice Question and Slide Deck */}
+                <Tooltip title={isSlideDeck ? (saveSlideDeckSuccess ? "Slide deck saved!" : "Save slide deck") : (saveQuizSuccess ? "Quiz saved!" : "Save quiz")}>
+                  <IconButton
+                    onClick={isSlideDeck ? handleSaveSlideDeck : handleSaveQuiz}
+                    sx={{
+                      color: isSlideDeck ? (saveSlideDeckSuccess ? '#4caf50' : 'primary.light') : (saveQuizSuccess ? '#4caf50' : 'primary.light'),
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)'
+                      },
+                      mr: 1
+                    }}
+                  >
+                    <SaveIcon />
+                  </IconButton>
+                </Tooltip>
                 {/* Chat button - only show for Practice Question */}
                 {!isSlideDeck && startCourse !== 1 && (
                   <Tooltip title={`Ask questions about ${currentSkill?.title || 'this topic'}`}>

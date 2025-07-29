@@ -61,7 +61,7 @@ interface TypewriterTextProps {
 // };
 
 // Component to render AI message content with syntax highlighting
-const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isUser }) => {
+const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizContent?: boolean }> = ({ text, isUser, isViewingQuizContent = false }) => {
   if (isUser) {
     return (
       <Typography 
@@ -230,7 +230,7 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
               '& p': {
                 margin: '0 0 8px 0',
                 lineHeight: '1.5',
-                color: 'inherit',
+                color: isUser ? '#fff' : '#000 !important',
                 wordWrap: 'break-word',
                 overflowWrap: 'break-word',
                 wordBreak: 'break-word',
@@ -238,7 +238,7 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
               },
               '& strong': {
                 fontWeight: 'bold',
-                color: 'inherit'
+                color: isUser ? '#fff' : '#000 !important'
               },
               // Reduce spacing between list items and links
               '& ul': {
@@ -249,6 +249,7 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
                 margin: 0,
                 padding: 0,
                 lineHeight: '1.2',
+                color: isUser ? '#fff' : '#000 !important'
               },
               '& a': {
                 margin: 0,
@@ -256,6 +257,34 @@ const MessageContent: React.FC<{ text: string; isUser: boolean }> = ({ text, isU
                 lineHeight: '1.2',
                 color: '#0000ee',
                 textDecoration: 'underline',
+              },
+              '& *': {
+                color: isUser ? '#fff' : '#000 !important'
+              },
+              // Quiz-specific styling - more specific selectors to override the * selector
+              '& div.option': {
+                color: isUser ? '#fff' : '#fff !important'
+              },
+              '& span.option-prefix': {
+                color: isUser ? '#90EE90' : '#4caf50 !important'
+              },
+              '& div.question-text': {
+                color: isUser ? '#fff' : '#000 !important'
+              },
+              '& div.answer-choice': {
+                color: isUser ? '#fff' : '#000 !important'
+              },
+              '& div.explanation': {
+                color: isUser ? '#fff' : (isViewingQuizContent ? '#fff' : '#000') + ' !important'
+              },
+              '& div.explanation *': {
+                color: isUser ? '#fff' : (isViewingQuizContent ? '#fff' : '#000') + ' !important'
+              },
+              '& div.correct-answer': {
+                color: isUser ? '#fff' : '#fff !important'
+              },
+              '& .title-section': {
+                color: isUser ? '#fff' : '#000 !important'
               }
             }}
             dangerouslySetInnerHTML={{
@@ -737,7 +766,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
                 }
               }}
             >
-              <MessageContent text={message.text} isUser={message.isUser} />
+              <MessageContent text={message.text} isUser={message.isUser} isViewingQuizContent={message.isViewingQuizContent} />
             </Box>
             {/* Copy and Save buttons for AI messages positioned outside and to the right of bubble */}
             {!message.isUser && message.text !== "Thinking..." && (

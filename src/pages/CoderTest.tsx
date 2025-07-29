@@ -15,6 +15,7 @@ import {
   Tooltip
 } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import SaveIcon from '@mui/icons-material/Save';
 import LaunchIcon from '@mui/icons-material/Launch';
 import CodeIcon from '@mui/icons-material/Code';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -290,6 +291,7 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
   const [error, setError] = useState<string>('');
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
   const [copyCodeSuccess, setCopyCodeSuccess] = useState<boolean>(false);
+  const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
   const [isExplaining, setIsExplaining] = useState<boolean>(false);
 
   // Quiz context for tracking coder test questions
@@ -299,7 +301,9 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
     coderTestQuestions, 
     currentCoderTestIndex,
     setCurrentCoderTestIndex,
-    setLevel: setQuizLevel 
+    setLevel: setQuizLevel,
+    savedUserCoderTests,
+    setSavedUserCoderTests
   } = useQuiz();
   
   // Chat context for explain further functionality
@@ -379,6 +383,25 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
       }
     } catch (err) {
       console.error('Failed to copy code: ', err);
+    }
+  };
+
+  // Save coder test function
+  const handleSaveCoderTest = () => {
+    try {
+      // Create a formatted string with header and question content
+      const header = `Coder Test - ${getLanguageDisplayName(language)} (${level})\n\n`;
+      const fullContent = header + questionContent.trim();
+      
+      setSavedUserCoderTests(prev => [...prev, fullContent]);
+      setSaveSuccess(true);
+      
+      // Reset success message after 2 seconds
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to save coder test: ', err);
     }
   };
 
@@ -623,6 +646,32 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
                   startIcon={<CodeIcon />}
                 >
                   Copy Code
+                </Button>
+              </Tooltip>
+              
+              {/* Save Coder Test Button */}
+              <Tooltip 
+                title={saveSuccess ? "Coder test saved!" : "Save coder test"}
+                open={saveSuccess || undefined}
+                arrow
+              >
+                <Button
+                  onClick={handleSaveCoderTest}
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    backgroundColor: '#4caf50',
+                    color: 'white',
+                    minWidth: 'auto',
+                    px: 2,
+                    py: 1,
+                    '&:hover': {
+                      backgroundColor: '#45a049'
+                    }
+                  }}
+                  startIcon={<SaveIcon />}
+                >
+                  Save
                 </Button>
               </Tooltip>
               

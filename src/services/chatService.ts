@@ -5,6 +5,7 @@ export interface ChatMessage {
   timestamp: Date;
   isFromLearnDialog?: boolean;
   originalTopic?: string;
+  isViewingQuizContent?: boolean;
 }
 
 class ChatService {
