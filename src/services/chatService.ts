@@ -7,6 +7,7 @@ export interface ChatMessage {
   originalTopic?: string;
   isViewingQuizContent?: boolean;
   isSavedContent?: boolean;
+  savedContentType?: string;
 }
 
 class ChatService {

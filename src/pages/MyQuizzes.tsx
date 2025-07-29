@@ -64,7 +64,8 @@ const MyQuizzes: React.FC = () => {
         isUser: false,
         timestamp: new Date(),
         isFromLearnDialog: true, // Mark as from learn dialog so save button appears
-        isSavedContent: true // Mark as saved content to hide save button
+        isSavedContent: true, // Mark as saved content to hide save button
+        savedContentType: 'Saved Snippet'
       };
       
       console.log('MyQuizzes - Viewing snippet:', snippetMessage);
@@ -92,7 +93,8 @@ const MyQuizzes: React.FC = () => {
         isUser: false,
         timestamp: new Date(),
         isViewingQuizContent: false,  // Coder tests should NOT use quiz styling
-        isSavedContent: true // Mark as saved content to hide save button
+        isSavedContent: true, // Mark as saved content to hide save button
+        savedContentType: 'Saved Coder Test'
       };
       
       addExternalMessage(testMessage);
@@ -114,7 +116,8 @@ const MyQuizzes: React.FC = () => {
         isUser: false,
         timestamp: new Date(),
         isViewingQuizContent: true,
-        isSavedContent: true // Mark as saved content to hide save button
+        isSavedContent: true, // Mark as saved content to hide save button
+        savedContentType: 'Saved Quiz'
       };
       
       addExternalMessage(quizMessage);
@@ -136,7 +139,8 @@ const MyQuizzes: React.FC = () => {
         isUser: false,
         timestamp: new Date(),
         isViewingQuizContent: false,  // Slidedecks should have code highlighting, not quiz styling
-        isSavedContent: true // Mark as saved content to hide save button
+        isSavedContent: true, // Mark as saved content to hide save button
+        savedContentType: 'Saved Slide Deck'
       };
       
       addExternalMessage(slidedeckMessage);

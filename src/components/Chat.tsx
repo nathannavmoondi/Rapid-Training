@@ -742,7 +742,15 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
           <Avatar sx={{ bgcolor: '#0053A7' }}>
             <BuddyIcon />
           </Avatar>
-          <Typography>AI Assistant {chatboxSkill ? `(${chatboxSkill})` : ''}</Typography>
+          <Typography>
+            AI Assistant {
+              messages.length > 0 && messages[0].savedContentType 
+                ? `(${messages[0].savedContentType})` 
+                : chatboxSkill 
+                  ? `(${chatboxSkill})` 
+                  : ''
+            }
+          </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Tooltip title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}>
