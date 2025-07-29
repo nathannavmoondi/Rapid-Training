@@ -265,6 +265,20 @@ if (startCourse === 1) {
         - Use code sections when needed with proper syntax highlighting
         - Keep text white for readability on dark background
         - Structure content with clear visual hierarchy
+        
+        IMPORTANT: For any code examples, you MUST use one of these EXACT language classes in the <code> tag:
+        - language-javascript (for JavaScript)
+        - language-typescript (for TypeScript)  
+        - language-python (for Python)
+        - language-java (for Java)
+        - language-csharp (for C#)
+        - language-cpp (for C++)
+        - language-css (for CSS)
+        - language-markup (for HTML/XML)
+        - language-sql (for SQL)
+        - language-json (for JSON)
+        NEVER use "language-" without a proper language identifier!
+        
         Do not use * as marker.
         If course is not a programming language, DO NOT USE CODE EXAMPLE OR BLOCKS AT ALL!!!
         Format output as:
@@ -283,7 +297,7 @@ if (startCourse === 1) {
             </div>
             <div class="slide">
                 <h2>Code Example</h2>
-                <pre><code class="language-${skillCategory}">
+                <pre><code class="language-javascript">
                 [Basic example code]
                 </code></pre>
             </div>
