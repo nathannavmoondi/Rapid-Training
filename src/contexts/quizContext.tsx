@@ -20,6 +20,9 @@ interface QuizContextType {
   currentCoderTestIndex: number;
   inCoderTest: boolean;
   userSavedSnippets: string[];
+  savedUserCoderTests: string[];
+  savedUserQuizzes: string[];
+  savedUserSlidedecks: string[];
   setStartCourse: (value: number) => void;
   setMaxQuizzes: (value: number) => void;
   startQuiz: () => void;
@@ -36,7 +39,13 @@ interface QuizContextType {
   setCurrentCoderTestIndex: (index: number) => void;
   setInCoderTest: (inTest: boolean) => void;
   setUserSavedSnippets: React.Dispatch<React.SetStateAction<string[]>>;
+  setSavedUserCoderTests: React.Dispatch<React.SetStateAction<string[]>>;
+  setSavedUserQuizzes: React.Dispatch<React.SetStateAction<string[]>>;
+  setSavedUserSlidedecks: React.Dispatch<React.SetStateAction<string[]>>;
   clearSavedSnippets: () => void;
+  clearSavedCoderTests: () => void;
+  clearSavedQuizzes: () => void;
+  clearSavedSlidedecks: () => void;
   language: string;
   setLanguage: (lang: string) => void;
 }
@@ -74,6 +83,39 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   });
 
+  // Initialize savedUserCoderTests from localStorage
+  const [savedUserCoderTests, setSavedUserCoderTests] = useState<string[]>(() => {
+    try {
+      const savedTests = localStorage.getItem('savedUserCoderTests');
+      return savedTests ? JSON.parse(savedTests) : [];
+    } catch (error) {
+      console.error('Error loading saved coder tests from localStorage:', error);
+      return [];
+    }
+  });
+
+  // Initialize savedUserQuizzes from localStorage
+  const [savedUserQuizzes, setSavedUserQuizzes] = useState<string[]>(() => {
+    try {
+      const savedQuizzes = localStorage.getItem('savedUserQuizzes');
+      return savedQuizzes ? JSON.parse(savedQuizzes) : [];
+    } catch (error) {
+      console.error('Error loading saved quizzes from localStorage:', error);
+      return [];
+    }
+  });
+
+  // Initialize savedUserSlidedecks from localStorage
+  const [savedUserSlidedecks, setSavedUserSlidedecks] = useState<string[]>(() => {
+    try {
+      const savedSlidedecks = localStorage.getItem('savedUserSlidedecks');
+      return savedSlidedecks ? JSON.parse(savedSlidedecks) : [];
+    } catch (error) {
+      console.error('Error loading saved slidedecks from localStorage:', error);
+      return [];
+    }
+  });
+
 
   // // Add effect to log quiz state changes
   // useEffect(() => {
@@ -89,6 +131,36 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.error('Error saving snippets to localStorage:', error);
     }
   }, [userSavedSnippets]);
+
+  // Save savedUserCoderTests to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('savedUserCoderTests', JSON.stringify(savedUserCoderTests));
+      console.log('Quiz context - Saved coder tests to localStorage:', savedUserCoderTests.length);
+    } catch (error) {
+      console.error('Error saving coder tests to localStorage:', error);
+    }
+  }, [savedUserCoderTests]);
+
+  // Save savedUserQuizzes to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('savedUserQuizzes', JSON.stringify(savedUserQuizzes));
+      console.log('Quiz context - Saved quizzes to localStorage:', savedUserQuizzes.length);
+    } catch (error) {
+      console.error('Error saving quizzes to localStorage:', error);
+    }
+  }, [savedUserQuizzes]);
+
+  // Save savedUserSlidedecks to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('savedUserSlidedecks', JSON.stringify(savedUserSlidedecks));
+      console.log('Quiz context - Saved slidedecks to localStorage:', savedUserSlidedecks.length);
+    } catch (error) {
+      console.error('Error saving slidedecks to localStorage:', error);
+    }
+  }, [savedUserSlidedecks]);
 
   const startQuiz = useCallback(() => {
     setIsQuizActive(true);
@@ -153,6 +225,27 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.removeItem('userSavedSnippets');
     console.log('Quiz context - Cleared all saved snippets');
   }, []);
+
+  // Function to clear all saved coder tests
+  const clearSavedCoderTests = useCallback(() => {
+    setSavedUserCoderTests([]);
+    localStorage.removeItem('savedUserCoderTests');
+    console.log('Quiz context - Cleared all saved coder tests');
+  }, []);
+
+  // Function to clear all saved quizzes
+  const clearSavedQuizzes = useCallback(() => {
+    setSavedUserQuizzes([]);
+    localStorage.removeItem('savedUserQuizzes');
+    console.log('Quiz context - Cleared all saved quizzes');
+  }, []);
+
+  // Function to clear all saved slidedecks
+  const clearSavedSlidedecks = useCallback(() => {
+    setSavedUserSlidedecks([]);
+    localStorage.removeItem('savedUserSlidedecks');
+    console.log('Quiz context - Cleared all saved slidedecks');
+  }, []);
   
   //identify to provider all that want to share with other components.  usualy specified in app.tsx 
   const contextValue = {
@@ -189,7 +282,16 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setInCoderTest,
     userSavedSnippets,
     setUserSavedSnippets,
+    savedUserCoderTests,
+    setSavedUserCoderTests,
+    savedUserQuizzes,
+    setSavedUserQuizzes,
+    savedUserSlidedecks,
+    setSavedUserSlidedecks,
     clearSavedSnippets,
+    clearSavedCoderTests,
+    clearSavedQuizzes,
+    clearSavedSlidedecks,
     language,
     setLanguage,
   };

@@ -21,7 +21,8 @@ import {
   School as SchoolIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
-  Save as SaveIcon
+  Save as SaveIcon,
+  Slideshow as SlideshowIcon
 } from '@mui/icons-material';
 import { useQuiz } from '../contexts/quizContext';
 import { useChat } from '../contexts/chatContext';
@@ -29,12 +30,22 @@ import { useNavigate } from 'react-router-dom';
 
 const MyQuizzes: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
-  const { userSavedSnippets, setUserSavedSnippets, clearSavedSnippets } = useQuiz();
+  const { 
+    userSavedSnippets, 
+    setUserSavedSnippets, 
+    clearSavedSnippets,
+    savedUserCoderTests,
+    setSavedUserCoderTests,
+    clearSavedCoderTests,
+    savedUserQuizzes,
+    setSavedUserQuizzes,
+    clearSavedQuizzes,
+    savedUserSlidedecks,
+    setSavedUserSlidedecks,
+    clearSavedSlidedecks
+  } = useQuiz();
   const { addExternalMessage } = useChat();
   const navigate = useNavigate();
-
-  // Debug logging for snippets
-  console.log('MyQuizzes - Current saved snippets:', userSavedSnippets.length);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
@@ -64,6 +75,68 @@ const MyQuizzes: React.FC = () => {
       // The App.tsx has logic to auto-open chat when external messages are added
     } catch (e) {
       console.error('Error viewing snippet:', e);
+    }
+  };
+
+  // Coder Tests handlers
+  const handleDeleteCoderTest = (index: number) => {
+    setSavedUserCoderTests(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleViewCoderTest = async (test: string) => {
+    try {
+      const testMessage = {
+        id: Math.random().toString(36).substring(7),
+        text: test,
+        isUser: false,
+        timestamp: new Date()
+      };
+      
+      addExternalMessage(testMessage);
+    } catch (e) {
+      console.error('Error viewing coder test:', e);
+    }
+  };
+
+  // Quizzes handlers
+  const handleDeleteQuiz = (index: number) => {
+    setSavedUserQuizzes(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleViewQuiz = async (quiz: string) => {
+    try {
+      const quizMessage = {
+        id: Math.random().toString(36).substring(7),
+        text: quiz,
+        isUser: false,
+        timestamp: new Date(),
+        isViewingQuizContent: true
+      };
+      
+      addExternalMessage(quizMessage);
+    } catch (e) {
+      console.error('Error viewing quiz:', e);
+    }
+  };
+
+  // Slidedecks handlers
+  const handleDeleteSlidedeck = (index: number) => {
+    setSavedUserSlidedecks(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleViewSlidedeck = async (slidedeck: string) => {
+    try {
+      const slidedeckMessage = {
+        id: Math.random().toString(36).substring(7),
+        text: slidedeck,
+        isUser: false,
+        timestamp: new Date(),
+        isViewingQuizContent: true
+      };
+      
+      addExternalMessage(slidedeckMessage);
+    } catch (e) {
+      console.error('Error viewing slidedeck:', e);
     }
   };
 
@@ -146,6 +219,397 @@ const MyQuizzes: React.FC = () => {
       </CardContent>
     </Card>
   );
+
+  // Render functions for different content types
+  const renderCoderTests = () => {
+    if (savedUserCoderTests.length === 0) {
+      return (
+        <Card
+          sx={{
+            maxWidth: 600,
+            mx: 'auto',
+            background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(63, 81, 181, 0.1) 100%)',
+            border: '1px solid rgba(25, 118, 210, 0.2)',
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+            textAlign: 'center'
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <CodeIcon sx={{ fontSize: 64, color: '#1976d2', mb: 2 }} />
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold', color: 'text.primary' }}>
+              No Coder Tests Saved Yet
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                color: 'text.secondary',
+                lineHeight: 1.6
+              }}
+            >
+              Use the Coder Test feature and save tests to see them here.
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => navigate('/coder-test')}
+              sx={{
+                mt: 3,
+                background: 'linear-gradient(135deg, #1976d2 0%, #3f51b5 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #1565c0 0%, #3949ab 100%)',
+                }
+              }}
+            >
+              Start Coding Tests
+            </Button>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(2, 1fr)',
+            md: 'repeat(3, 1fr)'
+          },
+          gap: 3
+        }}
+      >
+        {savedUserCoderTests.map((test, index) => (
+          <Card
+            key={index}
+            sx={{
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(63, 81, 181, 0.1) 100%)',
+              border: '1px solid rgba(25, 118, 210, 0.2)',
+              borderRadius: 3,
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+              }
+            }}
+          >
+            <CardContent sx={{ flexGrow: 1, p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <CodeIcon sx={{ fontSize: 24, color: '#1976d2', mr: 1 }} />
+                <Chip
+                  label={`Coder Test ${index + 1}`}
+                  size="small"
+                  sx={{
+                    backgroundColor: 'rgba(25, 118, 210, 0.2)',
+                    color: '#1976d2',
+                    fontWeight: 'bold'
+                  }}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  lineHeight: 1.4
+                }}
+              >
+                {test.substring(0, 150)}...
+              </Typography>
+            </CardContent>
+            <Box sx={{ p: 2, pt: 0, display: 'flex', gap: 1 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<ViewIcon />}
+                onClick={() => handleViewCoderTest(test)}
+                sx={{ flex: 1 }}
+              >
+                View
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={() => handleDeleteCoderTest(index)}
+              >
+                Delete
+              </Button>
+            </Box>
+          </Card>
+        ))}
+      </Box>
+    );
+  };
+
+  const renderQuizzes = () => {
+    if (savedUserQuizzes.length === 0) {
+      return (
+        <Card
+          sx={{
+            maxWidth: 600,
+            mx: 'auto',
+            background: 'linear-gradient(135deg, rgba(156, 39, 176, 0.1) 0%, rgba(233, 30, 99, 0.1) 100%)',
+            border: '1px solid rgba(156, 39, 176, 0.2)',
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+            textAlign: 'center'
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <QuizIcon sx={{ fontSize: 64, color: '#9c27b0', mb: 2 }} />
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold', color: 'text.primary' }}>
+              No Quizzes Saved Yet
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                color: 'text.secondary',
+                lineHeight: 1.6
+              }}
+            >
+              Use the Skills Refresher feature and save quizzes to see them here.
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => navigate('/skills-refresher')}
+              sx={{
+                mt: 3,
+                background: 'linear-gradient(135deg, #9c27b0 0%, #e91e63 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #8e24aa 0%, #d81b60 100%)',
+                }
+              }}
+            >
+              Start Skills Refresher
+            </Button>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(2, 1fr)',
+            md: 'repeat(3, 1fr)'
+          },
+          gap: 3
+        }}
+      >
+        {savedUserQuizzes.map((quiz, index) => (
+          <Card
+            key={index}
+            sx={{
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              background: 'linear-gradient(135deg, rgba(156, 39, 176, 0.1) 0%, rgba(233, 30, 99, 0.1) 100%)',
+              border: '1px solid rgba(156, 39, 176, 0.2)',
+              borderRadius: 3,
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+              }
+            }}
+          >
+            <CardContent sx={{ flexGrow: 1, p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <QuizIcon sx={{ fontSize: 24, color: '#9c27b0', mr: 1 }} />
+                <Chip
+                  label={`Quiz ${index + 1}`}
+                  size="small"
+                  sx={{
+                    backgroundColor: 'rgba(156, 39, 176, 0.2)',
+                    color: '#9c27b0',
+                    fontWeight: 'bold'
+                  }}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  lineHeight: 1.4
+                }}
+              >
+                {quiz.substring(0, 150)}...
+              </Typography>
+            </CardContent>
+            <Box sx={{ p: 2, pt: 0, display: 'flex', gap: 1 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<ViewIcon />}
+                onClick={() => handleViewQuiz(quiz)}
+                sx={{ flex: 1 }}
+              >
+                View
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={() => handleDeleteQuiz(index)}
+              >
+                Delete
+              </Button>
+            </Box>
+          </Card>
+        ))}
+      </Box>
+    );
+  };
+
+  const renderSlidedecks = () => {
+    if (savedUserSlidedecks.length === 0) {
+      return (
+        <Card
+          sx={{
+            maxWidth: 600,
+            mx: 'auto',
+            background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 193, 7, 0.1) 100%)',
+            border: '1px solid rgba(255, 152, 0, 0.2)',
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+            textAlign: 'center'
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <SlideshowIcon sx={{ fontSize: 64, color: '#ff9800', mb: 2 }} />
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold', color: 'text.primary' }}>
+              No Slidedecks Saved Yet
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                color: 'text.secondary',
+                lineHeight: 1.6
+              }}
+            >
+              Use the Skills Refresher slide deck feature and save slidedecks to see them here.
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => navigate('/skills-refresher')}
+              sx={{
+                mt: 3,
+                background: 'linear-gradient(135deg, #ff9800 0%, #ffc107 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #f57c00 0%, #ffb300 100%)',
+                }
+              }}
+            >
+              Start Skills Refresher
+            </Button>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(2, 1fr)',
+            md: 'repeat(3, 1fr)'
+          },
+          gap: 3
+        }}
+      >
+        {savedUserSlidedecks.map((slidedeck, index) => (
+          <Card
+            key={index}
+            sx={{
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 193, 7, 0.1) 100%)',
+              border: '1px solid rgba(255, 152, 0, 0.2)',
+              borderRadius: 3,
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+              }
+            }}
+          >
+            <CardContent sx={{ flexGrow: 1, p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <SlideshowIcon sx={{ fontSize: 24, color: '#ff9800', mr: 1 }} />
+                <Chip
+                  label={`Slide Deck ${index + 1}`}
+                  size="small"
+                  sx={{
+                    backgroundColor: 'rgba(255, 152, 0, 0.2)',
+                    color: '#ff9800',
+                    fontWeight: 'bold'
+                  }}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  lineHeight: 1.4
+                }}
+              >
+                {slidedeck.substring(0, 150)}...
+              </Typography>
+            </CardContent>
+            <Box sx={{ p: 2, pt: 0, display: 'flex', gap: 1 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<ViewIcon />}
+                onClick={() => handleViewSlidedeck(slidedeck)}
+                sx={{ flex: 1 }}
+              >
+                View
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={() => handleDeleteSlidedeck(index)}
+              >
+                Delete
+              </Button>
+            </Box>
+          </Card>
+        ))}
+      </Box>
+    );
+  };
 
   const renderSnippets = () => {
     if (userSavedSnippets.length === 0) {
@@ -395,9 +859,144 @@ const MyQuizzes: React.FC = () => {
 
       {/* Tab Content */}
       <Box sx={{ mt: 3 }}>
-        {activeTab === 0 && renderUnderDevelopment("Quizzes Under Development", "Here you will see list of your saved quizzes")}
-        {activeTab === 1 && renderUnderDevelopment("Coder Tests Under Development", "Here you will see list of your saved coder test results")}
-        {activeTab === 2 && renderUnderDevelopment("Slidedecks Under Development", "Here you will see list of your saved slidedecks")}
+        {activeTab === 0 && (
+          <Box>
+            {/* Quizzes Header with Clear Button */}
+            {savedUserQuizzes.length > 0 && (
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                mb: 3,
+                flexWrap: 'wrap',
+                gap: 2
+              }}>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    color: 'text.primary',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <QuizIcon sx={{ color: '#9c27b0' }} />
+                  Saved Quizzes ({savedUserQuizzes.length})
+                </Typography>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="small"
+                  onClick={clearSavedQuizzes}
+                  sx={{
+                    borderColor: '#f44336',
+                    color: '#f44336',
+                    '&:hover': {
+                      borderColor: '#d32f2f',
+                      backgroundColor: 'rgba(244, 67, 54, 0.04)',
+                    }
+                  }}
+                >
+                  Clear All Quizzes
+                </Button>
+              </Box>
+            )}
+            {renderQuizzes()}
+          </Box>
+        )}
+        {activeTab === 1 && (
+          <Box>
+            {/* Coder Tests Header with Clear Button */}
+            {savedUserCoderTests.length > 0 && (
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                mb: 3,
+                flexWrap: 'wrap',
+                gap: 2
+              }}>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    color: 'text.primary',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <CodeIcon sx={{ color: '#1976d2' }} />
+                  Saved Coder Tests ({savedUserCoderTests.length})
+                </Typography>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="small"
+                  onClick={clearSavedCoderTests}
+                  sx={{
+                    borderColor: '#f44336',
+                    color: '#f44336',
+                    '&:hover': {
+                      borderColor: '#d32f2f',
+                      backgroundColor: 'rgba(244, 67, 54, 0.04)',
+                    }
+                  }}
+                >
+                  Clear All Coder Tests
+                </Button>
+              </Box>
+            )}
+            {renderCoderTests()}
+          </Box>
+        )}
+        {activeTab === 2 && (
+          <Box>
+            {/* Slidedecks Header with Clear Button */}
+            {savedUserSlidedecks.length > 0 && (
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                mb: 3,
+                flexWrap: 'wrap',
+                gap: 2
+              }}>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    color: 'text.primary',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <SlideshowIcon sx={{ color: '#ff9800' }} />
+                  Saved Slidedecks ({savedUserSlidedecks.length})
+                </Typography>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="small"
+                  onClick={clearSavedSlidedecks}
+                  sx={{
+                    borderColor: '#f44336',
+                    color: '#f44336',
+                    '&:hover': {
+                      borderColor: '#d32f2f',
+                      backgroundColor: 'rgba(244, 67, 54, 0.04)',
+                    }
+                  }}
+                >
+                  Clear All Slidedecks
+                </Button>
+              </Box>
+            )}
+            {renderSlidedecks()}
+          </Box>
+        )}
         {activeTab === 3 && (
           <Box>
             {/* Snippets Header with Clear Button */}
