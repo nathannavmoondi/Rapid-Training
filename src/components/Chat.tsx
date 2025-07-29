@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { Box, TextField, IconButton, Typography, Avatar, Tooltip, CircularProgress } from '@mui/material';
 import { useChat } from '../contexts/chatContext';
 import SendIcon from '@mui/icons-material/Send';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import SaveIcon from '@mui/icons-material/Save';
 import MicIcon from '@mui/icons-material/Mic';
 import MicOffIcon from '@mui/icons-material/MicOff';
 import { SvgIcon } from '@mui/material';
@@ -14,7 +15,7 @@ import { chatService, ChatMessage } from '../services/chatService';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useSpeechToText } from '../hooks/useSpeechToText';
-import { useQuiz, languages } from '../contexts/quizContext'; // Import useQuiz and languages
+import { useQuiz } from '../contexts/quizContext'; // Import useQuiz
 
 
 
@@ -284,7 +285,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
   // ...existing code...
   // ...existing code...
   const { chatboxSkill, externalMessages, clearExternalMessages } = useChat();
-  const { language } = useQuiz();
+  const { language, setUserSavedSnippets } = useQuiz();
 
   // Function to get initial message (now after hooks)
   const getInitialMessage = () => ({
@@ -313,6 +314,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
   const [width, setWidth] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [savedMessageId, setSavedMessageId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   
@@ -352,29 +354,55 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
     }
   };
 
+  // Save snippet function
+  const handleSaveSnippet = async (text: string, messageId: string) => {
+    try {
+      setUserSavedSnippets(prev => [...prev, text]);
+      setSavedMessageId(messageId);
+      
+      // Reset tooltip after 2 seconds
+      setTimeout(() => {
+        setSavedMessageId(null);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to save snippet: ', err);
+    }
+  };
+
   // Toggle fullscreen function
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
-    // Reset messages when chatbox opens
+  // Reset messages when chatbox opens
   useEffect(() => {
     if (isOpen) {
-      // Only show initial welcome message if there are no external messages pending
-      if (externalMessages.length === 0) {
-        setMessages([getInitialMessage()]);
+      // Check for external messages first
+      if (externalMessages.length > 0) {
+        // If there are external messages, process them immediately
+        const lastMessage = externalMessages[externalMessages.length - 1];
+        console.log('Chat - Opening with external message:', lastMessage);
+        setMessages([lastMessage]);
+        setIsWaitingForResponse(false);
+        // Clear external messages after processing
+        clearExternalMessages();
       } else {
-        // If there are external messages, start with empty array to avoid showing welcome message
-        setMessages([]);
+        // Only show initial welcome message if there are no external messages
+        setMessages([getInitialMessage()]);
       }
       setInput('');
-      // Don't clear external messages here since we want to process them
     }
-  }, [isOpen, chatboxSkill]);
+  }, [isOpen, chatboxSkill]); // Remove externalMessages.length dependency to avoid loops
 
-  // Handle external messages (like "Explain Further")
+  // Handle external messages (like "Explain Further") - only when chat is already open
   useEffect(() => {
-    if (externalMessages.length > 0) {
+    console.log('Chat - External messages changed, length:', externalMessages.length, 'isOpen:', isOpen);
+    
+    // Only process external messages if chat is already open (to avoid duplicate processing)
+    if (isOpen && externalMessages.length > 0) {
       const lastMessage = externalMessages[externalMessages.length - 1];
+      
+      console.log('Chat - Processing external message (chat already open):', lastMessage);
+      console.log('Chat - isFromLearnDialog:', lastMessage.isFromLearnDialog);
       
       if (lastMessage.text === "CLEAR_CHAT") {
         // Special message to clear the chat
@@ -385,6 +413,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
         setIsWaitingForResponse(true); // Set waiting state for external thinking messages
       } else {
         // For other messages, replace any existing messages
+        console.log('Chat - Setting message with isFromLearnDialog:', lastMessage.isFromLearnDialog);
         setMessages([lastMessage]);
         setIsWaitingForResponse(false); // Clear waiting state for regular messages
       }
@@ -710,30 +739,50 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
             >
               <MessageContent text={message.text} isUser={message.isUser} />
             </Box>
-            {/* Copy button for AI messages positioned outside and to the right of bubble */}
+            {/* Copy and Save buttons for AI messages positioned outside and to the right of bubble */}
             {!message.isUser && message.text !== "Thinking..." && (
-              <Tooltip 
-                title={copiedMessageId === message.id ? "Copied to clipboard!" : "Copy to clipboard"}
-                open={copiedMessageId === message.id || undefined}
-                arrow
-              >
-                <IconButton
-                  onClick={() => handleCopyToClipboard(message.text, message.id)}
-                  sx={{
-                    width: '28px',
-                    height: '28px',
-                    marginLeft: '8px',
-                    alignSelf: 'flex-start',
-                    marginTop: '8px',
-                    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                    '&:hover': {
-                      backgroundColor: 'rgba(0, 0, 0, 0.1)'
-                    }
-                  }}
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, marginLeft: '8px', alignSelf: 'flex-start', marginTop: '8px' }}>
+                <Tooltip 
+                  title={copiedMessageId === message.id ? "Copied to clipboard!" : "Copy to clipboard"}
+                  open={copiedMessageId === message.id || undefined}
+                  arrow
                 >
-                  <ContentCopyIcon sx={{ fontSize: '16px', color: '#666' }} />
-                </IconButton>
-              </Tooltip>
+                  <IconButton
+                    onClick={() => handleCopyToClipboard(message.text, message.id)}
+                    sx={{
+                      width: '28px',
+                      height: '28px',
+                      backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                      '&:hover': {
+                        backgroundColor: 'rgba(0, 0, 0, 0.1)'
+                      }
+                    }}
+                  >
+                    <ContentCopyIcon sx={{ fontSize: '16px', color: '#666' }} />
+                  </IconButton>
+                </Tooltip>
+                
+                {/* Save button - temporarily show for ALL AI messages for debugging */}
+                <Tooltip 
+                  title={savedMessageId === message.id ? "Snippet saved!" : `Save snippet (Debug: isFromLearnDialog: ${message.isFromLearnDialog})`}
+                  open={savedMessageId === message.id || undefined}
+                  arrow
+                >
+                  <IconButton
+                    onClick={() => handleSaveSnippet(message.text, message.id)}
+                    sx={{
+                      width: '28px',
+                      height: '28px',
+                      backgroundColor: 'rgba(0, 128, 0, 0.1)',
+                      '&:hover': {
+                        backgroundColor: 'rgba(0, 128, 0, 0.2)'
+                      }
+                    }}
+                  >
+                    <SaveIcon sx={{ fontSize: '16px', color: '#4caf50' }} />
+                  </IconButton>
+                </Tooltip>
+              </Box>
             )}
           </Box>
         ))}

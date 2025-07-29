@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import { ToastContainer } from 'react-toastify';
@@ -16,7 +16,7 @@ import { SkillsRefresher } from './pages/SkillsRefresher';
 import SkillsRefresherDetail from './pages/SkillsRefresherDetail';
 import { QuizResults } from './pages/QuizResults';
 import { QuizProvider } from './contexts/quizContext';
-import { ChatProvider, UserProvider } from './contexts/chatContext';
+import { ChatProvider, UserProvider, useChat } from './contexts/chatContext';
 import { PromptDB } from './pages/PromptDB';
 import { MarketingAI } from './pages/MarketingAI';
 import { YouTubeQuizGenerator } from './pages/YouTubeQuizGenerator';
@@ -37,8 +37,44 @@ import SplashPage from './components/SplashPage';
 
 
 function App() {
+  return (
+    <ThemeProvider theme={theme}>
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        toastClassName="custom-toast-dark"
+      />
+      <CssBaseline />
+      <QuizProvider>
+        <ChatProvider>
+          <UserProvider>
+            <AppContent />
+          </UserProvider>
+        </ChatProvider>
+      </QuizProvider>
+    </ThemeProvider>
+  );
+}
+
+function AppContent() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
+  const { externalMessages } = useChat();
+
+  // Auto-open chat when there are external messages
+  useEffect(() => {
+    if (externalMessages.length > 0) {
+      setIsChatOpen(true);
+    }
+  }, [externalMessages.length]);
 
   // Centralized chat state management
   const handleChatToggle = () => {
@@ -58,73 +94,51 @@ function App() {
   };
 
   return (
-    <ThemeProvider theme={theme}>
+    <BrowserRouter>
       {showSplash && <SplashPage onClose={handleSplashClose} />}
-      <ToastContainer
-        position="top-right"
-        autoClose={4000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-        toastClassName="custom-toast-dark"
-      />
-      <CssBaseline />
-      <QuizProvider>
-        <ChatProvider>
-          <UserProvider>
-            <BrowserRouter>
-              <Box sx={{ display: 'flex', minHeight: '100vh', position: 'relative' }}>
-                <Navbar 
-                  onChatToggle={handleChatToggle} 
-                  isChatOpen={isChatOpen}
-                />
-                <Sidebar onChatToggle={handleChatToggle} isChatOpen={isChatOpen} />
-                <Box 
-                  sx={{ 
-                    flex: 1,
-                    marginLeft: '60px',
-                    marginTop: '40px',
-                    display: 'flex',
-                    flexDirection: 'column'
-                  }}
-                >
-                  <Container>
-                    <Routes>
-                      <Route path="/" element={<Navigate to="/topics" replace />} />
-                      <Route path="/topics" element={<SkillsRefresher />} />
-                      <Route path="/topics/:id" element={<SkillsRefresherDetail onChatToggle={handleChatToggle} isChatOpen={isChatOpen} />} />
-                      <Route path="/algorithms" element={<AlgorithmList />} />
-                      <Route path="/algorithm/:id" element={<AlgorithmDetail />} />
-                      <Route path="/item/:id" element={<Details />} />
-                      <Route path="/quiz-results" element={<QuizResults />} />
-                      <Route path="/my-quizzes" element={<MyQuizzes />} />
-                      <Route path="/interview-candidates" element={<InterviewCandidates />} />
-                      <Route path="/my-slidedecks" element={<MySlidedecks />} />
-                      <Route path="/my-training" element={<MyTraining />} />
-                      <Route path="/custom-quizzes" element={<CustomQuizzes />} />
-                      <Route path="/explore" element={<Explore />} />
-                      <Route path="/review-quizzes" element={<ReviewQuizzes />} />
-                      <Route path="/coder-test" element={<CoderTest onChatToggle={handleChatToggle} isChatOpen={isChatOpen} />} />
-                      <Route path="/failed-questions-primer" element={<React.Suspense fallback={<div>Loading...</div>}><FailedQuestionsPrimer /></React.Suspense>} />
-                      <Route path="/promptdb" element={<PromptDB />} />
-                      <Route path="/marketing-ai" element={<MarketingAI />} />
-                      <Route path="/yt-generator" element={<YouTubeQuizGenerator />} />
-                      <Route path="/learn" element={<IWantToLearn />} />                      
-                    </Routes>
-                  </Container>
-                </Box>
-                <Chat isOpen={isChatOpen} onClose={handleChatToggle} />
-              </Box>
-            </BrowserRouter>
-          </UserProvider>
-        </ChatProvider>
-      </QuizProvider>
-    </ThemeProvider>
+      <Box sx={{ display: 'flex', minHeight: '100vh', position: 'relative' }}>
+        <Navbar 
+          onChatToggle={handleChatToggle} 
+          isChatOpen={isChatOpen}
+        />
+        <Sidebar onChatToggle={handleChatToggle} isChatOpen={isChatOpen} />
+        <Box 
+          sx={{ 
+            flex: 1,
+            marginLeft: '60px',
+            marginTop: '40px',
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          <Container>
+            <Routes>
+              <Route path="/" element={<Navigate to="/topics" replace />} />
+              <Route path="/topics" element={<SkillsRefresher />} />
+              <Route path="/topics/:id" element={<SkillsRefresherDetail onChatToggle={handleChatToggle} isChatOpen={isChatOpen} />} />
+              <Route path="/algorithms" element={<AlgorithmList />} />
+              <Route path="/algorithm/:id" element={<AlgorithmDetail />} />
+              <Route path="/item/:id" element={<Details />} />
+              <Route path="/quiz-results" element={<QuizResults />} />
+              <Route path="/my-quizzes" element={<MyQuizzes />} />
+              <Route path="/interview-candidates" element={<InterviewCandidates />} />
+              <Route path="/my-slidedecks" element={<MySlidedecks />} />
+              <Route path="/my-training" element={<MyTraining />} />
+              <Route path="/custom-quizzes" element={<CustomQuizzes />} />
+              <Route path="/explore" element={<Explore />} />
+              <Route path="/review-quizzes" element={<ReviewQuizzes />} />
+              <Route path="/coder-test" element={<CoderTest onChatToggle={handleChatToggle} isChatOpen={isChatOpen} />} />
+              <Route path="/failed-questions-primer" element={<React.Suspense fallback={<div>Loading...</div>}><FailedQuestionsPrimer /></React.Suspense>} />
+              <Route path="/promptdb" element={<PromptDB />} />
+              <Route path="/marketing-ai" element={<MarketingAI />} />
+              <Route path="/yt-generator" element={<YouTubeQuizGenerator />} />
+              <Route path="/learn" element={<IWantToLearn />} />                      
+            </Routes>
+          </Container>
+        </Box>
+        <Chat isOpen={isChatOpen} onClose={handleChatToggle} />
+      </Box>
+    </BrowserRouter>
   );
 }
 

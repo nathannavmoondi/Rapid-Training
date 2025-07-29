@@ -19,6 +19,7 @@ interface QuizContextType {
   coderTestQuestions: string[];
   currentCoderTestIndex: number;
   inCoderTest: boolean;
+  userSavedSnippets: string[];
   setStartCourse: (value: number) => void;
   setMaxQuizzes: (value: number) => void;
   startQuiz: () => void;
@@ -34,6 +35,8 @@ interface QuizContextType {
   setCoderTestQuestions: React.Dispatch<React.SetStateAction<string[]>>;
   setCurrentCoderTestIndex: (index: number) => void;
   setInCoderTest: (inTest: boolean) => void;
+  setUserSavedSnippets: React.Dispatch<React.SetStateAction<string[]>>;
+  clearSavedSnippets: () => void;
   language: string;
   setLanguage: (lang: string) => void;
 }
@@ -59,12 +62,33 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [currentCoderTestIndex, setCurrentCoderTestIndex] = useState<number>(0);
   const [inCoderTest, setInCoderTest] = useState<boolean>(false);
   const [language, setLanguage] = useState<string>("english");
+  
+  // Initialize userSavedSnippets from localStorage
+  const [userSavedSnippets, setUserSavedSnippets] = useState<string[]>(() => {
+    try {
+      const savedSnippets = localStorage.getItem('userSavedSnippets');
+      return savedSnippets ? JSON.parse(savedSnippets) : [];
+    } catch (error) {
+      console.error('Error loading saved snippets from localStorage:', error);
+      return [];
+    }
+  });
 
 
   // // Add effect to log quiz state changes
   // useEffect(() => {
   //   console.log('Quiz context - previousQuizzes updated:', previousQuizzes.length);    
   // }, [previousQuizzes]);
+
+  // Save userSavedSnippets to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('userSavedSnippets', JSON.stringify(userSavedSnippets));
+      console.log('Quiz context - Saved snippets to localStorage:', userSavedSnippets.length);
+    } catch (error) {
+      console.error('Error saving snippets to localStorage:', error);
+    }
+  }, [userSavedSnippets]);
 
   const startQuiz = useCallback(() => {
     setIsQuizActive(true);
@@ -111,6 +135,8 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setFailedQuizzes([]); // Reset failed quizzes when resetting quiz
     setCoderTestQuestions([]); // Reset coder test questions when resetting quiz
     setCurrentCoderTestIndex(0); // Reset coder test index when resetting quiz
+    // Don't reset saved snippets - they should persist across quiz resets
+    // setUserSavedSnippets([]); // Reset saved snippets when resetting quiz
   }, []);
 
   const setPreviousPath = useCallback((path: string) => {
@@ -120,6 +146,13 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const setLevel = useCallback((newLevel: string) => {
     setLevelState(newLevel);
   }, []);  
+  
+  // Function to clear all saved snippets
+  const clearSavedSnippets = useCallback(() => {
+    setUserSavedSnippets([]);
+    localStorage.removeItem('userSavedSnippets');
+    console.log('Quiz context - Cleared all saved snippets');
+  }, []);
   
   //identify to provider all that want to share with other components.  usualy specified in app.tsx 
   const contextValue = {
@@ -154,6 +187,9 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setCurrentCoderTestIndex,
     inCoderTest,
     setInCoderTest,
+    userSavedSnippets,
+    setUserSavedSnippets,
+    clearSavedSnippets,
     language,
     setLanguage,
   };

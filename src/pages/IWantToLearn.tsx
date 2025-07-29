@@ -2,21 +2,53 @@ import React, { useState } from 'react';
 import { Box, Button, Container, Paper, TextField, Typography, CircularProgress } from '@mui/material';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import SchoolIcon from '@mui/icons-material/School';
-import { GetIWantToLearn } from '../services/aiService';
+import { useChat } from '../contexts/chatContext';
+import { chatService } from '../services/chatService';
+import { useNavigate } from 'react-router-dom';
 
 export const IWantToLearn: React.FC = () => {
   const [topic, setTopic] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const { setChatboxSkill, addExternalMessage } = useChat();
+  const navigate = useNavigate();
 
   const handleLearn = async () => {
+    if (!topic.trim()) return;
+    
     setLoading(true);
     setResult(null);
+    
     try {
-      // Call the placeholder AI service method
-      await GetIWantToLearn(topic);
-      setResult('This feature is under development');
+      // Set the chatbox skill to the topic
+      setChatboxSkill(topic);
+      
+      // Generate AI explanation for the topic
+      const aiResponse = await chatService.explainTopicInDepth(topic, `Please provide a comprehensive explanation about ${topic}. Include key concepts, practical applications, and learning resources.`, 'english', false);
+      
+      // Format the response with the topic title
+      const formattedResponse = `Topic: ${topic}\n\n${aiResponse.text}`;
+      
+      // Mark the response as coming from learn dialog
+      const learnDialogMessage = {
+        ...aiResponse,
+        text: formattedResponse,
+        isFromLearnDialog: true,
+        originalTopic: topic
+      };
+      
+      console.log('IWantToLearn - Adding message:', learnDialogMessage);
+      
+      // Add the AI response to external messages
+      addExternalMessage(learnDialogMessage);
+      
+      // Navigate to the main page and open chat
+      navigate('/');
+      
+      // The chat will automatically open and show the response
+      setResult('Response generated and sent to chat!');
     } catch (e) {
+      console.error('Error generating response:', e);
       setResult('There was an error. Please try again later.');
     } finally {
       setLoading(false);

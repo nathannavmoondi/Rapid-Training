@@ -3,6 +3,8 @@ export interface ChatMessage {
   text: string;
   isUser: boolean;
   timestamp: Date;
+  isFromLearnDialog?: boolean;
+  originalTopic?: string;
 }
 
 class ChatService {
