@@ -389,9 +389,24 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
   // Save coder test function
   const handleSaveCoderTest = () => {
     try {
-      // Create a formatted string with header and question content
+      // Create a formatted string with header and FULL question content including all HTML sections
       const header = `Coder Test - ${getLanguageDisplayName(language)} (${level})\n\n`;
-      const fullContent = header + questionContent.trim();
+      
+      // Ensure we save the complete questionContent with all HTML sections intact
+      // This includes the question, tips-section, and answer-section divs
+      const fullContent = header + questionContent;
+      
+      // Debug: Log what we're saving to console
+      console.log('=== SAVING CODER TEST ===');
+      console.log('Header:', header);
+      console.log('Question Content Length:', questionContent.length);
+      console.log('Full Content Preview (first 1000 chars):', fullContent.substring(0, 1000));
+      console.log('Contains Solution H3?', fullContent.includes('<h3>Solution</h3>'));
+      console.log('Contains Approach H4?', fullContent.includes('<h4>Approach:</h4>'));
+      console.log('Contains Implementation H4?', fullContent.includes('<h4>Implementation:</h4>'));
+      console.log('NOTE: All sections (including hidden answer sections) are saved!');
+      console.log('To see Solution/Approach/Implementation in the CoderTest page, click "Show Answer"');
+      console.log('========================');
       
       setSavedUserCoderTests(prev => [...prev, fullContent]);
       setSaveSuccess(true);

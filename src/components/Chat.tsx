@@ -112,6 +112,10 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
       }
     );
 
+    // Remove display:none styles from coder test sections so all content is visible
+    processedContent = processedContent.replace(/style="display:\s*none;?"/g, '');
+    processedContent = processedContent.replace(/style='display:\s*none;?'/g, '');
+
     // Also handle plain <pre><code> without language class
     processedContent = processedContent.replace(
       /<pre><code>([\s\S]*?)<\/code><\/pre>/g,
@@ -249,7 +253,8 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
                 margin: 0,
                 padding: 0,
                 lineHeight: '1.2',
-                color: isUser ? '#fff' : '#000 !important'
+                color: isUser ? '#fff' : '#000 !important',
+                marginBottom: '2px'
               },
               '& a': {
                 margin: 0,
@@ -285,18 +290,67 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
               },
               '& .title-section': {
                 color: isUser ? '#fff' : '#000 !important'
+              },
+              // Coder test specific styling
+              '& .coding-question-container': {
+                color: isUser ? '#fff' : '#000 !important'
+              },
+              '& .title-section h2': {
+                color: isUser ? '#fff' : '#f500ff !important',
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                marginBottom: '4px'
+              },
+              '& .question-section h3, & .tips-section h3, & .answer-section h3': {
+                color: isUser ? '#fff' : '#f500ff !important',
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                marginBottom: '4px',
+                marginTop: '8px'
+              },
+              '& .question-section h4, & .tips-section h4, & .answer-section h4': {
+                color: isUser ? '#fff' : '#006400 !important',
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+                marginBottom: '2px',
+                marginTop: '4px'
+              },
+              '& .problem-statement, & .requirements, & .examples, & .hints, & .strategy, & .common-pitfalls, & .approach, & .solution-code, & .complexity, & .explanation': {
+                color: isUser ? '#fff' : '#000 !important',
+                marginBottom: '4px',
+                lineHeight: '1.3'
+              },
+              '& .tips-section, & .answer-section': {
+                marginTop: '8px',
+                paddingTop: '4px',
+                borderTop: '1px solid rgba(128, 128, 128, 0.3)'
+              },
+              '& ul, & ol': {
+                marginTop: '2px',
+                marginBottom: '4px',
+                paddingLeft: '1.2em'
+              },
+              // Slidedeck specific styling
+              '& .slide': {
+                backgroundColor: '#ffffff !important',
+                padding: '16px',
+                borderRadius: '8px',
+                border: '1px solid #e0e0e0',
+                marginBottom: '16px'
               }
             }}
             dangerouslySetInnerHTML={{
               __html: part
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\n\n/g, '</p><p>')
-                .replace(/\n/g, '<br>')
+                .replace(/\n\s*\n\s*\n+/g, '</p><p>') // Replace triple+ newlines with paragraph breaks
+                .replace(/\n\s*\n/g, '<br>')         // Replace double newlines with single break
+                .replace(/\n/g, ' ')                 // Single newlines become spaces (more compact)
                 .replace(/^(?!<p>)/, '<p>')
                 .replace(/(?!<\/p>)$/, '</p>')
                 .replace(/<p><\/p>/g, '')
-                .replace(/<p><br><\/p>/g, '<br>')
+                .replace(/<p><br><\/p>/g, '')
                 .replace(/<p>\s*<\/p>/g, '')
+                .replace(/(<br>\s*){2,}/g, '<br>')   // Limit consecutive br tags to max 1
             }}
           />
         );
@@ -688,7 +742,15 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
           <Avatar sx={{ bgcolor: '#0053A7' }}>
             <BuddyIcon />
           </Avatar>
-          <Typography>AI Assistant {chatboxSkill ? `(${chatboxSkill})` : ''}</Typography>
+          <Typography>
+            AI Assistant {
+              messages.length > 0 && messages[0].savedContentType 
+                ? `(${messages[0].savedContentType})` 
+                : chatboxSkill 
+                  ? `(${chatboxSkill})` 
+                  : ''
+            }
+          </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Tooltip title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}>
@@ -791,26 +853,28 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
                   </IconButton>
                 </Tooltip>
                 
-                {/* Save button - temporarily show for ALL AI messages for debugging */}
-                <Tooltip 
-                  title={savedMessageId === message.id ? "Snippet saved!" : `Save snippet (Debug: isFromLearnDialog: ${message.isFromLearnDialog})`}
-                  open={savedMessageId === message.id || undefined}
-                  arrow
-                >
-                  <IconButton
-                    onClick={() => handleSaveSnippet(message.text, message.id)}
-                    sx={{
-                      width: '28px',
-                      height: '28px',
-                      backgroundColor: 'rgba(0, 128, 0, 0.1)',
-                      '&:hover': {
-                        backgroundColor: 'rgba(0, 128, 0, 0.2)'
-                      }
-                    }}
+                {/* Save button - only show for new AI responses, not saved content */}
+                {!message.isViewingQuizContent && !message.isSavedContent && (
+                  <Tooltip 
+                    title={savedMessageId === message.id ? "Snippet saved!" : "Save snippet"}
+                    open={savedMessageId === message.id || undefined}
+                    arrow
                   >
-                    <SaveIcon sx={{ fontSize: '16px', color: '#4caf50' }} />
-                  </IconButton>
-                </Tooltip>
+                    <IconButton
+                      onClick={() => handleSaveSnippet(message.text, message.id)}
+                      sx={{
+                        width: '28px',
+                        height: '28px',
+                        backgroundColor: 'rgba(0, 128, 0, 0.1)',
+                        '&:hover': {
+                          backgroundColor: 'rgba(0, 128, 0, 0.2)'
+                        }
+                      }}
+                    >
+                      <SaveIcon sx={{ fontSize: '16px', color: '#4caf50' }} />
+                    </IconButton>
+                  </Tooltip>
+                )}
               </Box>
             )}
           </Box>
