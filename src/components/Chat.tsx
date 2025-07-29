@@ -112,6 +112,10 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
       }
     );
 
+    // Remove display:none styles from coder test sections so all content is visible
+    processedContent = processedContent.replace(/style="display:\s*none;?"/g, '');
+    processedContent = processedContent.replace(/style='display:\s*none;?'/g, '');
+
     // Also handle plain <pre><code> without language class
     processedContent = processedContent.replace(
       /<pre><code>([\s\S]*?)<\/code><\/pre>/g,
@@ -285,6 +289,38 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
               },
               '& .title-section': {
                 color: isUser ? '#fff' : '#000 !important'
+              },
+              // Coder test specific styling
+              '& .coding-question-container': {
+                color: isUser ? '#fff' : '#000 !important'
+              },
+              '& .title-section h2': {
+                color: isUser ? '#fff' : '#f500ff !important',
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                marginBottom: '16px'
+              },
+              '& .question-section h3, & .tips-section h3, & .answer-section h3': {
+                color: isUser ? '#fff' : '#f500ff !important',
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                marginBottom: '16px'
+              },
+              '& .question-section h4, & .tips-section h4, & .answer-section h4': {
+                color: isUser ? '#fff' : '#00FF00 !important',
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+                marginBottom: '8px'
+              },
+              '& .problem-statement, & .requirements, & .examples, & .hints, & .strategy, & .common-pitfalls, & .approach, & .solution-code, & .complexity, & .explanation': {
+                color: isUser ? '#fff' : '#000 !important',
+                marginBottom: '16px',
+                lineHeight: '1.6'
+              },
+              '& .tips-section, & .answer-section': {
+                marginTop: '24px',
+                paddingTop: '16px',
+                borderTop: '1px solid rgba(255, 255, 255, 0.2)'
               }
             }}
             dangerouslySetInnerHTML={{

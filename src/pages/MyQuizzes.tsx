@@ -89,7 +89,8 @@ const MyQuizzes: React.FC = () => {
         id: Math.random().toString(36).substring(7),
         text: test,
         isUser: false,
-        timestamp: new Date()
+        timestamp: new Date(),
+        isViewingQuizContent: false  // Coder tests should NOT use quiz styling
       };
       
       addExternalMessage(testMessage);
