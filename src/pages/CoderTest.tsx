@@ -283,6 +283,8 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
   const language = searchParams.get('language') || 'javascript';
   const initialLevel = searchParams.get('level') || 'basic';
   
+  console.log('CoderTest - URL level:', initialLevel, 'Full URL level param:', searchParams.get('level'));
+  
   const [level, setLevel] = useState(initialLevel);
   const [questionContent, setQuestionContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -514,6 +516,15 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
     };
   }, [setInCoderTest, setCoderTestQuestions, setCurrentCoderTestIndex]);
 
+  // Ensure level state matches URL parameter
+  useEffect(() => {
+    const urlLevel = searchParams.get('level');
+    if (urlLevel && urlLevel !== level) {
+      setLevel(urlLevel);
+      setQuizLevel(urlLevel);
+    }
+  }, [searchParams, level, setQuizLevel]);
+
   // Load coding question when component mounts or when language changes (but not level)
   useEffect(() => {
     loadQuestion();
@@ -572,9 +583,14 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
     switch (lang) {
       case 'csharp': return 'C#';
       case 'javascript': return 'JavaScript';
+      case 'typescript': return 'TypeScript';
       case 'cpp': return 'C++';
       case 'python': return 'Python';
       case 'java': return 'Java';
+      case 'react': return 'React';
+      case '.net': return '.NET';
+      case 'go': return 'Go';
+      case 'ruby': return 'Ruby';
       default: return lang.charAt(0).toUpperCase() + lang.slice(1);
     }
   };
@@ -888,6 +904,9 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
                   </MenuItem>
                   <MenuItem value="basic">Basic</MenuItem>
                   <MenuItem value="intermediate">Intermediate</MenuItem>
+                  <MenuItem value="average">Average</MenuItem>
+                  <MenuItem value="tough">Tough</MenuItem>
+                  <MenuItem value="advanced">Advanced</MenuItem>
                 </Select>
               </FormControl>
             </Box>
