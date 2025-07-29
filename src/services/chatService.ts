@@ -6,6 +6,7 @@ export interface ChatMessage {
   isFromLearnDialog?: boolean;
   originalTopic?: string;
   isViewingQuizContent?: boolean;
+  isSavedContent?: boolean;
 }
 
 class ChatService {

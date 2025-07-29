@@ -845,26 +845,28 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
                   </IconButton>
                 </Tooltip>
                 
-                {/* Save button - temporarily show for ALL AI messages for debugging */}
-                <Tooltip 
-                  title={savedMessageId === message.id ? "Snippet saved!" : `Save snippet (Debug: isFromLearnDialog: ${message.isFromLearnDialog})`}
-                  open={savedMessageId === message.id || undefined}
-                  arrow
-                >
-                  <IconButton
-                    onClick={() => handleSaveSnippet(message.text, message.id)}
-                    sx={{
-                      width: '28px',
-                      height: '28px',
-                      backgroundColor: 'rgba(0, 128, 0, 0.1)',
-                      '&:hover': {
-                        backgroundColor: 'rgba(0, 128, 0, 0.2)'
-                      }
-                    }}
+                {/* Save button - only show for new AI responses, not saved content */}
+                {!message.isViewingQuizContent && !message.isSavedContent && (
+                  <Tooltip 
+                    title={savedMessageId === message.id ? "Snippet saved!" : "Save snippet"}
+                    open={savedMessageId === message.id || undefined}
+                    arrow
                   >
-                    <SaveIcon sx={{ fontSize: '16px', color: '#4caf50' }} />
-                  </IconButton>
-                </Tooltip>
+                    <IconButton
+                      onClick={() => handleSaveSnippet(message.text, message.id)}
+                      sx={{
+                        width: '28px',
+                        height: '28px',
+                        backgroundColor: 'rgba(0, 128, 0, 0.1)',
+                        '&:hover': {
+                          backgroundColor: 'rgba(0, 128, 0, 0.2)'
+                        }
+                      }}
+                    >
+                      <SaveIcon sx={{ fontSize: '16px', color: '#4caf50' }} />
+                    </IconButton>
+                  </Tooltip>
+                )}
               </Box>
             )}
           </Box>
