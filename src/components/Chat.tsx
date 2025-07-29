@@ -253,7 +253,8 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
                 margin: 0,
                 padding: 0,
                 lineHeight: '1.2',
-                color: isUser ? '#fff' : '#000 !important'
+                color: isUser ? '#fff' : '#000 !important',
+                marginBottom: '2px'
               },
               '& a': {
                 margin: 0,
@@ -298,41 +299,50 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
                 color: isUser ? '#fff' : '#f500ff !important',
                 fontSize: '1.5rem',
                 fontWeight: 'bold',
-                marginBottom: '16px'
+                marginBottom: '4px'
               },
               '& .question-section h3, & .tips-section h3, & .answer-section h3': {
                 color: isUser ? '#fff' : '#f500ff !important',
                 fontSize: '1.5rem',
                 fontWeight: 'bold',
-                marginBottom: '16px'
+                marginBottom: '4px',
+                marginTop: '8px'
               },
               '& .question-section h4, & .tips-section h4, & .answer-section h4': {
-                color: isUser ? '#fff' : '#00FF00 !important',
+                color: isUser ? '#fff' : '#006400 !important',
                 fontSize: '1.2rem',
                 fontWeight: 'bold',
-                marginBottom: '8px'
+                marginBottom: '2px',
+                marginTop: '4px'
               },
               '& .problem-statement, & .requirements, & .examples, & .hints, & .strategy, & .common-pitfalls, & .approach, & .solution-code, & .complexity, & .explanation': {
                 color: isUser ? '#fff' : '#000 !important',
-                marginBottom: '16px',
-                lineHeight: '1.6'
+                marginBottom: '4px',
+                lineHeight: '1.3'
               },
               '& .tips-section, & .answer-section': {
-                marginTop: '24px',
-                paddingTop: '16px',
-                borderTop: '1px solid rgba(255, 255, 255, 0.2)'
+                marginTop: '8px',
+                paddingTop: '4px',
+                borderTop: '1px solid rgba(128, 128, 128, 0.3)'
+              },
+              '& ul, & ol': {
+                marginTop: '2px',
+                marginBottom: '4px',
+                paddingLeft: '1.2em'
               }
             }}
             dangerouslySetInnerHTML={{
               __html: part
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\n\n/g, '</p><p>')
-                .replace(/\n/g, '<br>')
+                .replace(/\n\s*\n\s*\n+/g, '</p><p>') // Replace triple+ newlines with paragraph breaks
+                .replace(/\n\s*\n/g, '<br>')         // Replace double newlines with single break
+                .replace(/\n/g, ' ')                 // Single newlines become spaces (more compact)
                 .replace(/^(?!<p>)/, '<p>')
                 .replace(/(?!<\/p>)$/, '</p>')
                 .replace(/<p><\/p>/g, '')
-                .replace(/<p><br><\/p>/g, '<br>')
+                .replace(/<p><br><\/p>/g, '')
                 .replace(/<p>\s*<\/p>/g, '')
+                .replace(/(<br>\s*){2,}/g, '<br>')   // Limit consecutive br tags to max 1
             }}
           />
         );
