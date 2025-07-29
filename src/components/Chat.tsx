@@ -329,6 +329,14 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
                 marginTop: '2px',
                 marginBottom: '4px',
                 paddingLeft: '1.2em'
+              },
+              // Slidedeck specific styling
+              '& .slide': {
+                backgroundColor: '#ffffff !important',
+                padding: '16px',
+                borderRadius: '8px',
+                border: '1px solid #e0e0e0',
+                marginBottom: '16px'
               }
             }}
             dangerouslySetInnerHTML={{

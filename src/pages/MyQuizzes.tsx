@@ -132,7 +132,7 @@ const MyQuizzes: React.FC = () => {
         text: slidedeck,
         isUser: false,
         timestamp: new Date(),
-        isViewingQuizContent: true
+        isViewingQuizContent: false  // Slidedecks should have code highlighting, not quiz styling
       };
       
       addExternalMessage(slidedeckMessage);
