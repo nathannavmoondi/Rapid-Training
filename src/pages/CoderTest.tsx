@@ -27,7 +27,7 @@ import { getCoderTestQuestion } from '../services/aiService';
 import { chatService } from '../services/chatService';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { useQuiz } from '../contexts/quizContext';
+import { useQuiz, generateLabelFromHtml } from '../contexts/quizContext';
 import { useChat } from '../contexts/chatContext';
 
 // Component to render content with syntax highlighting (similar to Chat.tsx)
@@ -283,6 +283,8 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
   const language = searchParams.get('language') || 'javascript';
   const initialLevel = searchParams.get('level') || 'basic';
   
+  console.log('CoderTest - URL level:', initialLevel, 'Full URL level param:', searchParams.get('level'));
+  
   const [level, setLevel] = useState(initialLevel);
   const [questionContent, setQuestionContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -390,25 +392,27 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
   const handleSaveCoderTest = () => {
     try {
       // Create a formatted string with header and FULL question content including all HTML sections
-      const header = `Coder Test - ${getLanguageDisplayName(language)} (${level})\n\n`;
+      const header = `${getLanguageDisplayName(language)} (${level})\n\n`;
       
       // Ensure we save the complete questionContent with all HTML sections intact
       // This includes the question, tips-section, and answer-section divs
       const fullContent = header + questionContent;
       
-      // Debug: Log what we're saving to console
-      console.log('=== SAVING CODER TEST ===');
-      console.log('Header:', header);
-      console.log('Question Content Length:', questionContent.length);
-      console.log('Full Content Preview (first 1000 chars):', fullContent.substring(0, 1000));
-      console.log('Contains Solution H3?', fullContent.includes('<h3>Solution</h3>'));
-      console.log('Contains Approach H4?', fullContent.includes('<h4>Approach:</h4>'));
-      console.log('Contains Implementation H4?', fullContent.includes('<h4>Implementation:</h4>'));
-      console.log('NOTE: All sections (including hidden answer sections) are saved!');
-      console.log('To see Solution/Approach/Implementation in the CoderTest page, click "Show Answer"');
-      console.log('========================');
+      // // Debug: Log what we're saving to console
+      // console.log('=== SAVING CODER TEST ===');
+      // console.log('Header:', header);
+      // console.log('Question Content Length:', questionContent.length);
+      // console.log('Full Content Preview (first 1000 chars):', fullContent.substring(0, 1000));
+      // console.log('Contains Solution H3?', fullContent.includes('<h3>Solution</h3>'));
+      // console.log('Contains Approach H4?', fullContent.includes('<h4>Approach:</h4>'));
+      // console.log('Contains Implementation H4?', fullContent.includes('<h4>Implementation:</h4>'));
+      // console.log('NOTE: All sections (including hidden answer sections) are saved!');
+      // console.log('To see Solution/Approach/Implementation in the CoderTest page, click "Show Answer"');
+      // console.log('========================');
       
-      setSavedUserCoderTests(prev => [...prev, fullContent]);
+      const label = generateLabelFromHtml(fullContent, 'Coder Test');
+      const savedItem = { label, html: fullContent };
+      setSavedUserCoderTests(prev => [...prev, savedItem]);
       setSaveSuccess(true);
       
       // Reset success message after 2 seconds
@@ -512,6 +516,15 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
     };
   }, [setInCoderTest, setCoderTestQuestions, setCurrentCoderTestIndex]);
 
+  // Ensure level state matches URL parameter
+  useEffect(() => {
+    const urlLevel = searchParams.get('level');
+    if (urlLevel && urlLevel !== level) {
+      setLevel(urlLevel);
+      setQuizLevel(urlLevel);
+    }
+  }, [searchParams, level, setQuizLevel]);
+
   // Load coding question when component mounts or when language changes (but not level)
   useEffect(() => {
     loadQuestion();
@@ -570,9 +583,14 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
     switch (lang) {
       case 'csharp': return 'C#';
       case 'javascript': return 'JavaScript';
+      case 'typescript': return 'TypeScript';
       case 'cpp': return 'C++';
       case 'python': return 'Python';
       case 'java': return 'Java';
+      case 'react': return 'React';
+      case '.net': return '.NET';
+      case 'go': return 'Go';
+      case 'ruby': return 'Ruby';
       default: return lang.charAt(0).toUpperCase() + lang.slice(1);
     }
   };
@@ -886,6 +904,9 @@ const CoderTest: React.FC<{ onChatToggle?: () => void; isChatOpen?: boolean }> =
                   </MenuItem>
                   <MenuItem value="basic">Basic</MenuItem>
                   <MenuItem value="intermediate">Intermediate</MenuItem>
+                  <MenuItem value="average">Average</MenuItem>
+                  <MenuItem value="tough">Tough</MenuItem>
+                  <MenuItem value="advanced">Advanced</MenuItem>
                 </Select>
               </FormControl>
             </Box>

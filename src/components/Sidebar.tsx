@@ -15,10 +15,8 @@ import AssessmentIcon from '@mui/icons-material/Assessment';
 import CodeIcon from '@mui/icons-material/Code';
 import PeopleIcon from '@mui/icons-material/People';
 import { useNavigate } from 'react-router-dom';
-import { IWantToLearnDialog } from './IWantToLearnDialog';
 import { CoderTestDialog } from './CoderTestDialog';
 import { useChat } from '../contexts/chatContext';
-import { chatService } from '../services/chatService';
 
 const menuItems = [
   { label: 'Topics', path: '/topics', icon: <SchoolIcon />, external: false },
@@ -48,11 +46,9 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = false }) => {
   const navigate = useNavigate();
   const theme = useTheme();
-  const { addExternalMessage } = useChat();
   const [width, setWidth] = useState(window.innerWidth < WIDTH_BREAKPOINT ? SIDEBAR_MIN_WIDTH : SIDEBAR_MAX_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
   const [shouldShowHamburger, setShouldShowHamburger] = useState(window.innerWidth < WIDTH_BREAKPOINT);
-  const [iWantToLearnOpen, setIWantToLearnOpen] = useState(false);
   const [coderTestOpen, setCoderTestOpen] = useState(false);
   const showText = width >= TEXT_VISIBILITY_THRESHOLD;
 
@@ -104,52 +100,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
     };
   }, [isResizing]);
 
-  const handleIWantToLearn = async (topic: string) => {
-    try {
-      // Add "thinking" message to chat BEFORE opening chat
-      const thinkingMessage = {
-        id: Math.random().toString(36).substring(7),
-        text: "Thinking...",
-        isUser: false,
-        timestamp: new Date()
-      };
-      addExternalMessage(thinkingMessage);
-      
-      // Ensure chat is open only if it's not already open
-      if (!isChatOpen) {
-        onChatToggle?.();
-        // Wait a bit for the chat to fully open before making API call
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-      
-      // Call AI with the explain topic prompt - we'll use a generic "Learning" skill
-      const aiResponse = await chatService.explainTopicInDepth(
-        "General Learning",
-        topic,
-        "english"
-      );
-      
-      // Add AI response to chat
-      addExternalMessage(aiResponse);
-
-      // Force scroll to top after a small delay to ensure the message is rendered
-      setTimeout(() => {
-        const chatContainer = document.querySelector('.chat-messages');
-        if (chatContainer) {
-          chatContainer.scrollTop = 0;
-        }
-      }, 100);
-    } catch (error) {
-      console.error('Failed to explain topic:', error);
-      const errorMessage = {
-        id: Math.random().toString(36).substring(7),
-        text: "Sorry, I encountered an error while trying to explain this topic. Please try again.",
-        isUser: false,
-        timestamp: new Date()
-      };
-      addExternalMessage(errorMessage);
-    }
-  };
+  // Removed handleIWantToLearn as it's now handled in the IWantToLearn page
 
   const handleCoderTest = (language: string, level: string) => {
     navigate(`/coder-test?language=${encodeURIComponent(language)}&level=${encodeURIComponent(level)}`);
@@ -235,9 +186,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
                 })
               }}
               onClick={() => {
-                if (item.label === 'I want to learn') {
-                  setIWantToLearnOpen(true);
-                } else if (item.label === 'Coder Test') {
+                if (item.label === 'Coder Test') {
                   setCoderTestOpen(true);
                 } else if (item.external) {
                   window.open(item.path, '_blank');
@@ -323,13 +272,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
           },
         }}
         onMouseDown={handleMouseDown}
-      />
-      
-      {/* I Want to Learn Dialog */}
-      <IWantToLearnDialog
-        open={iWantToLearnOpen}
-        onClose={() => setIWantToLearnOpen(false)}
-        onLearnMore={handleIWantToLearn}
       />
       
       {/* Coder Test Dialog */}

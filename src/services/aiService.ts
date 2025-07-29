@@ -265,6 +265,20 @@ if (startCourse === 1) {
         - Use code sections when needed with proper syntax highlighting
         - Keep text white for readability on dark background
         - Structure content with clear visual hierarchy
+        
+        IMPORTANT: For any code examples, you MUST use one of these EXACT language classes in the <code> tag:
+        - language-javascript (for JavaScript)
+        - language-typescript (for TypeScript)  
+        - language-python (for Python)
+        - language-java (for Java)
+        - language-csharp (for C#)
+        - language-cpp (for C++)
+        - language-css (for CSS)
+        - language-markup (for HTML/XML)
+        - language-sql (for SQL)
+        - language-json (for JSON)
+        NEVER use "language-" without a proper language identifier!
+        
         Do not use * as marker.
         If course is not a programming language, DO NOT USE CODE EXAMPLE OR BLOCKS AT ALL!!!
         Format output as:
@@ -283,7 +297,7 @@ if (startCourse === 1) {
             </div>
             <div class="slide">
                 <h2>Code Example</h2>
-                <pre><code class="language-${skillCategory}">
+                <pre><code class="language-javascript">
                 [Basic example code]
                 </code></pre>
             </div>
@@ -645,10 +659,31 @@ export const getCoderTestQuestion = async (language: string, level: string, prev
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
     if (!apiKey) throw new Error('API key not found in environment variables!');
 
+    // Map special language cases to syntax highlighting languages
+    const getSyntaxLanguage = (lang: string): string => {
+      switch (lang.toLowerCase()) {
+        case 'react': return 'javascript'; // React uses JSX/JavaScript syntax
+        case '.net': return 'csharp'; // .NET typically uses C# syntax
+        case 'csharp': return 'csharp';
+        case 'javascript': return 'javascript';
+        case 'typescript': return 'typescript';
+        case 'python': return 'python';
+        case 'java': return 'java';
+        case 'cpp': return 'cpp';
+        case 'go': return 'go';
+        case 'ruby': return 'ruby';
+        default: return lang.toLowerCase();
+      }
+    };
+
+    const syntaxLanguage = getSyntaxLanguage(language);
+
     // Build the base prompt
     let prompt = `Give me a random LeetCode style coding question for programming language ${language} at ${level} skill level.
 
-Create an appropriate title for this coding test problem.
+Create an appropriate title for this coding test problem.  A coding test that you would
+give to an interview candidate.  Example: fizz buzz, binary graph, fibonacci, anagrams,  palindrome,
+chunks, permutation, trees, currency. The usual.
 
 Then underneath provide a detailed answer with code blocks. Code must have comments.`;
 
@@ -682,7 +717,7 @@ Format the response in this exact HTML structure:
         </div>
         <div class="function-signature">
             <h4>Function Signature:</h4>
-            <pre><code class="language-${language.toLowerCase()}">
+            <pre><code class="language-${syntaxLanguage}">
 [Sample function declaration with parameters - e.g., /**
  * @param {number[]} nums
  * @param {number} target
@@ -694,7 +729,7 @@ var twoSum = function(nums, target) { }; ]
         </div>
         <div class="examples">
             <h4>Example:</h4>
-            <pre><code class="language-${language.toLowerCase()}">
+            <pre><code class="language-${syntaxLanguage}">
 Input: [example input]
 Output: [example output]
 Explanation: [brief explanation - keep under 80 characters per line]
@@ -733,7 +768,7 @@ Explanation: [brief explanation - keep under 80 characters per line]
         </div>
         <div class="solution-code">
             <h4>Implementation:</h4>
-            <pre><code class="language-${language.toLowerCase()}">
+            <pre><code class="language-${syntaxLanguage}">
 [Complete solution code with detailed comments]
             </code></pre>
         </div>
@@ -756,15 +791,20 @@ Explanation: [brief explanation - keep under 80 characters per line]
 Important guidelines:
 1. Create a clear, descriptive title that reflects the problem's core concept
 2. Title should be in format: "Title - [Problem Name]" (e.g., "Title - Two Sum Problem")
-3. Make the problem appropriate for ${level} level (${level === 'basic' ? 'focus on fundamental concepts like arrays, strings, basic loops' : 'include more complex algorithms, data structures, optimization'})
+3. Make the problem appropriate for ${level} level (${level === 'basic' ? 'focus on fundamental concepts like arrays, strings, basic loops' : 
+  level === 'intermediate' ? 'include moderate complexity with common data structures and algorithms' :
+  level === 'average' ? 'use standard algorithmic patterns with moderate complexity' :
+  level === 'tough' ? 'include challenging problems requiring advanced problem-solving skills' :
+  level === 'advanced' ? 'create complex problems with advanced algorithms, data structures, and optimization techniques' :
+  'include more complex algorithms, data structures, optimization'})
 2. Use proper ${language} syntax in code examples
-3. All code must be wrapped in <pre><code class="language-${language.toLowerCase()}"> tags
+3. All code must be wrapped in <pre><code class="language-${syntaxLanguage}"> tags
 4. Include detailed comments in the solution code
 5. Make the problem realistic and practical
 6. Content will be displayed on a dark background, use light colors for text
 7. Keep explanations clear and educational
 8. Do not use backticks or markdown formatting
-9. Use only the supported language classes: language-javascript, language-typescript, language-python, language-java, language-csharp, language-cpp
+9. Use only the supported language classes: language-javascript, language-typescript, language-python, language-java, language-csharp, language-cpp, language-go, language-ruby
 10. IMPORTANT: Keep all text lines under 80 characters to prevent horizontal scrolling
 11. Break long sentences into shorter ones for better readability
 12. Use concise explanations - prioritize clarity over lengthy descriptions

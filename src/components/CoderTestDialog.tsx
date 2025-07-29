@@ -129,9 +129,14 @@ export const CoderTestDialog: React.FC<CoderTestDialogProps> = ({
               const languageNames: { [key: string]: string } = {
                 'csharp': 'C#',
                 'javascript': 'JavaScript',
+                'typescript': 'TypeScript',
                 'cpp': 'C++',
                 'python': 'Python',
-                'java': 'Java'
+                'java': 'Java',
+                'react': 'React',
+                '.net': '.NET',
+                'go': 'Go',
+                'ruby': 'Ruby'               
               };
               return languageNames[selected as string] || selected;
             }}
@@ -152,9 +157,14 @@ export const CoderTestDialog: React.FC<CoderTestDialogProps> = ({
           >
             <MenuItem value="csharp">C#</MenuItem>
             <MenuItem value="javascript">JavaScript</MenuItem>
+            <MenuItem value="typescript">TypeScript</MenuItem>
             <MenuItem value="cpp">C++</MenuItem>
             <MenuItem value="python">Python</MenuItem>
             <MenuItem value="java">Java</MenuItem>
+            <MenuItem value="react">React</MenuItem>
+            <MenuItem value=".net">.NET</MenuItem>
+            <MenuItem value="go">Go</MenuItem>
+            <MenuItem value="ruby">Ruby</MenuItem>
           </Select>
         </FormControl>
 
@@ -185,7 +195,10 @@ export const CoderTestDialog: React.FC<CoderTestDialogProps> = ({
               // Display the actual level name with proper capitalization
               const levelNames: { [key: string]: string } = {
                 'basic': 'Basic',
-                'intermediate': 'Intermediate'
+                'intermediate': 'Intermediate',
+                'average': 'Average',
+                'tough': 'Tough',
+                'advanced': 'Advanced'
               };
               return levelNames[selected as string] || selected;
             }}
@@ -206,6 +219,9 @@ export const CoderTestDialog: React.FC<CoderTestDialogProps> = ({
           >
             <MenuItem value="basic">Basic</MenuItem>
             <MenuItem value="intermediate">Intermediate</MenuItem>
+            <MenuItem value="average">Average</MenuItem>
+            <MenuItem value="tough">Tough</MenuItem>
+            <MenuItem value="advanced">Advanced</MenuItem>
           </Select>
         </FormControl>
 
