@@ -6,8 +6,8 @@
  * Each card shows the skill title, description, and key topics to learn.
  */
 import { Box, Card, CardContent, Container, Tab, Tabs, Typography, Chip, Stack, 
-  Radio, RadioGroup, FormControlLabel, FormControl, TextField, Button, IconButton, InputAdornment } from '@mui/material';
-import { Close as CloseIcon, Search as SearchIcon, Clear as ClearIcon } from '@mui/icons-material';
+  Radio, RadioGroup, FormControlLabel, FormControl, TextField, Button, IconButton, InputAdornment, Select, MenuItem, FormHelperText } from '@mui/material';
+import { Close as CloseIcon, Search as SearchIcon, Clear as ClearIcon, Launch as LaunchIcon } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { skills } from '../data/skills';
@@ -31,6 +31,7 @@ export const SkillsRefresher = () => {
   const [newSkillTitle, setNewSkillTitle] = useState('');
   const [customSkills, setCustomSkills] = useState<CustomSkill[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [skillDropdownValue, setSkillDropdownValue] = useState('');
 
   // Turn off course mode when entering homepage/skills page
   useEffect(() => {
@@ -95,6 +96,36 @@ export const SkillsRefresher = () => {
 
   const handleClearSearch = () => {
     setSearchTerm('');
+  };
+
+  const handleSkillDropdownChange = (value: string, skillTitle: string, skillCategory: SkillCategory) => {
+    console.log(`Selected ${value} for skill: ${skillTitle}`);
+    // Add your logic here for handling different dropdown options
+    switch (value) {
+      case 'quiz':
+        // Navigate to topics detail page - same as clicking the card
+        navigate(`/topics/detail?skill=${encodeURIComponent(skillTitle)}&category=${skillCategory}`);
+        break;
+      case 'questions':
+        // Navigate to topics detail page - same as clicking the card (same as quiz for now)
+        navigate(`/topics/detail?skill=${encodeURIComponent(skillTitle)}&category=${skillCategory}`);
+        break;
+      case 'course':
+        // Navigate to topics detail page with course mode
+        navigate(`/topics/detail?skill=${encodeURIComponent(skillTitle)}&category=${skillCategory}&mode=course`);
+        break;
+      case 'slide-deck':
+        // Navigate to topics detail page with slide deck mode
+        navigate(`/topics/detail?skill=${encodeURIComponent(skillTitle)}&category=${skillCategory}&mode=slidedeck`);
+        break;
+      case 'youtube':
+        // Navigate to topics detail page with youtube mode
+        navigate(`/topics/detail?skill=${encodeURIComponent(skillTitle)}&category=${skillCategory}&mode=youtube`);
+        break;
+      default:
+        break;
+    }
+    setSkillDropdownValue(''); // Reset dropdown after selection
   };
 
   const isCustomSkill = (skillId: string) => skillId.startsWith('custom-');
@@ -234,21 +265,61 @@ export const SkillsRefresher = () => {
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 {skill.description}
               </Typography>
-              <Stack direction="row" spacing={1} flexWrap="wrap" gap={1} sx={{ mt: 'auto' }}>
-                {skill.topics.slice(0, 3).map((topic) => (
-                  <Chip 
-                    key={topic}
-                    label={topic}
-                    size="small"
-                    sx={{ 
-                      backgroundColor: 'rgba(144, 202, 249, 0.1)',
-                      color: 'primary.light',
-                      '&:hover': {
-                        backgroundColor: 'rgba(144, 202, 249, 0.2)'
+              <Stack direction="row" spacing={1} flexWrap="wrap" gap={1} sx={{ mt: 'auto', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, flex: 1 }}>
+                  {skill.topics.slice(0, 3).map((topic) => (
+                    <Chip 
+                      key={topic}
+                      label={topic}
+                      size="small"
+                      sx={{ 
+                        backgroundColor: 'rgba(144, 202, 249, 0.1)',
+                        color: 'primary.light',
+                        '&:hover': {
+                          backgroundColor: 'rgba(144, 202, 249, 0.2)'
+                        }
+                      }}
+                    />
+                  ))}
+                </Box>
+                <FormControl size="small" sx={{ minWidth: 'auto' }}>
+                  <Select
+                    value={skillDropdownValue}
+                    onChange={(e) => handleSkillDropdownChange(e.target.value, skill.title, skill.category)}
+                    onClick={(e) => e.stopPropagation()}
+                    displayEmpty
+                    sx={{
+                      backgroundColor: 'primary.main',
+                      color: 'white',
+                      height: 32,
+                      width: 'auto',
+                      minWidth: 48,
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        border: 'none'
+                      },
+                      '& .MuiSelect-icon': {
+                        color: 'white',
+                        right: 4
+                      },
+                      '& .MuiSelect-select': {
+                        paddingLeft: '8px',
+                        paddingRight: '24px !important',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
                       }
                     }}
-                  />
-                ))}
+                  >
+                    <MenuItem value="">
+                      <span style={{ fontSize: '18px', paddingRight: '4px' }}>🚀</span>
+                    </MenuItem>
+                    <MenuItem value="quiz" sx={{ color: 'white' }}>Quiz</MenuItem>
+                    <MenuItem value="questions" sx={{ color: 'white' }}>Questions</MenuItem>
+                    <MenuItem value="course" sx={{ color: 'white' }}>Course</MenuItem>
+                    <MenuItem value="slide-deck" sx={{ color: 'white' }}>Slide Deck</MenuItem>
+                    <MenuItem value="youtube" sx={{ color: 'white' }}>Youtube</MenuItem>
+                  </Select>
+                </FormControl>
               </Stack>
             </CardContent>
           </Card>

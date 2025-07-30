@@ -125,8 +125,10 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
   const [subTopicsDialogOpen, setSubTopicsDialogOpen] = useState(false); // Added state for Sub Topics Dialog  
   const [saveQuizSuccess, setSaveQuizSuccess] = useState(false); // Added state for quiz save feedback
   const [saveSlideDeckSuccess, setSaveSlideDeckSuccess] = useState(false); // Added state for slide deck save feedback
+  const [pendingMode, setPendingMode] = useState<string | null>(null); // Track mode to trigger after skill is loaded
 
   const skillTitle = searchParams.get('skill');    
+  const mode = searchParams.get('mode'); // Get mode parameter from URL
   const contentRef = useRef<HTMLDivElement>(null);
   
   let userSelectedOption: string = ''; // Track user-selected option for quiz questions 
@@ -156,6 +158,11 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
       if (foundSkill) {
         setCurrentSkill(foundSkill);
         setChatboxSkill(foundSkill.title); // Update chat context with current skill
+        
+        // Set pending mode if provided in URL
+        if (mode) {
+          setPendingMode(mode);
+        }
       } else {
         setCurrentSkill({ id: 'not-found', title: skillTitle, category: 'non-technology', description: skillTitle, topics: [] }); // Reset skill if not found
         //add toastr alert that skill was not found so creating generic course
@@ -166,6 +173,92 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
       console.error('Error finding skill:', error);
     }
   }, []);
+
+  // Handle pending mode after skill is loaded
+  useEffect(() => {
+    if (!currentSkill || !pendingMode) return;
+    
+    const timer = setTimeout(() => {
+      if (pendingMode === 'slidedeck') {
+        // Reset any active quiz first
+        if (isQuizActive) {
+          resetQuiz();
+        }
+        // Trigger slide deck mode
+        setIsLoading(true);
+        setShowAnswer(false);
+        setIsSlideDeck(true);
+        setShowYoutubeResources(false);
+        setQuestion(''); // Clear any existing question
+        
+        requestRefresher('slidedeck', currentSkill.title, currentSkill.category, userLanguage, startCourse)
+          .then(response => {
+            setQuestion(response || 'Failed to load slidedeck. Please try again.');
+            setIsLoading(false);
+          })
+          .catch(error => {
+            console.error('Error fetching slidedeck:', error);
+            setQuestion('Failed to load slidedeck. Please try again.');
+            setIsLoading(false);
+          });
+      } else if (pendingMode === 'youtube') {
+        // Reset any active quiz first
+        if (isQuizActive) {
+          resetQuiz();
+        }
+        // Trigger YouTube mode
+        setShowYoutubeResources(true);
+        setIsSlideDeck(false);
+        setShowAnswer(false);
+        setQuestion(''); // Clear any existing question
+        
+        if (currentSkill?.title) {
+          setIsLoadingYoutube(true);
+          getYoutubeResources(currentSkill.title)
+            .then(response => {
+              setYoutubeContent(response || 'Failed to load YouTube resources. Please try again.');
+              setIsLoadingYoutube(false);
+            })
+            .catch(error => {
+              console.error('Error fetching YouTube resources:', error);
+              setYoutubeContent('Failed to load YouTube resources. Please try again.');
+              setIsLoadingYoutube(false);
+            });
+        }
+      } else if (pendingMode === 'course') {
+        // Reset any active quiz first
+        if (isQuizActive) {
+          resetQuiz();
+        }
+        // Trigger course mode
+        setIsLoading(true);
+        setShowAnswer(false);
+        setIsSlideDeck(false);
+        setShowYoutubeResources(false);
+        setQuestion(''); // Clear any existing question
+        
+        // Clear localStorage for fresh course start
+        localStorage.removeItem('previousContent');
+        localStorage.removeItem('currentSection');
+        
+        // Set course mode and fetch course content
+        setStartCourse(1);
+        requestRefresher('', currentSkill.title, currentSkill.category, userLanguage, 1)
+          .then(response => {
+            setQuestion(response || 'Failed to load course content. Please try again.');
+            setIsLoading(false);
+          })
+          .catch(error => {
+            console.error('Error fetching course content:', error);
+            setQuestion('Failed to load course content. Please try again.');
+            setIsLoading(false);
+          });
+      }
+      setPendingMode(null); // Clear pending mode after execution
+    }, 200); // Increased delay to ensure other effects have run
+
+    return () => clearTimeout(timer);
+  }, [currentSkill, pendingMode, userLanguage, startCourse, setShowYoutubeResources, isQuizActive, resetQuiz, setStartCourse]);
 
   const handleSlideDeck = async () => {
     if (isQuizActive) {
@@ -281,10 +374,10 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
   // So when some button is clicked, it triggers a new question request 
   useEffect(() => {
     if (currentSkill?.title) {
-      if (!question && !isLoading && !isQuizActive) { // Fetch initial question if none exists, not loading, AND not in a quiz
+      if (!question && !isLoading && !isQuizActive && !pendingMode && !isSlideDeck && !showYoutubeResources && startCourse === 0) { // Fetch initial question if none exists, not loading, AND not in a quiz, AND not in pending mode or special modes, AND not in course mode
         fetchNewQuestion(false); 
       }
-    }  }, [currentSkill, fetchNewQuestion, question, isLoading, isQuizActive]); // Added isQuizActive
+    }  }, [currentSkill, fetchNewQuestion, question, isLoading, isQuizActive, pendingMode, isSlideDeck, showYoutubeResources, startCourse]); // Added startCourse
 
  
 
