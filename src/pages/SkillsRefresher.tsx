@@ -98,12 +98,13 @@ export const SkillsRefresher = () => {
     setSearchTerm('');
   };
 
-  const handleSkillDropdownChange = (value: string, skillTitle: string) => {
+  const handleSkillDropdownChange = (value: string, skillTitle: string, skillCategory: SkillCategory) => {
     console.log(`Selected ${value} for skill: ${skillTitle}`);
     // Add your logic here for handling different dropdown options
     switch (value) {
       case 'quiz':
-        // Handle quiz action
+        // Navigate to topics detail page - same as clicking the card
+        navigate(`/topics/detail?skill=${encodeURIComponent(skillTitle)}&category=${skillCategory}`);
         break;
       case 'questions':
         // Handle questions action
@@ -112,10 +113,12 @@ export const SkillsRefresher = () => {
         // Handle course action
         break;
       case 'slide-deck':
-        // Handle slide deck action
+        // Navigate to topics detail page with slide deck mode
+        navigate(`/topics/detail?skill=${encodeURIComponent(skillTitle)}&category=${skillCategory}&mode=slidedeck`);
         break;
       case 'youtube':
-        // Handle youtube action
+        // Navigate to topics detail page with youtube mode
+        navigate(`/topics/detail?skill=${encodeURIComponent(skillTitle)}&category=${skillCategory}&mode=youtube`);
         break;
       default:
         break;
@@ -280,7 +283,7 @@ export const SkillsRefresher = () => {
                 <FormControl size="small" sx={{ minWidth: 'auto' }}>
                   <Select
                     value={skillDropdownValue}
-                    onChange={(e) => handleSkillDropdownChange(e.target.value, skill.title)}
+                    onChange={(e) => handleSkillDropdownChange(e.target.value, skill.title, skill.category)}
                     onClick={(e) => e.stopPropagation()}
                     displayEmpty
                     sx={{
