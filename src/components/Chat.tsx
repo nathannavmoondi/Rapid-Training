@@ -490,17 +490,26 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
         // If there are external messages, process them immediately
         const lastMessage = externalMessages[externalMessages.length - 1];
         console.log('Chat - Opening with external message:', lastMessage);
-        setMessages([lastMessage]);
-        setIsWaitingForResponse(false);
+        
+        // For "Thinking..." messages, set waiting state
+        if (lastMessage.text === "Thinking...") {
+          setMessages([lastMessage]);
+          setIsWaitingForResponse(true);
+        } else {
+          setMessages([lastMessage]);
+          setIsWaitingForResponse(false);
+        }
+        
         // Clear external messages after processing
         clearExternalMessages();
       } else {
         // Only show initial welcome message if there are no external messages
         setMessages([getInitialMessage()]);
+        setIsWaitingForResponse(false);
       }
       setInput('');
     }
-  }, [isOpen, chatboxSkill]); // Remove externalMessages.length dependency to avoid loops
+  }, [isOpen]); // Removed chatboxSkill dependency to prevent loops
 
   // Handle external messages (like "Explain Further") - only when chat is already open
   useEffect(() => {
@@ -516,15 +525,16 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
       if (lastMessage.text === "CLEAR_CHAT") {
         // Special message to clear the chat
         setMessages([]);
+        setIsWaitingForResponse(false);
       } else if (lastMessage.text === "Thinking...") {
-        // For "Thinking..." message, just add it as the only message
+        // For "Thinking..." message, clear existing messages and show only thinking
         setMessages([lastMessage]);
-        setIsWaitingForResponse(true); // Set waiting state for external thinking messages
+        setIsWaitingForResponse(true);
       } else {
         // For other messages, replace any existing messages
         console.log('Chat - Setting message with isFromLearnDialog:', lastMessage.isFromLearnDialog);
         setMessages([lastMessage]);
-        setIsWaitingForResponse(false); // Clear waiting state for regular messages
+        setIsWaitingForResponse(false);
       }
       
       // Schedule scroll after state update is complete
@@ -539,7 +549,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
       
       clearExternalMessages();
     }
-  }, [externalMessages, clearExternalMessages]);
+  }, [externalMessages, clearExternalMessages, isOpen]);
 
   // Focus input when chat opens
   useEffect(() => {
@@ -769,11 +779,18 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
             <BuddyIcon />
           </Avatar>
           <Typography>
+                {/* AI Assistant {
+              messages.length > 0 && messages[0].savedContentType 
+                ? `(${messages[0].savedContentType})` 
+                : chatboxSkill
+                  ? `(${chatboxSkill.substring(0, 50)})` 
+                  : ''
+            } */}
             AI Assistant {
               messages.length > 0 && messages[0].savedContentType 
                 ? `(${messages[0].savedContentType})` 
-                : chatboxSkill 
-                  ? `(${chatboxSkill})` 
+                : chatboxSkill
+                  ? `` 
                   : ''
             }
           </Typography>
@@ -979,7 +996,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder={`Ask me about ${chatboxSkill || 'anything'}...`}
+            placeholder={`Ask me about ${chatboxSkill.substring(0,20) || 'anything'}...`}
             sx={{
               '& .MuiOutlinedInput-root': {
                 backgroundColor: '#F1F2F6',

@@ -251,7 +251,7 @@ When providing code examples or explanations:
               content: `You are a helpful assistant focused on ${skill}. Provide an in-depth explanation of this topic. Include relevant concepts, background information, and practical applications.
 
 IMPORTANT: Do NOT start your responses with greetings, introductions, or phrases like "Hello", "Hi", "As Mr. Buddy", etc.
- Get straight to explaining the answer directly.
+ Get straight to explaining the answer directly.  Display question before answering it.
 
 When providing code examples or explanations:
 1. All code snippets MUST be wrapped in <pre><code class="language-xxx">...code here...</code></pre> tags.
