@@ -104,7 +104,8 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
     savedUserSlidedecks,
     setSavedUserSlidedecks,
     language,
-    setLanguage
+    setLanguage,
+    userFailedQuizzes
   } = useQuiz(); //from quizcontext
 
   const {setChatboxSkill, addExternalMessage } = useChat();
@@ -506,6 +507,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
 
     const currentScrollPosition = window.scrollY;
     console.log('select answer', userSelectedOption);
+    console.log('Current failed quizzes count:', userFailedQuizzes.length);
     
     if (question) {
       const processedQuestion = processRawHtml(question);
@@ -513,13 +515,18 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
       const doc = parser.parseFromString(processedQuestion, 'text/html');
       const correctAnswerElement = doc.querySelector('.correct-answer');
       if (correctAnswerElement?.textContent) {
-        submitQuizAnswer(correctAnswerElement.textContent, userSelectedOption, question);
+        submitQuizAnswer(correctAnswerElement.textContent, userSelectedOption, question, skillTitle || 'Unknown Topic', level);
       } else {
         // Fallback or error if correct answer can't be parsed
         console.warn("Could not parse correct answer from question HTML.", processedQuestion);
-        submitQuizAnswer("Error: Could not determine correct answer.", '', ''); // Or handle differently
+        submitQuizAnswer("Error: Could not determine correct answer.", '', '', skillTitle || 'Unknown Topic', level); 
       }
     }
+
+    // Log failed quizzes after submission
+    setTimeout(() => {
+      console.log('Failed quizzes after submission:', userFailedQuizzes.length, userFailedQuizzes);
+    }, 100);
 
     // Use requestAnimationFrame to maintain scroll position during state update
     requestAnimationFrame(() => {
@@ -826,9 +833,16 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
         
         <>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-              <Typography variant="h6" sx={{ color: 'primary.light' }}>
-                {getTitle()}                
-              </Typography>
+              <Box>
+                <Typography variant="h6" sx={{ color: 'primary.light' }}>
+                  {getTitle()}                
+                </Typography>
+                {userFailedQuizzes.length > 0 && (
+                  <Typography variant="caption" sx={{ color: 'warning.main', display: 'block' }}>
+                    Failed Quizzes: {userFailedQuizzes.length}
+                  </Typography>
+                )}
+              </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {/* PDF icon button - always visible except in slide deck or course mode */}
                 {!isSlideDeck && startCourse !== 1 && (
