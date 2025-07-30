@@ -107,10 +107,12 @@ export const SkillsRefresher = () => {
         navigate(`/topics/detail?skill=${encodeURIComponent(skillTitle)}&category=${skillCategory}`);
         break;
       case 'questions':
-        // Handle questions action
+        // Navigate to topics detail page - same as clicking the card (same as quiz for now)
+        navigate(`/topics/detail?skill=${encodeURIComponent(skillTitle)}&category=${skillCategory}`);
         break;
       case 'course':
-        // Handle course action
+        // Navigate to topics detail page with course mode
+        navigate(`/topics/detail?skill=${encodeURIComponent(skillTitle)}&category=${skillCategory}&mode=course`);
         break;
       case 'slide-deck':
         // Navigate to topics detail page with slide deck mode

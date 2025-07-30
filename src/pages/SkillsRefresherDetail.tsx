@@ -225,12 +225,40 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
               setIsLoadingYoutube(false);
             });
         }
+      } else if (pendingMode === 'course') {
+        // Reset any active quiz first
+        if (isQuizActive) {
+          resetQuiz();
+        }
+        // Trigger course mode
+        setIsLoading(true);
+        setShowAnswer(false);
+        setIsSlideDeck(false);
+        setShowYoutubeResources(false);
+        setQuestion(''); // Clear any existing question
+        
+        // Clear localStorage for fresh course start
+        localStorage.removeItem('previousContent');
+        localStorage.removeItem('currentSection');
+        
+        // Set course mode and fetch course content
+        setStartCourse(1);
+        requestRefresher('', currentSkill.title, currentSkill.category, userLanguage, 1)
+          .then(response => {
+            setQuestion(response || 'Failed to load course content. Please try again.');
+            setIsLoading(false);
+          })
+          .catch(error => {
+            console.error('Error fetching course content:', error);
+            setQuestion('Failed to load course content. Please try again.');
+            setIsLoading(false);
+          });
       }
       setPendingMode(null); // Clear pending mode after execution
     }, 200); // Increased delay to ensure other effects have run
 
     return () => clearTimeout(timer);
-  }, [currentSkill, pendingMode, userLanguage, startCourse, setShowYoutubeResources, isQuizActive, resetQuiz]);
+  }, [currentSkill, pendingMode, userLanguage, startCourse, setShowYoutubeResources, isQuizActive, resetQuiz, setStartCourse]);
 
   const handleSlideDeck = async () => {
     if (isQuizActive) {
@@ -346,10 +374,10 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
   // So when some button is clicked, it triggers a new question request 
   useEffect(() => {
     if (currentSkill?.title) {
-      if (!question && !isLoading && !isQuizActive && !pendingMode && !isSlideDeck && !showYoutubeResources) { // Fetch initial question if none exists, not loading, AND not in a quiz, AND not in pending mode or special modes
+      if (!question && !isLoading && !isQuizActive && !pendingMode && !isSlideDeck && !showYoutubeResources && startCourse === 0) { // Fetch initial question if none exists, not loading, AND not in a quiz, AND not in pending mode or special modes, AND not in course mode
         fetchNewQuestion(false); 
       }
-    }  }, [currentSkill, fetchNewQuestion, question, isLoading, isQuizActive, pendingMode, isSlideDeck, showYoutubeResources]); // Added pendingMode and special mode checks
+    }  }, [currentSkill, fetchNewQuestion, question, isLoading, isQuizActive, pendingMode, isSlideDeck, showYoutubeResources, startCourse]); // Added startCourse
 
  
 
