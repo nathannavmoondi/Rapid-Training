@@ -1069,26 +1069,24 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
                 )}
 
                 {/* PDF download button - show for all AI responses */}
-                {!message.isViewingQuizContent && (
-                  <Tooltip 
-                    title="Download as PDF"
-                    arrow
+                <Tooltip 
+                  title="Download as PDF"
+                  arrow
+                >
+                  <IconButton
+                    onClick={() => handleDownloadPdf(message.text, message.savedContentType)}
+                    sx={{
+                      width: '28px',
+                      height: '28px',
+                      backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                      '&:hover': {
+                        backgroundColor: 'rgba(244, 67, 54, 0.2)'
+                      }
+                    }}
                   >
-                    <IconButton
-                      onClick={() => handleDownloadPdf(message.text, message.savedContentType)}
-                      sx={{
-                        width: '28px',
-                        height: '28px',
-                        backgroundColor: 'rgba(244, 67, 54, 0.1)',
-                        '&:hover': {
-                          backgroundColor: 'rgba(244, 67, 54, 0.2)'
-                        }
-                      }}
-                    >
-                      <PictureAsPdfIcon sx={{ fontSize: '16px', color: '#f44336' }} />
-                    </IconButton>
-                  </Tooltip>
-                )}
+                    <PictureAsPdfIcon sx={{ fontSize: '16px', color: '#f44336' }} />
+                  </IconButton>
+                </Tooltip>
               </Box>
             )}
           </Box>
