@@ -104,14 +104,24 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
     let processedContent = content.replace(
       /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g,
       (match, language, code) => {
-        // Decode HTML entities and convert to markdown format
-        const decodedCode = code
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/&amp;/g, '&')
-          .replace(/&quot;/g, '"')
-          .replace(/&#x27;/g, "'");
-        return `\`\`\`${language}\n${decodedCode}\n\`\`\``;
+          // Decode HTML entities and clean up code formatting
+          let decodedCode = code
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&amp;/g, '&')
+            .replace(/&quot;/g, '"')
+            .replace(/&#x27;/g, "'");
+          // Remove common leading whitespace from all lines (fixes indented code blocks)
+          const lines = decodedCode.split('\n');
+          const nonEmptyLines = lines.filter((line: string) => line.trim().length > 0);
+          if (nonEmptyLines.length > 0) {
+            const minIndent = Math.min(...nonEmptyLines.map((line: string) => {
+              const match = line.match(/^(\s*)/);
+              return match ? match[1].length : 0;
+            }));
+            decodedCode = lines.map((line: string) => line.slice(minIndent)).join('\n').trim();
+          }
+          return `\`\`\`${language}\n${decodedCode}\n\`\`\``;
       }
     );
 
@@ -123,13 +133,23 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
     processedContent = processedContent.replace(
       /<pre><code>([\s\S]*?)<\/code><\/pre>/g,
       (match, code) => {
-        const decodedCode = code
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/&amp;/g, '&')
-          .replace(/&quot;/g, '"')
-          .replace(/&#x27;/g, "'");
-        return `\`\`\`javascript\n${decodedCode}\n\`\`\``;
+          let decodedCode = code
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&amp;/g, '&')
+            .replace(/&quot;/g, '"')
+            .replace(/&#x27;/g, "'");
+          // Remove common leading whitespace from all lines (fixes indented code blocks)
+          const lines = decodedCode.split('\n');
+          const nonEmptyLines = lines.filter((line: string) => line.trim().length > 0);
+          if (nonEmptyLines.length > 0) {
+            const minIndent = Math.min(...nonEmptyLines.map((line: string) => {
+              const match = line.match(/^(\s*)/);
+              return match ? match[1].length : 0;
+            }));
+            decodedCode = lines.map((line: string) => line.slice(minIndent)).join('\n').trim();
+          }
+          return `\`\`\`javascript\n${decodedCode}\n\`\`\``;
       }
     );
 
@@ -271,7 +291,11 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
               },
               // Quiz-specific styling - more specific selectors to override the * selector
               '& div.option': {
-                color: isUser ? '#fff' : '#fff !important'
+                fontWeight: 500,
+                borderRadius: '6px',
+                padding: '8px 12px',
+                margin: '4px 0',
+                border: '1px solid #555'
               },
               '& span.option-prefix': {
                 color: isUser ? '#90EE90' : '#4caf50 !important'
@@ -280,7 +304,11 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
                 color: isUser ? '#fff' : '#000 !important'
               },
               '& div.answer-choice': {
-                color: isUser ? '#fff' : '#000 !important'
+                fontWeight: 500,
+                borderRadius: '6px',
+                padding: '8px 12px',
+                margin: '4px 0',
+                border: '1px solid #555'
               },
               '& div.explanation': {
                 color: isUser ? '#fff' : (isViewingQuizContent ? '#fff' : '#000') + ' !important'
@@ -365,6 +393,32 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
 };
 
 export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+  // Inject global style for quiz options to guarantee white text and dark background
+  useEffect(() => {
+    const styleId = 'quiz-option-global-style';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.innerHTML = `
+        [class*="option"], [class*="answer"] {
+          color: #000 !important;
+          font-weight: 500 !important;
+          border-radius: 6px !important;
+          padding: 8px 12px !important;
+          margin: 4px 0 !important;
+        }
+        [class*="option"] code, [class*="answer"] code {
+          color: white !important;
+          background: transparent !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    return () => {
+      const style = document.getElementById(styleId);
+      if (style) style.remove();
+    };
+  }, []);
   // ...existing code...
   // Only one declaration of messages and setMessages should exist below:
 
