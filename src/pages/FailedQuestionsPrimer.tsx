@@ -37,6 +37,8 @@ const processHtmlWithSyntaxHighlighting = (html: string) => {
         language={language}
         style={vscDarkPlus}
         showLineNumbers={false}
+        wrapLines={true}
+        wrapLongLines={true}
         customStyle={{
           margin: '12px 0',
           padding: '16px',
@@ -45,6 +47,9 @@ const processHtmlWithSyntaxHighlighting = (html: string) => {
           lineHeight: '1.4',
           borderRadius: '6px',
           fontFamily: "'Fira Code', 'Consolas', monospace",
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+          overflowWrap: 'break-word'
         }}
       >
         {code}

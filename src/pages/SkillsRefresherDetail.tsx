@@ -472,6 +472,8 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
             language={language}
             style={vscDarkPlus}
             showLineNumbers={false}
+            wrapLines={true}
+            wrapLongLines={true}
             customStyle={{
               margin: 0,
               padding: '16px',
@@ -481,6 +483,9 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
               borderRadius: '6px',
               fontFamily: "'Fira Code', 'Consolas', monospace",
               color: '#d4d4d4',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word'
             }}
           >
             {code}

@@ -32,15 +32,20 @@
   opacity: 100% !important;
   background-color: #000000 !important;
   border-radius: 4px !important;
-  overflow: auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
   border: 1px solid #333 !important;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
 }
 
 .explanation code {
   font-family: "Fira Code", Consolas, monospace !important;
   font-size: 0.95rem !important;
   color: #ffffff !important;
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
 }
 
 .content-block {
@@ -109,9 +114,12 @@
   padding: 20px !important;
   background-color: #000000 !important;
   border-radius: 4px !important;
-  overflow: auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
   border: 1px solid #333 !important;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
 }
 
 .content-block code {
