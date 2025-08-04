@@ -72,17 +72,59 @@ const FailedQuizzes: React.FC = () => {
       // Ensure explanation divs have white text color
       let processedHtml = quiz.html;
       
-      /// Add inline styles to explanation divs to ensure white text
-       processedHtml = processedHtml.replace(
-         /<div([^>]*class="[^"]*option[^"]*"[^>]*)>/gi,
-         '<div$1 style="color: white !important;">'
-       );
+      // First let's add option class if it's missing (ensuring we have something to target)
+      processedHtml = processedHtml.replace(
+        /<div>([A-D]\))/gi,
+        '<div class="option"><span class="option-prefix">$1</span>'
+      );
       
-      // // Also handle explanation paragraphs
-       processedHtml = processedHtml.replace(
-         /<p([^>]*class="[^"]*explanation[^"]*"[^>]*)>/gi,
-         '<p$1 style="color: white !important;">'
-       );
+      // Apply direct styles to options for guaranteed visibility
+      processedHtml = processedHtml.replace(
+        /<div class="option">/gi,
+        '<div class="option" style="padding: 15px !important; border: 1px solid #666 !important; border-radius: 8px !important; margin-bottom: 10px !important; background-color: #2A2A2A !important; color: white !important; display: block !important;">'
+      );
+      
+      // Style any existing options with more specific styling to override dark backgrounds
+      processedHtml = processedHtml.replace(
+        /<div([^>]*class="[^"]*option[^"]*"[^>]*)>/gi,
+        '<div$1 style="padding: 15px !important; border: 1px solid #666 !important; border-radius: 8px !important; margin-bottom: 10px !important; background-color: #2A2A2A !important; color: white !important; display: block !important;">'
+      );
+      
+      // Ensure option prefixes are properly styled with cyan color
+      processedHtml = processedHtml.replace(
+        /<span class="option-prefix">/gi, 
+        '<span class="option-prefix" style="color: #00FFFF !important; font-weight: bold !important; margin-right: 8px !important; display: inline-block !important;">'
+      );
+      
+      // Style any existing option prefixes with the correct styling
+      processedHtml = processedHtml.replace(
+        /<span([^>]*class="[^"]*option-prefix[^"]*"[^>]*)>/gi,
+        '<span$1 style="color: #00FFFF !important; font-weight: bold !important; margin-right: 8px !important; display: inline-block !important;">'
+      );
+      
+      // Make sure the options container has proper styling and spacing
+      processedHtml = processedHtml.replace(
+        /<div([^>]*class="[^"]*options[^"]*"[^>]*)>/gi,
+        '<div$1 style="padding-top: 10px !important; margin-bottom: 20px !important; display: block !important;">'
+      );
+      
+      // Target the div structure that might contain multiple choice options
+      processedHtml = processedHtml.replace(
+        /<div>([A-D])\)\s*(.*?)<\/div>/gi,
+        '<div class="option" style="padding: 15px !important; border: 1px solid #666 !important; border-radius: 8px !important; margin-bottom: 10px !important; background-color: #2A2A2A !important; color: white !important;"><span class="option-prefix" style="color: #00FFFF !important; font-weight: bold !important; margin-right: 8px !important;">$1)</span> $2</div>'
+      );
+      
+      // Enhance contrast for all question container
+      processedHtml = processedHtml.replace(
+        /<div class="question-container">/gi,
+        '<div class="question-container" style="color: white !important;">'
+      );
+      
+      // Also handle explanation paragraphs
+      processedHtml = processedHtml.replace(
+        /<p([^>]*class="[^"]*explanation[^"]*"[^>]*)>/gi,
+        '<p$1 style="color: white !important;">'
+      );
       
       // Handle any explanation content that might not have proper styling
       processedHtml = processedHtml.replace(
@@ -93,6 +135,19 @@ const FailedQuizzes: React.FC = () => {
           const whiteContent = content.replace(/<(p|div|span|h[1-6])([^>]*)>/gi, '<$1$2 style="color: white !important;">');
           return whiteOpeningTag + whiteContent + closingTag;
         }
+      );
+      
+      // Final fallback - if we have options that might not be captured by previous patterns
+      // This looks for patterns like A) Option text, even without proper classes
+      processedHtml = processedHtml.replace(
+        /<div[^>]*>\s*([A-D])\)\s*(.*?)<\/div>/gi,
+        '<div class="option" style="padding: 15px !important; border: 1px solid #666 !important; border-radius: 8px !important; margin-bottom: 10px !important; background-color: #2A2A2A !important; color: white !important;"><span style="color: #00FFFF !important; font-weight: bold !important; margin-right: 8px !important;">$1)</span> $2</div>'
+      );
+      
+      // Make sure the correct answer is highlighted
+      processedHtml = processedHtml.replace(
+        /<div class="correct-answer">/gi,
+        '<div class="correct-answer" style="color: #4caf50 !important; font-weight: bold !important; margin-bottom: 10px !important; font-size: 1.1rem !important; padding: 10px 0 !important; border-bottom: 1px solid #444 !important;">'
       );
       
       const quizMessage = {
