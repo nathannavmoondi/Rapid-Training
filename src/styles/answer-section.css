@@ -128,15 +128,31 @@
 
 
 .option-prefix {
-  color: cyan !important;
+  color: #00FFFF !important; /* Bright cyan */
+  font-weight: bold !important;
+  font-size: 20px !important;
+  margin-right: 10px !important;
+  
 }
 
 .options {
   padding-top: 0.3125rem !important;
   margin-bottom: 0 !important;
   padding-bottom: 0 !important;
-  display: block;
+  color: white !important;
+  display: block !important;
 }
+
+/* Higher specificity selector to override any other styling */
+div.options .option, 
+.quiz-question .option,
+[class*="option"].option {
+  color: #fff !important;
+  background-color: #333333 !important;
+  padding: 15px !important;
+  margin: 8px 0 !important;
+}
+
 
 .quiz-status {
   margin-top: 0 !important;
@@ -153,21 +169,28 @@
 }
 
 .option {
-    padding: 15px;
-    border: 1px solid #555;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s, border-color 0.3s;
-    background-color: #1E1E1E; /* Dark background for options */
-    color: #fff; /* Light text for options */
+    padding: 15px !important;
+    border: 1px solid #666 !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    background-color: #333333 !important; /* Match the second screenshot */
+    color: #fff !important; /* Light text for options */
+    margin-bottom: 10px !important;
+    margin-top: 0px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5) !important;
+    font-size: 18px !important;
+    display: flex !important;
+    align-items: center !important;
   }
   
   .option:hover {
-    background-color: #333;
-    border-color: #777;
+    background-color: #444444 !important;
+    border-color: #999 !important;
+    box-shadow: 0 4px 12px rgba(0,255,255,0.2) !important;
   }
   
   .option.selected {
-    background-color: #007bff;
-    border-color: #0056b3;
+    background-color: #0066cc;
+    border-color: #0099ff;
   }

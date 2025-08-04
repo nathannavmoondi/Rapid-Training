@@ -194,8 +194,8 @@ const MyQuizzes: React.FC = () => {
         /(<div[^>]*class="[^\"]*explanation[^\"]*"[^>]*>)([\s\S]*?)(<\/div>)/gi,
         (match: string, openingTag: string, content: string, closingTag: string) => {
           // Add white color to the explanation div itself and all elements within it
-          const whiteOpeningTag = openingTag.replace('>', ' style="color: black !important;">');
-          const whiteContent = content.replace(/<(p|div|span|h[1-6])([^>]*)>/gi, '<$1$2 style="color: black !important;">');
+          const whiteOpeningTag = openingTag.replace('>', ' style="color: white !important;">');
+          const whiteContent = content.replace(/<(p|div|span|h[1-6])([^>]*)>/gi, '<$1$2 style="color: white !important;">');
           return whiteOpeningTag + whiteContent + closingTag;
         }
       );

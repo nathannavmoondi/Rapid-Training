@@ -82,7 +82,7 @@ const FailedQuizzes: React.FC = () => {
       // Style options divs for visibility
       processedHtml = processedHtml.replace(
         /<div([^>]*class="[^"]*option[^"]*"[^>]*)>/gi,
-        '<div$1 style="padding: 15px !important; border: 1px solid #666 !important; border-radius: 8px !important; margin-bottom: 10px !important; background-color: #2A2A2A !important; color: white !important; display: block !important;">'
+        '<div$1 style="border: 1px solid #666 !important; border-radius: 8px !important; margin-bottom: 10px !important; background-color: #2A2A2A !important; color: white !important; display: block !important;">'
       );
 
       // Style option prefixes with cyan color
