@@ -7,12 +7,6 @@ export interface SavedItem {
   html: string;
 }
 
-export interface FailedQuiz {
-  topic: string;
-  skillLevel: string;
-  html: string;
-}
-
 // Helper function to generate label from HTML content
 export const generateLabelFromHtml = (html: string, defaultLabel: string): string => {
   try {
@@ -176,8 +170,7 @@ interface QuizContextType {
   startCourse: number;
   showYoutubeResources: boolean;
   previousQuizzes: string[];
-  failedQuizzes: FailedQuiz[];
-  userFailedQuizzes: FailedQuiz[];
+  failedQuizzes: string[];
   coderTestQuestions: string[];
   currentCoderTestIndex: number;
   inCoderTest: boolean;
@@ -189,16 +182,14 @@ interface QuizContextType {
   setMaxQuizzes: (value: number) => void;
   startQuiz: () => void;
   selectAnswer: (answer: string) => void;
-  submitAnswer: (correctAnswer: string, userAnswer: string, quizHtml?: string, topic?: string, skillLevel?: string) => void;
+  submitAnswer: (correctAnswer: string, userAnswer: string, quizHtml?: string) => void;
   resetQuiz: () => void;
   setPreviousPath: (path: string) => void;
   setLevel: (level: string) => void;
   setSkillDescription: (description: string) => void;
   setShowYoutubeResources: (show: boolean) => void;
   setPreviousQuizzes: React.Dispatch<React.SetStateAction<string[]>>;
-  setFailedQuizzes: React.Dispatch<React.SetStateAction<FailedQuiz[]>>;
-  setUserFailedQuizzes: React.Dispatch<React.SetStateAction<FailedQuiz[]>>;
-  addFailedQuiz: (topic: string, skillLevel: string, html: string) => void;
+  setFailedQuizzes: React.Dispatch<React.SetStateAction<string[]>>;
   setCoderTestQuestions: React.Dispatch<React.SetStateAction<string[]>>;
   setCurrentCoderTestIndex: (index: number) => void;
   setInCoderTest: (inTest: boolean) => void;
@@ -210,7 +201,6 @@ interface QuizContextType {
   clearSavedCoderTests: () => void;
   clearSavedQuizzes: () => void;
   clearSavedSlidedecks: () => void;
-  clearFailedQuizzes: () => void;
   language: string;
   setLanguage: (lang: string) => void;
 }
@@ -231,22 +221,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [skillDescription, setSkillDescription] = useState<string>('');
   const [showYoutubeResources, setShowYoutubeResources] = useState<boolean>(false);
   const [previousQuizzes, setPreviousQuizzes] = useState<string[]>([]);
-  const [failedQuizzes, setFailedQuizzes] = useState<FailedQuiz[]>([]);
-  
-  // Initialize userFailedQuizzes from localStorage
-  const [userFailedQuizzes, setUserFailedQuizzes] = useState<FailedQuiz[]>(() => {
-    try {
-      const savedFailedQuizzes = localStorage.getItem('userFailedQuizzes');
-      if (savedFailedQuizzes) {
-        const parsed = JSON.parse(savedFailedQuizzes);
-        return Array.isArray(parsed) ? parsed : [];
-      }
-      return [];
-    } catch (error) {
-      console.error('Error loading failed quizzes from localStorage:', error);
-      return [];
-    }
-  });
+  const [failedQuizzes, setFailedQuizzes] = useState<string[]>([]);
   const [coderTestQuestions, setCoderTestQuestions] = useState<string[]>([]);
   const [currentCoderTestIndex, setCurrentCoderTestIndex] = useState<number>(0);
   const [inCoderTest, setInCoderTest] = useState<boolean>(false);
@@ -394,16 +369,6 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [savedUserSlidedecks]);
 
-  // Save userFailedQuizzes to localStorage whenever it changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('userFailedQuizzes', JSON.stringify(userFailedQuizzes));
-      console.log('Quiz context - Saved failed quizzes to localStorage:', userFailedQuizzes.length);
-    } catch (error) {
-      console.error('Error saving failed quizzes to localStorage:', error);
-    }
-  }, [userFailedQuizzes]);
-
   const startQuiz = useCallback(() => {
     setIsQuizActive(true);
     setSelectedAnswer(null);
@@ -414,7 +379,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setSelectedAnswer(answer);
   }, []);  
   
-  const submitAnswer = (correctAnswer: string,  userAnswer: string, quizHtml?: string, topic?: string, skillLevel?: string) => {
+  const submitAnswer = (correctAnswer: string,  userAnswer: string, quizHtml?: string,) => {
       const correctAnswerLetter = correctAnswer.replace("Correct Answer: ", "").trim().charAt(0);
       const isCorrect = userAnswer.charAt(0).toUpperCase() === correctAnswerLetter.toUpperCase();
       console.log('Submitting answer:', userAnswer);
@@ -424,13 +389,8 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (isCorrect) {
         setScore(prevScore => prevScore + 1);
       } else {
-        // Save failed quiz with topic, skill level, and HTML content
-        if (topic && skillLevel && quizHtml) {
-          console.log('Quiz failed - saving to failed quizzes:', { topic, skillLevel });
-          addFailedQuiz(topic, skillLevel, quizHtml);
-        } else {
-          console.log('Quiz failed but missing data - topic:', topic, 'skillLevel:', skillLevel, 'quizHtml:', !!quizHtml);
-        }
+        //console.log('Adding failed question:', quizHtml);
+        setFailedQuizzes(prev => [...prev, quizHtml || '']);
       }
       if (isQuizActive) 
       {        
@@ -438,12 +398,6 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       setSelectedAnswer(null); // Reset selected answer when submitting    
   }
-
-  const addFailedQuiz = (topic: string, skillLevel: string, html: string) => {
-    const failedQuiz: FailedQuiz = { topic, skillLevel, html };
-    setFailedQuizzes(prev => [...prev, failedQuiz]);
-    setUserFailedQuizzes(prev => [...prev, failedQuiz]);
-  };
 
   const resetQuiz = useCallback(() => {
     console.log('Resetting quiz...');
@@ -457,12 +411,11 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setPreviousPath_internal(null); // Reset previous path when resetting quiz
     console.log('Clearing previousQuizzes array');
     setPreviousQuizzes([]); // Reset previous quizzes when resetting quiz
-    setFailedQuizzes([]); // Reset session failed quizzes when resetting quiz
+    setFailedQuizzes([]); // Reset failed quizzes when resetting quiz
     setCoderTestQuestions([]); // Reset coder test questions when resetting quiz
     setCurrentCoderTestIndex(0); // Reset coder test index when resetting quiz
-    // Don't reset saved snippets or failed quizzes - they should persist across quiz resets
+    // Don't reset saved snippets - they should persist across quiz resets
     // setUserSavedSnippets([]); // Reset saved snippets when resetting quiz
-    // setUserFailedQuizzes([]); // Keep failed quizzes persistent
   }, []);
 
   const setPreviousPath = useCallback((path: string) => {
@@ -500,13 +453,6 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.removeItem('savedUserSlidedecks');
     console.log('Quiz context - Cleared all saved slidedecks');
   }, []);
-
-  // Function to clear all failed quizzes
-  const clearFailedQuizzes = useCallback(() => {
-    setUserFailedQuizzes([]);
-    localStorage.removeItem('userFailedQuizzes');
-    console.log('Quiz context - Cleared all failed quizzes');
-  }, []);
   
   //identify to provider all that want to share with other components.  usualy specified in app.tsx 
   const contextValue = {
@@ -535,9 +481,6 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setPreviousQuizzes,
     failedQuizzes,
     setFailedQuizzes,
-    userFailedQuizzes,
-    setUserFailedQuizzes,
-    addFailedQuiz,
     coderTestQuestions,
     setCoderTestQuestions,
     currentCoderTestIndex,
@@ -556,7 +499,6 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     clearSavedCoderTests,
     clearSavedQuizzes,
     clearSavedSlidedecks,
-    clearFailedQuizzes,
     language,
     setLanguage,
   };
