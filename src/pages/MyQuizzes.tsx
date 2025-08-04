@@ -146,35 +146,9 @@ const MyQuizzes: React.FC = () => {
 
   const handleViewQuiz = async (quiz: SavedItem) => {
     try {
-      // Ensure options and explanation divs have white text color
-      let processedHtml = quiz.html;
-      
-      // Add inline styles to options to ensure white text
-      processedHtml = processedHtml.replace(
-        /<div([^>]*class="[^"]*option[^"]*"[^>]*)>/gi,
-        '<div$1 style="color: white !important;">'
-      );
-      
-      // Also handle explanation paragraphs
-      processedHtml = processedHtml.replace(
-        /<p([^>]*class="[^"]*explanation[^"]*"[^>]*)>/gi,
-        '<p$1 style="color: white !important;">'
-      );
-      
-      // Handle any explanation content that might not have proper styling
-      processedHtml = processedHtml.replace(
-        /(<div[^>]*class="[^"]*explanation[^"]*"[^>]*>)([\s\S]*?)(<\/div>)/gi,
-        (match: string, openingTag: string, content: string, closingTag: string) => {
-          // Add white color to the explanation div itself and all elements within it
-          const whiteOpeningTag = openingTag.replace('>', ' style="color: white !important;">');
-          const whiteContent = content.replace(/<(p|div|span|h[1-6])([^>]*)>/gi, '<$1$2 style="color: white !important;">');
-          return whiteOpeningTag + whiteContent + closingTag;
-        }
-      );
-
       const quizMessage = {
         id: Math.random().toString(36).substring(7),
-        text: processedHtml,
+        text: quiz.html,
         isUser: false,
         timestamp: new Date(),
         isViewingQuizContent: true,
