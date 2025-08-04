@@ -5,6 +5,7 @@ import { useChat } from '../contexts/chatContext';
 import SendIcon from '@mui/icons-material/Send';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import SaveIcon from '@mui/icons-material/Save';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import MicIcon from '@mui/icons-material/Mic';
 import MicOffIcon from '@mui/icons-material/MicOff';
 import { SvgIcon } from '@mui/material';
@@ -13,6 +14,7 @@ import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import { chatService, ChatMessage } from '../services/chatService';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { downloadHtmlAsPdf } from '../services/pdfService';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useSpeechToText } from '../hooks/useSpeechToText';
 import { useQuiz } from '../contexts/quizContext'; // Import useQuiz
@@ -102,14 +104,24 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
     let processedContent = content.replace(
       /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g,
       (match, language, code) => {
-        // Decode HTML entities and convert to markdown format
-        const decodedCode = code
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/&amp;/g, '&')
-          .replace(/&quot;/g, '"')
-          .replace(/&#x27;/g, "'");
-        return `\`\`\`${language}\n${decodedCode}\n\`\`\``;
+          // Decode HTML entities and clean up code formatting
+          let decodedCode = code
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&amp;/g, '&')
+            .replace(/&quot;/g, '"')
+            .replace(/&#x27;/g, "'");
+          // Remove common leading whitespace from all lines (fixes indented code blocks)
+          const lines = decodedCode.split('\n');
+          const nonEmptyLines = lines.filter((line: string) => line.trim().length > 0);
+          if (nonEmptyLines.length > 0) {
+            const minIndent = Math.min(...nonEmptyLines.map((line: string) => {
+              const match = line.match(/^(\s*)/);
+              return match ? match[1].length : 0;
+            }));
+            decodedCode = lines.map((line: string) => line.slice(minIndent)).join('\n').trim();
+          }
+          return `\`\`\`${language}\n${decodedCode}\n\`\`\``;
       }
     );
 
@@ -121,13 +133,23 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
     processedContent = processedContent.replace(
       /<pre><code>([\s\S]*?)<\/code><\/pre>/g,
       (match, code) => {
-        const decodedCode = code
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/&amp;/g, '&')
-          .replace(/&quot;/g, '"')
-          .replace(/&#x27;/g, "'");
-        return `\`\`\`javascript\n${decodedCode}\n\`\`\``;
+          let decodedCode = code
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&amp;/g, '&')
+            .replace(/&quot;/g, '"')
+            .replace(/&#x27;/g, "'");
+          // Remove common leading whitespace from all lines (fixes indented code blocks)
+          const lines = decodedCode.split('\n');
+          const nonEmptyLines = lines.filter((line: string) => line.trim().length > 0);
+          if (nonEmptyLines.length > 0) {
+            const minIndent = Math.min(...nonEmptyLines.map((line: string) => {
+              const match = line.match(/^(\s*)/);
+              return match ? match[1].length : 0;
+            }));
+            decodedCode = lines.map((line: string) => line.slice(minIndent)).join('\n').trim();
+          }
+          return `\`\`\`javascript\n${decodedCode}\n\`\`\``;
       }
     );
 
@@ -269,7 +291,11 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
               },
               // Quiz-specific styling - more specific selectors to override the * selector
               '& div.option': {
-                color: isUser ? '#fff' : '#fff !important'
+                fontWeight: 500,
+                borderRadius: '6px',
+                padding: '8px 12px',
+                margin: '4px 0',
+                border: '1px solid #555'
               },
               '& span.option-prefix': {
                 color: isUser ? '#90EE90' : '#4caf50 !important'
@@ -278,7 +304,11 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
                 color: isUser ? '#fff' : '#000 !important'
               },
               '& div.answer-choice': {
-                color: isUser ? '#fff' : '#000 !important'
+                fontWeight: 500,
+                borderRadius: '6px',
+                padding: '8px 12px',
+                margin: '4px 0',
+                border: '1px solid #555'
               },
               '& div.explanation': {
                 color: isUser ? '#fff' : (isViewingQuizContent ? '#fff' : '#000') + ' !important'
@@ -363,6 +393,32 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
 };
 
 export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+  // Inject global style for quiz options to guarantee white text and dark background
+  useEffect(() => {
+    const styleId = 'quiz-option-global-style';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.innerHTML = `
+        [class*="option"], [class*="answer"] {
+          color: #000 !important;
+          font-weight: 500 !important;
+          border-radius: 6px !important;
+          padding: 8px 12px !important;
+          margin: 4px 0 !important;
+        }
+        [class*="option"] code, [class*="answer"] code {
+          color: white !important;
+          background: transparent !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    return () => {
+      const style = document.getElementById(styleId);
+      if (style) style.remove();
+    };
+  }, []);
   // ...existing code...
   // Only one declaration of messages and setMessages should exist below:
 
@@ -475,6 +531,99 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
       }, 2000);
     } catch (err) {
       console.error('Failed to save snippet: ', err);
+    }
+  };
+
+  // PDF download function
+  const handleDownloadPdf = async (messageText: string, savedContentType?: string) => {
+    try {
+      // Create a properly formatted container element like in SkillsRefresherDetail
+      const contentContainer = document.createElement('div');
+      contentContainer.className = 'question-content';
+      
+      // Set the same styling as in SkillsRefresherDetail
+      contentContainer.style.color = '#fff';
+      contentContainer.style.padding = '24px';
+      contentContainer.style.borderRadius = '4px';
+      contentContainer.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+      
+      // Add the message content
+      contentContainer.innerHTML = messageText;
+      
+      // Find and properly format code blocks
+      const codeBlocks = contentContainer.querySelectorAll('pre');
+      codeBlocks.forEach(pre => {
+        const codeElement = pre.querySelector('code');
+        if (codeElement) {
+          // Get the plain text content without HTML tags
+          const codeText = codeElement.textContent || codeElement.innerText || '';
+          
+          // Clear the existing content and apply proper styling
+          pre.style.backgroundColor = '#1E1E1E';
+          pre.style.color = '#D4D4D4';
+          pre.style.fontFamily = "'Fira Code', 'Consolas', monospace";
+          pre.style.fontSize = '14px';
+          pre.style.lineHeight = '1.4';
+          pre.style.padding = '16px';
+          pre.style.borderRadius = '6px';
+          pre.style.margin = '8px 0';
+          pre.style.whiteSpace = 'pre-wrap';
+          pre.style.wordWrap = 'break-word';
+          pre.style.overflowWrap = 'break-word';
+          pre.style.border = '1px solid #333';
+          
+          // Create a clean formatted version of the code
+          const formattedCode = codeText
+            // Keywords (make them blue and bold)
+            .replace(/\b(public|private|protected|static|class|struct|interface|namespace|using|void|string|int|bool|var|const|let|function|return|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|new|this|super|extends|implements|import|export|default)\b/g, 
+              '<span style="color: #569CD6; font-weight: bold;">$1</span>')
+            // Property names and methods (make them light blue)
+            .replace(/\b([A-Z][a-zA-Z0-9]*)\b/g, '<span style="color: #4EC9B0;">$1</span>')
+            // Numbers (make them light green)
+            .replace(/\b\d+(\.\d+)?\b/g, '<span style="color: #B5CEA8;">$1</span>');
+          
+          // Set the formatted content
+          pre.innerHTML = `<code style="color: inherit; font-family: inherit;">${formattedCode}</code>`;
+        }
+      });
+
+      // Handle standalone code elements that aren't in pre tags
+      const standaloneCodes = contentContainer.querySelectorAll('code:not(pre code)');
+      standaloneCodes.forEach(code => {
+        const el = code as HTMLElement;
+        el.style.backgroundColor = '#2D2D30';
+        el.style.color = '#D4D4D4';
+        el.style.fontFamily = "'Fira Code', 'Consolas', monospace";
+        el.style.padding = '2px 6px';
+        el.style.borderRadius = '3px';
+        el.style.border = '1px solid #444';
+      });
+      
+      // Apply additional styling for better PDF formatting
+      const allElements = contentContainer.querySelectorAll('*');
+      allElements.forEach(element => {
+        const el = element as HTMLElement;
+        // Ensure proper text color inheritance for non-code elements
+        if (!el.closest('pre') && !el.closest('code') && !el.style.color) {
+          el.style.color = 'inherit';
+        }
+        // Fix any background colors that might interfere (except code blocks)
+        if (!el.closest('pre') && !el.closest('code') && el.style.backgroundColor && el.style.backgroundColor !== 'transparent') {
+          el.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+        }
+      });
+      
+      // Generate filename based on savedContentType or default to "Chatbox"
+      const filename = savedContentType 
+        ? `${savedContentType.replace(/[^a-zA-Z0-9]/g, '_')}-RapidSkillAI.pdf`
+        : 'Chatbox-RapidSkillAI.pdf';
+      
+      // Use the PDF service with the properly formatted HTMLElement
+      await downloadHtmlAsPdf(contentContainer, filename, savedContentType || 'Chatbox Content');
+      
+      console.log('PDF downloaded successfully:', filename);
+    } catch (err) {
+      console.error('Failed to download PDF:', err);
     }
   };
 
@@ -897,7 +1046,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
                 </Tooltip>
                 
                 {/* Save button - only show for new AI responses, not saved content */}
-                {!message.isViewingQuizContent && !message.isSavedContent && (
+                {!message.isViewingQuizContent && (
                   <Tooltip 
                     title={savedMessageId === message.id ? "Snippet saved!" : "Save snippet"}
                     open={savedMessageId === message.id || undefined}
@@ -918,6 +1067,26 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
                     </IconButton>
                   </Tooltip>
                 )}
+
+                {/* PDF download button - show for all AI responses */}
+                <Tooltip 
+                  title="Download as PDF"
+                  arrow
+                >
+                  <IconButton
+                    onClick={() => handleDownloadPdf(message.text, message.savedContentType)}
+                    sx={{
+                      width: '28px',
+                      height: '28px',
+                      backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                      '&:hover': {
+                        backgroundColor: 'rgba(244, 67, 54, 0.2)'
+                      }
+                    }}
+                  >
+                    <PictureAsPdfIcon sx={{ fontSize: '16px', color: '#f44336' }} />
+                  </IconButton>
+                </Tooltip>
               </Box>
             )}
           </Box>

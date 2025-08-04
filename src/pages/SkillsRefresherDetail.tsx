@@ -513,11 +513,11 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
       const doc = parser.parseFromString(processedQuestion, 'text/html');
       const correctAnswerElement = doc.querySelector('.correct-answer');
       if (correctAnswerElement?.textContent) {
-        submitQuizAnswer(correctAnswerElement.textContent, userSelectedOption, question);
+        submitQuizAnswer(correctAnswerElement.textContent, userSelectedOption, question, skillTitle || 'Unknown Topic', level);
       } else {
         // Fallback or error if correct answer can't be parsed
         console.warn("Could not parse correct answer from question HTML.", processedQuestion);
-        submitQuizAnswer("Error: Could not determine correct answer.", '', ''); // Or handle differently
+        submitQuizAnswer("Error: Could not determine correct answer.", '', '', skillTitle || 'Unknown Topic', level); 
       }
     }
 
@@ -826,9 +826,11 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
         
         <>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-              <Typography variant="h6" sx={{ color: 'primary.light' }}>
-                {getTitle()}                
-              </Typography>
+              <Box>
+                <Typography variant="h6" sx={{ color: 'primary.light' }}>
+                  {getTitle()}                
+                </Typography>
+              </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {/* PDF icon button - always visible except in slide deck or course mode */}
                 {!isSlideDeck && startCourse !== 1 && (
