@@ -146,9 +146,63 @@ const MyQuizzes: React.FC = () => {
 
   const handleViewQuiz = async (quiz: SavedItem) => {
     try {
+      // Ensure options and explanation divs have white text color
+      let processedHtml = quiz.html;
+
+      // Convert <pre><code class="language-xxx">...</code></pre> blocks to Markdown triple-backtick format
+      processedHtml = processedHtml.replace(
+        /<pre[^>]*>\s*<code class="language-([^\"]+)">([\s\S]*?)<\/code>\s*<\/pre>/gi,
+        (match: string, language: string, code: string) => {
+          const decodedCode = code
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&amp;/g, '&')
+            .replace(/&quot;/g, '"')
+            .replace(/&#x27;/g, "'");
+          return `\`\`\`${language}\n${decodedCode}\n\`\`\``;
+        }
+      );
+
+      // Also handle <code class="language-xxx">...</code> blocks not wrapped in <pre>
+      processedHtml = processedHtml.replace(
+        /<code class="language-([^\"]+)">([\s\S]*?)<\/code>/gi,
+        (match: string, language: string, code: string) => {
+          const decodedCode = code
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&amp;/g, '&')
+            .replace(/&quot;/g, '"')
+            .replace(/&#x27;/g, "'");
+          return `\`\`\`${language}\n${decodedCode}\n\`\`\``;
+        }
+      );
+
+      // Add inline styles to options to ensure white text
+      processedHtml = processedHtml.replace(
+        /<div([^>]*class="[^\"]*option[^\"]*"[^>]*)>/gi,
+        '<div$1 style="color: white !important;">'
+      );
+
+      // Also handle explanation paragraphs
+      processedHtml = processedHtml.replace(
+        /<p([^>]*class="[^\"]*explanation[^\"]*"[^>]*)>/gi,
+        '<p$1 style="color: white !important;">'
+      );
+
+      // // Handle any explanation content that might not have proper styling
+      // processedHtml = processedHtml.replace(
+      //   /(<div[^>]*class="[^\"]*explanation[^\"]*"[^>]*>)([\s\S]*?)(<\/div>)/gi,
+      //   (match: string, openingTag: string, content: string, closingTag: string) => {
+      //     // Add white color to the explanation div itself and all elements within it
+      //     const whiteOpeningTag = openingTag.replace('>', ' style="color: white;">');
+      //     const whiteContent = content.replace(/<(p|div|span|h[1-6])([^>]*)>/gi, '<$1$2 style="color: white">');
+      //     return whiteOpeningTag + whiteContent + closingTag;
+      //   }
+      // );
+
       const quizMessage = {
         id: Math.random().toString(36).substring(7),
-        text: quiz.html,
+        text: processedHtml,
         isUser: false,
         timestamp: new Date(),
         isViewingQuizContent: true,
