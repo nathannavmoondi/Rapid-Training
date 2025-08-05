@@ -1321,7 +1321,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
                   variant="contained"
                   onClick={() => {
                     resetQuiz();
-                    navigate(`/faq/${currentSkill?.title}`);
+                    navigate(`/faq/${encodeURIComponent(currentSkill?.title || '')}`);
                   }}
                   sx={{
                     backgroundColor: '#2e7d32', // Dark green

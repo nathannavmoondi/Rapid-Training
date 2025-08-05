@@ -216,7 +216,17 @@ const Faq: React.FC<FaqProps> = ({ onChatToggle, isChatOpen = false }) => {
           ReactDOM.createRoot(syntaxHighlighterRoot).render(
             <SyntaxHighlighter 
               language={language} 
-              style={atomDark}
+              style={{
+                ...atomDark,
+                'hljs-title.class_': { color: '#4ec9b0', textDecoration: 'none' },
+                'hljs-title.function_': { color: '#dcdcaa', textDecoration: 'none' },
+                'hljs-title.class_.inherited__': { color: '#4ec9b0', textDecoration: 'none' },
+                'hljs-title': { color: '#dcdcaa', textDecoration: 'none' },
+                'hljs-string': { color: '#ce9178', textDecoration: 'none' },
+                'hljs-keyword': { color: '#569cd6', textDecoration: 'none' },
+                'hljs-literal': { color: '#569cd6', textDecoration: 'none' },
+                'hljs-built_in': { color: '#4ec9b0', textDecoration: 'none' }
+              }}
               customStyle={{
                 borderRadius: '4px',
                 fontSize: '14px',
@@ -229,7 +239,8 @@ const Faq: React.FC<FaqProps> = ({ onChatToggle, isChatOpen = false }) => {
               codeTagProps={{
                 style: {
                   fontFamily: 'Consolas, Monaco, "Andale Mono", monospace',
-                  color: '#e0e0e0'
+                  color: '#e0e0e0',
+                  textDecoration: 'none'
                 }
               }}
             >

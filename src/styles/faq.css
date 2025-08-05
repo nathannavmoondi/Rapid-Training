@@ -87,6 +87,11 @@
   overflow-x: auto !important;
 }
 
+/* Ensure no text is underlined in syntax highlighting */
+.syntax-highlighter-wrapper * {
+  text-decoration: none !important;
+}
+
 .syntax-highlighter-wrapper code {
   font-family: 'Consolas', 'Monaco', 'Andale Mono', monospace !important;
   font-size: 0.8rem !important;
