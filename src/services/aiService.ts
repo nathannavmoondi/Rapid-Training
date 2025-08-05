@@ -600,7 +600,7 @@ export const getSubTopics = async (skillTitle: string): Promise<string[]> => {
       throw new Error('API key not found in environment variables!');
     }
 
-    const prompt = `Give me up to 10 important subtopics of ${skillTitle}. Just the list nothing more. Return each subtopic on a new line without numbering or bullet points.`;
+    const prompt = `Give me up to 20  important subtopics of ${skillTitle}. Just the list nothing more. Return each subtopic on a new line without numbering or bullet points.`;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -635,7 +635,7 @@ export const getSubTopics = async (skillTitle: string): Promise<string[]> => {
       .split('\n')
       .map((line: string) => line.trim())
       .filter((line: string) => line.length > 0)
-      .slice(0, 10); // Ensure max 10 topics
+      .slice(0, 20); // Ensure max 10 topics
 
     return topics;
   } catch (error) {
