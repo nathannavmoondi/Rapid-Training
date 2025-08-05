@@ -9,6 +9,7 @@ import { requestRefresher } from '../services/aiService';
 import { getYoutubeResources } from '../services/resourceService';
 import { Chat } from '../components/Chat';
 import { SubTopicsDialog } from '../components/SubTopicsDialog';
+import MultipleChoiceOptions from '../components/MultipleChoiceOptions';
 import { useChat } from '../contexts/chatContext';
 import { chatService } from '../services/chatService';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -427,32 +428,35 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
 
   // Simple function to render content with syntax highlighting
   const renderContentWithSyntaxHighlighting = (html: string) => {
-    // Extract code blocks and their info
+    // Extract code blocks and convert to React components for proper syntax highlighting
     const codeBlockRegex = /<pre><code class="language-([\w-]+)">([\s\S]*?)<\/code><\/pre>/g;
     const parts = [];
     let lastIndex = 0;
     let match;
-
+    
     while ((match = codeBlockRegex.exec(html)) !== null) {
-      // Add text before code block
+      // Add the text before this code block
       if (match.index > lastIndex) {
-        const textPart = html.slice(lastIndex, match.index);
         parts.push(
           <div 
-            key={`text-${parts.length}`}
-            dangerouslySetInnerHTML={{ __html: textPart }}
+            key={`text-${lastIndex}`} 
+            dangerouslySetInnerHTML={{ 
+              __html: html.slice(lastIndex, match.index) 
+            }} 
+            style={{ color: 'white' }}
           />
         );
       }
-
-      // Add syntax highlighted code block
+      
+      // Process language
       let language = match[1];
       // Prism-react-syntax-highlighter uses 'bash' for shell, but sometimes 'sh' or 'shell' is used
       if (language === 'shell') language = 'bash';
       if (language === 'sh') language = 'bash';
       // Prism-react-syntax-highlighter uses 'markup' for html
       if (language === 'html') language = 'markup';
-
+      
+      // Extract and decode the code
       const code = match[2]
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
@@ -460,42 +464,52 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
         .replace(/&quot;/g, '"')
         .replace(/&#39;/g, "'")
         .trim();
-
+      
+      // Add the code block with syntax highlighting
       parts.push(
-        <SyntaxHighlighter
-          key={`code-${parts.length}`}
-          language={language}
-          style={vscDarkPlus}
-          showLineNumbers={false}
-          customStyle={{
-            margin: '12px 0',
-            padding: '16px',
-            background: '#1E1E1E',
-            fontSize: '18px',
-            lineHeight: '1.4',
-            borderRadius: '6px',
-            fontFamily: "'Fira Code', 'Consolas', monospace",
-          }}
-        >
-          {code}
-        </SyntaxHighlighter>
+        <Box key={`code-${match.index}`} sx={{ my: 2 }}>
+          <SyntaxHighlighter
+            language={language}
+            style={vscDarkPlus}
+            showLineNumbers={false}
+            wrapLines={true}
+            wrapLongLines={true}
+            customStyle={{
+              margin: 0,
+              padding: '16px',
+              background: '#1E1E1E',
+              fontSize: '16px',
+              lineHeight: '1.4',
+              borderRadius: '6px',
+              fontFamily: "'Fira Code', 'Consolas', monospace",
+              color: '#d4d4d4',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word'
+            }}
+          >
+            {code}
+          </SyntaxHighlighter>
+        </Box>
       );
-
+      
       lastIndex = match.index + match[0].length;
     }
-
-    // Add remaining text after last code block
+    
+    // Add any remaining content after the last code block
     if (lastIndex < html.length) {
-      const remainingText = html.slice(lastIndex);
       parts.push(
         <div 
-          key={`text-${parts.length}`}
-          dangerouslySetInnerHTML={{ __html: remainingText }}
+          key={`text-${lastIndex}`} 
+          dangerouslySetInnerHTML={{ 
+            __html: html.slice(lastIndex) 
+          }} 
+          style={{ color: 'white' }}
         />
       );
     }
-
-    return parts;
+    
+    return <>{parts}</>;
   };
 
   const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -513,11 +527,11 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
       const doc = parser.parseFromString(processedQuestion, 'text/html');
       const correctAnswerElement = doc.querySelector('.correct-answer');
       if (correctAnswerElement?.textContent) {
-        submitQuizAnswer(correctAnswerElement.textContent, userSelectedOption, question);
+        submitQuizAnswer(correctAnswerElement.textContent, userSelectedOption, question, skillTitle || 'Unknown Topic', level);
       } else {
         // Fallback or error if correct answer can't be parsed
         console.warn("Could not parse correct answer from question HTML.", processedQuestion);
-        submitQuizAnswer("Error: Could not determine correct answer.", '', ''); // Or handle differently
+        submitQuizAnswer("Error: Could not determine correct answer.", '', '', skillTitle || 'Unknown Topic', level); 
       }
     }
 
@@ -826,9 +840,11 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
         
         <>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-              <Typography variant="h6" sx={{ color: 'primary.light' }}>
-                {getTitle()}                
-              </Typography>
+              <Box>
+                <Typography variant="h6" sx={{ color: 'primary.light' }}>
+                  {getTitle()}                
+                </Typography>
+              </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {/* PDF icon button - always visible except in slide deck or course mode */}
                 {!isSlideDeck && startCourse !== 1 && (
@@ -912,7 +928,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
                 my: 3,
                 p: 3, 
                 borderRadius: 1,
-                backgroundColor: 'rgba(255, 255, 255, 0.05)', 
+                backgroundColor: 'rgba(0, 0, 0, 1)', 
                 '& .question-container': {
                   display: 'flex',
                   flexDirection: 'column',
@@ -951,7 +967,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
                   '&.operator': { color: '#d4d4d4' }, 
                   '&.punctuation': { color: '#d4d4d4' }                },
                 '& a': { // Style for anchor tags
-                  color: 'primary.main',
+                  color: 'white',
                   textDecoration: 'underline',
                   '&:hover': {
                     color: 'primary.light',
@@ -1019,14 +1035,15 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
                     <FormControlLabel 
                       key={option} 
                       value={option} 
-                      control={<Radio sx={{ color: 'primary.light', '&.Mui-checked': { color: 'secondary.main' } }} />} 
+                      control={<Radio sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }} />} 
                       label={option} 
                       sx={{ 
-                        color: 'text.secondary',
+                        color: 'white',
                         cursor: 'pointer',
                         '&:hover': {
                           backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                          borderRadius: 1
+                          color: 'white', 
+                          borderRadius: 1 
                         }
                       }}
                       onClick={() => {

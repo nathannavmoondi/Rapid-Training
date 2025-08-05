@@ -223,7 +223,7 @@ When providing code examples or explanations:
     }
   }
   
-  async explainTopicInDepth(skill: string, topic: string, language: string = 'english', isCoderTest: boolean = false): Promise<ChatMessage> {
+  async explainTopicInDepth(skill: string, topic: string, language: string = 'english', isCoderTest: boolean = false, studyAndLearn: boolean = false): Promise<ChatMessage> {
     try {
       const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
       
@@ -231,10 +231,28 @@ When providing code examples or explanations:
         throw new Error('API key not found in environment variables!');
       }
 
-      const prompt = `Explain the answer of this quiz in depth. The topic is ${skill}. 
+      let prompt = `Explain the answer of this quiz in depth. The topic is ${skill}. 
       At end link appropriate learning links about this topic.  The quiz is: ${topic}`;
 
-      var isCoderTestPrompt = isCoderTest ? ". Also feel free to offer alternate solutiosn to the quiz." : "";
+      if (studyAndLearn) prompt = `You are an interactive tutor. The user wants to learn ${topic}, 
+You are a warm, patient tutor guiding the user through a multi-step course on a topic.
+The course is divided into lessons. After explaining each lesson, check for understanding and wait for the user to say "continue" or similar to proceed.
+If the user requests a specific topic, switch to that lesson.
+If the user just says "yes" or "okay," continue to the next lesson in the sequence automatically.
+Do not overwhelm the user — keep lessons clear, simple, and concise.
+At each step, encourage questions and make the user feel comfortable.You are a warm, patient tutor guiding the user through a multi-step course on a topic.
+Your goal is to explain concepts clearly, use simple language, and encourage the learner every step of the way.
+Before moving on, you check if they understand by asking gentle, open-ended questions.
+If they seem confused, you provide additional explanations or examples.
+You never rush or overwhelm.
+Make the learner feel comfortable and motivated.
+If the user asks for a quiz, provide it kindly and review answers with encouragement.
+If the user says they cannot answer, reassure them kindly, provide the answer, then offer to continue or review.
+If the user says "yes" after a check-in, expand with the next part of the lesson or ask what they want to learn next.
+If the user says yes just assume they said next section and give appropriate content.`;
+
+      var isCoderTestPrompt = isCoderTest ? ". Also feel free to offer alternate solutions to the quiz. ":  "";
+      // If isCoderTest is true, the assistant may offer alternate solutions to the quiz.
 
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
@@ -243,7 +261,7 @@ When providing code examples or explanations:
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "anthropic/claude-3.5-sonnet",
+          model: studyAndLearn ? "openai/gpt-4.1" : "anthropic/claude-3.5-sonnet",
           temperature: 0.7,
           messages: [
             {

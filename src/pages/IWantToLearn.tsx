@@ -19,7 +19,7 @@ export const IWantToLearn: React.FC = () => {
   const navigate = useNavigate();
   const { setChatboxSkill, addExternalMessage } = useChat();
 
-  const handleLearnMore = async () => {
+  const handleLearnMore = async (useStudyAndLearn: boolean = false) => {
     if (!topic.trim()) return;
     
     setLoading(true);
@@ -31,7 +31,9 @@ export const IWantToLearn: React.FC = () => {
       const aiResponse = await chatService.explainTopicInDepth(
         "General Learning",
         topic,
-        "english"
+        "english",
+        false,
+        useStudyAndLearn
       );
       
       // Add AI response to chat
@@ -47,7 +49,7 @@ export const IWantToLearn: React.FC = () => {
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter' && topic.trim() && !loading) {
-      handleLearnMore();
+      handleLearnMore(false);
     }
   };
 
@@ -145,35 +147,63 @@ export const IWantToLearn: React.FC = () => {
             </Box>
           )}
 
-          {/* Action Button */}
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          {/* Action Buttons */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
             <Button
-              onClick={handleLearnMore}
+              onClick={() => handleLearnMore(false)}
               disabled={!topic.trim() || loading}
               variant="contained"
               size="large"
               sx={{
-              backgroundColor: '#1976D2',
-              color: 'white',
-              fontWeight: 'bold',
-              px: 6,
-              py: 1.5,
-              fontSize: '1.2rem',
-              borderRadius: 3,
-              textTransform: 'none',
-              '&:hover': { 
-                backgroundColor: '#1565C0',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 5px 15px rgba(0,0,0,0.3)'
-              },
-              transition: 'all 0.2s ease-in-out',
-              '&:disabled': {
-                backgroundColor: 'rgba(25, 118, 210, 0.3)',
-                color: 'rgba(255, 255, 255, 0.5)'
-              }
-            }}
+                backgroundColor: '#1976D2',
+                color: 'white',
+                fontWeight: 'bold',
+                px: 6,
+                py: 1.5,
+                fontSize: '1.2rem',
+                borderRadius: 3,
+                textTransform: 'none',
+                '&:hover': { 
+                  backgroundColor: '#1565C0',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 5px 15px rgba(0,0,0,0.3)'
+                },
+                transition: 'all 0.2s ease-in-out',
+                '&:disabled': {
+                  backgroundColor: 'rgba(25, 118, 210, 0.3)',
+                  color: 'rgba(255, 255, 255, 0.5)'
+                }
+              }}
             >
-              {loading ? 'Learning...' : 'Start Learning'}
+              {loading ? 'Start Learning' : 'Start Learning'}
+            </Button>
+            <Button
+              onClick={() => handleLearnMore(true)}
+              disabled={!topic.trim() || loading}
+              variant="contained"
+              size="large"
+              sx={{
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                fontWeight: 'bold',
+                px: 6,
+                py: 1.5,
+                fontSize: '1.2rem',
+                borderRadius: 3,
+                textTransform: 'none',
+                '&:hover': { 
+                  backgroundColor: '#388E3C',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 5px 15px rgba(0,0,0,0.3)'
+                },
+                transition: 'all 0.2s ease-in-out',
+                '&:disabled': {
+                  backgroundColor: 'rgba(76, 175, 80, 0.3)',
+                  color: 'rgba(255, 255, 255, 0.5)'
+                }
+              }}
+            >
+              {loading ? 'Study and Learn (OpenAI Beta)'  : 'Study and Learn (OpenAI Beta)'}
             </Button>
           </Box>
         </Box>

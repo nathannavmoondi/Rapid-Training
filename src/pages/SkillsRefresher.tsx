@@ -311,7 +311,9 @@ export const SkillsRefresher = () => {
                     }}
                   >
                     <MenuItem value="">
-                      <span style={{ fontSize: '18px', paddingRight: '4px' }}>🚀</span>
+                      <svg width="24" height="24" viewBox="0 0 24 24" style={{ marginRight: '4px' }}>
+                        <path d="M11 15H6l7-14v8h5l-7 14z" fill="#2196F3" stroke="black" strokeWidth="1" />
+                      </svg>
                     </MenuItem>
                     <MenuItem value="quiz" sx={{ color: 'white' }}>Quiz</MenuItem>
                     <MenuItem value="questions" sx={{ color: 'white' }}>Questions</MenuItem>

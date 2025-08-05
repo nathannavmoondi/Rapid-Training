@@ -37,6 +37,8 @@ const processHtmlWithSyntaxHighlighting = (html: string) => {
         language={language}
         style={vscDarkPlus}
         showLineNumbers={false}
+        wrapLines={true}
+        wrapLongLines={true}
         customStyle={{
           margin: '12px 0',
           padding: '16px',
@@ -45,6 +47,9 @@ const processHtmlWithSyntaxHighlighting = (html: string) => {
           lineHeight: '1.4',
           borderRadius: '6px',
           fontFamily: "'Fira Code', 'Consolas', monospace",
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+          overflowWrap: 'break-word'
         }}
       >
         {code}
@@ -62,7 +67,7 @@ const processHtmlWithSyntaxHighlighting = (html: string) => {
 };
 
 const FailedQuestionsPrimer: React.FC = () => {
-  const { skillDescription, failedQuizzes } = useQuiz();
+  const { skillDescription, userFailedQuizzes } = useQuiz();
   const [primerHtml, setPrimerHtml] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +88,9 @@ const FailedQuestionsPrimer: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const html = await getFailedQuestionsPrimer(skillDescription, failedQuizzes);
+      // Extract HTML content from FailedQuiz objects
+      const failedQuestionHtmls = userFailedQuizzes.map(quiz => quiz.html);
+      const html = await getFailedQuestionsPrimer(skillDescription, failedQuestionHtmls);
       setPrimerHtml(html);
     } catch (err) {
       setError('Failed to load primer.');

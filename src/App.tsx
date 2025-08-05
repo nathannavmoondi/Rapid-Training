@@ -25,7 +25,7 @@ import MySlidedecks from './pages/MySlidedecks';
 import MyTraining from './pages/MyTraining';
 import CustomQuizzes from './pages/CustomQuizzes';
 import Explore from './pages/Explore';
-import ReviewQuizzes from './pages/ReviewQuizzes';
+import FailedQuizzes from './pages/FailedQuizzes';
 import CoderTest from './pages/CoderTest';
 import InterviewCandidates from './pages/InterviewCandidates';
 import { Sidebar } from './components/Sidebar';
@@ -126,7 +126,7 @@ function AppContent() {
               <Route path="/my-training" element={<MyTraining />} />
               <Route path="/custom-quizzes" element={<CustomQuizzes />} />
               <Route path="/explore" element={<Explore />} />
-              <Route path="/review-quizzes" element={<ReviewQuizzes />} />
+              <Route path="/review-quizzes" element={<FailedQuizzes />} />
               <Route path="/coder-test" element={<CoderTest onChatToggle={handleChatToggle} isChatOpen={isChatOpen} />} />
               <Route path="/failed-questions-primer" element={<React.Suspense fallback={<div>Loading...</div>}><FailedQuestionsPrimer /></React.Suspense>} />
               <Route path="/promptdb" element={<PromptDB />} />
