@@ -68,36 +68,67 @@
   font-family: 'Consolas', 'Monaco', 'Andale Mono', monospace !important;
 }
 
-/* Syntax highlighting wrapper */
+/* Syntax highlighter styles */
 .syntax-highlighter-wrapper {
-  margin-bottom: 1rem;
+  margin: 1rem 0 !important;
 }
 
-/* Syntax highlighting - Color schemes based on code types */
-.syntax-highlighted .keyword,
-.syntax-highlighted .operator,
-.syntax-highlighted .entity {
+/* Override react-syntax-highlighter styles */
+.syntax-highlighter-wrapper pre {
+  background-color: #1a1a1a !important;
+  border-radius: 4px !important;
+  padding: 1rem !important;
+  margin: 1rem 0 !important;
+  border: 1px solid #333 !important;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.3) !important;
+  overflow-x: auto !important;
+}
+
+.syntax-highlighter-wrapper code {
+  font-family: 'Consolas', 'Monaco', 'Andale Mono', monospace !important;
+  font-size: 0.9rem !important;
+  background: transparent !important;
+  color: #e0e0e0 !important;
+  padding: 0 !important;
+}
+
+/* Syntax highlighting token styles */
+.syntax-highlighter-wrapper .token.keyword,
+.syntax-highlighter-wrapper .token.operator {
   color: #c678dd !important; /* purple for keywords */
 }
 
-.syntax-highlighted .string,
-.syntax-highlighted .attr-value {
+.syntax-highlighter-wrapper .token.string,
+.syntax-highlighter-wrapper .token.attr-value {
   color: #98c379 !important; /* green for strings */
 }
 
-.syntax-highlighted .function,
-.syntax-highlighted .function-name {
+.syntax-highlighter-wrapper .token.function,
+.syntax-highlighter-wrapper .token.function-name {
   color: #61afef !important; /* blue for functions */
 }
 
-.syntax-highlighted .number,
-.syntax-highlighted .boolean {
+.syntax-highlighter-wrapper .token.number,
+.syntax-highlighter-wrapper .token.boolean {
   color: #d19a66 !important; /* orange for numbers/booleans */
 }
 
-.syntax-highlighted .comment {
+.syntax-highlighter-wrapper .token.comment {
   color: #5c6370 !important; /* gray for comments */
-  font-style: italic;
+  font-style: italic !important;
+}
+
+.syntax-highlighter-wrapper .token.punctuation {
+  color: #abb2bf !important;
+}
+
+.syntax-highlighter-wrapper .token.tag,
+.syntax-highlighter-wrapper .token.tag .punctuation {
+  color: #e06c75 !important;
+}
+
+.syntax-highlighter-wrapper .token.attr-name {
+  color: #d19a66 !important;
 }
 
 .faq-answer a {

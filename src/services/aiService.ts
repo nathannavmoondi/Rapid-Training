@@ -661,8 +661,7 @@ export interface FaqItem {
 export const getFaqQuestions = async (skillTopic: string): Promise<FaqItem[]> => {
   try {
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
-
-    const numberQuestions = 3;
+    const numberQuestions = 20;
     
     if (!apiKey) {
       throw new Error('API key not found in environment variables!');
@@ -684,13 +683,17 @@ Style the content with these requirements:
 5. Make code examples visually distinct and properly formatted
 6. All text must be light-colored (white, light blue, etc.) to display well on dark backgrounds
 7. Use <strong> tags with bright colors for emphasis
+8. Ensure all code blocks are properly formatted with correct syntax highlighting
 
 For code examples in answers, use <pre><code class="language-xxx"> tags with the appropriate language class 
 from this list: language-typescript, language-javascript, language-jsx, language-tsx, language-markup, 
 language-css, language-graphql, language-cpp, language-python, language-rust, language-go, language-ruby, 
 language-sql, language-java, language-csharp.
 
-The response format must be exactly like this example but with 20 complete FAQ items:
+Code examples must be properly indented and formatted. Each code example must start on a new line after the opening <pre><code> tag and 
+include the proper closing </code></pre> tags on their own lines. Do not include extra spaces or characters outside the code itself.
+
+The response format must be exactly like this example but with complete FAQ items:
 [
   {
     "question": "🤔 What is ${skillTopic}?",
@@ -702,7 +705,7 @@ The response format must be exactly like this example but with 20 complete FAQ i
   }
 ]
 
-AGAIN: Return ONLY the JSON array with ${numberQuestions} questions and answers. No other text, explanations, or formatting.
+AGAIN: Return ONLY the JSON array with ${numberQuestions} maximum questions and answers. No other text, explanations, or formatting.
 Make sure the answers are comprehensive, educational, visually attractive, and properly formatted with HTML tags for clarity and readability.`;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -714,9 +717,8 @@ Make sure the answers are comprehensive, educational, visually attractive, and p
         'X-Title': 'RapidSkillTrain'
       },
       body: JSON.stringify({
-         model: 'google/gemini-2.0-flash-001:floor',
-            //model: 'gpt-3.5-turbo',
-          temperature: 0.7, // Reduced randomness for more consistent formatting
+        model: 'google/gemini-2.0-flash-001:floor',
+        temperature: 0.7,
         messages: [
           {
             role: 'system',
@@ -746,53 +748,216 @@ Make sure the answers are comprehensive, educational, visually attractive, and p
     // Log first 200 chars of response for debugging
     console.log('FAQ API response preview:', content.substring(0, 200) + '...');
     
-    // Remove any markdown code block formatting first
-    const cleanContent = content
-      .replace(/^```json\s*/i, '') // Remove opening ```json
-      .replace(/```\s*$/i, '');    // Remove closing ```
-    
-    // Try to parse the entire content as JSON first
     try {
-      const faqItems = JSON.parse(cleanContent);
-      if (Array.isArray(faqItems) && faqItems.length > 0) {
-        console.log(`Successfully parsed ${faqItems.length} FAQ items`);
-        return faqItems.slice(0, 20); // Ensure max 20 questions
-      }
-    } catch (e) {
-      console.error('Error parsing cleaned JSON response:', e);
+      // First, simply remove the markdown code block formatting if present
+      let cleanedJson = content
+        .replace(/^```json\s*/i, '')
+        .replace(/```\s*$/i, '');
       
-      // If that fails, try to find the JSON array in the response and parse it
-      const jsonMatch = cleanContent.match(/\[\s*\{[\s\S]*\}\s*\]/);
-      if (jsonMatch) {
-        try {
-          const faqItems = JSON.parse(jsonMatch[0]);
-          console.log(`Successfully parsed ${faqItems.length} FAQ items from extracted JSON`);
-          return faqItems.slice(0, 20); // Ensure max 20 questions
-        } catch (e) {
-          console.error('Error parsing extracted JSON:', e);
+      // Try direct parse first (sometimes the response is already valid JSON)
+      try {
+        const parsedJson = JSON.parse(cleanedJson);
+        if (Array.isArray(parsedJson) && parsedJson.length > 0) {
+          console.log("Successfully parsed JSON directly");
+          return parsedJson.slice(0, numberQuestions);
         }
+      } catch (directError) {
+        console.log("Direct JSON parsing failed, trying more approaches");
       }
       
-      // If we still couldn't parse it, log the response for debugging
-      console.log('Raw API response content:', cleanContent);
+      // If direct parsing failed, we'll use a completely different approach
+      // that doesn't rely on parsing the entire JSON at once
+      console.log("Attempting to extract individual FAQ items directly from the response");
+      
+      // This approach skips JSON parsing entirely and just processes the response as text
+      try {
+        // First, let's find all the individual questions and answers in the raw text
+        const faqItems = [];
+        let rawText = cleanedJson;
+        
+        // Find question/answer pairs by looking for the question pattern
+        const questionRegex = /"question":\s*"(🤔|💡|⚡|📊|🌐|🔄|📞|⏳|📦|🧰|🚦|♻️|🛡️|🌍|🔥|🎨|⚙️|📚|🧪|[^"]+)"/g;
+        let questionMatch;
+        let startIndex = 0;
+        
+        while ((questionMatch = questionRegex.exec(rawText)) !== null) {
+          const questionStart = questionMatch.index;
+          const questionContent = questionMatch[1];
+          
+          // Find the start of the answer field that follows this question
+          const answerStart = rawText.indexOf('"answer":', questionStart);
+          if (answerStart !== -1) {
+            const answerValueStart = rawText.indexOf('"', answerStart + 9) + 1;
+            if (answerValueStart !== 0) {
+              // Find the end of this answer by looking for the next item or the end of the array
+              // This is complex because the answer can contain escaped quotes
+              let answerEnd = answerValueStart;
+              let quoteFound = false;
+              let escapeMode = false;
+              
+              while (!quoteFound && answerEnd < rawText.length) {
+                const char = rawText[answerEnd];
+                
+                if (char === '\\' && !escapeMode) {
+                  escapeMode = true;
+                } else if (char === '"' && !escapeMode) {
+                  quoteFound = true;
+                } else {
+                  escapeMode = false;
+                }
+                
+                answerEnd++;
+              }
+              
+              if (quoteFound) {
+                // Extract the answer content and unescape it
+                let answerContent = rawText.substring(answerValueStart, answerEnd - 1);
+                
+                // Clean up common escaping issues in the answer
+                answerContent = answerContent
+                  .replace(/\\"/g, '"')  // Replace escaped quotes
+                  .replace(/\\n/g, '\n') // Replace escaped newlines
+                  .replace(/\\t/g, '\t') // Replace escaped tabs
+                  .replace(/\\{2,}/g, '\\'); // Replace multiple backslashes
+                
+                // Add the question and answer pair to our results
+                faqItems.push({
+                  question: questionContent,
+                  answer: answerContent
+                });
+                
+                // Continue from after this answer
+                startIndex = answerEnd;
+              }
+            }
+          }
+        }
+        
+        if (faqItems.length > 0) {
+          console.log(`Successfully extracted ${faqItems.length} FAQ items using direct text processing`);
+          return faqItems.slice(0, numberQuestions);
+        }
+      } catch (textProcessingError) {
+        console.log("Text processing approach failed", textProcessingError);
+      }
+      
+      // Try a more targeted approach for problematic JSON - focus on one item at a time
+      try {
+        console.log("Attempting to extract individual JSON objects from array");
+        
+        // Find the array section
+        const startBracket = cleanedJson.indexOf('[');
+        const endBracket = cleanedJson.lastIndexOf(']');
+        
+        if (startBracket !== -1 && endBracket !== -1 && startBracket < endBracket) {
+          const arrayContent = cleanedJson.substring(startBracket + 1, endBracket);
+          
+          // Split into individual objects - find each complete {...} object
+          const items = [];
+          let depth = 0;
+          let startPos = 0;
+          let inString = false;
+          let escapeNext = false;
+          
+          for (let i = 0; i < arrayContent.length; i++) {
+            const char = arrayContent[i];
+            
+            // Handle string mode and escaping
+            if (char === '"' && !escapeNext) {
+              inString = !inString;
+            } else if (char === '\\' && inString) {
+              escapeNext = true;
+              continue;
+            }
+            
+            // Only count braces when not inside a string
+            if (!inString) {
+              if (char === '{') {
+                if (depth === 0) {
+                  startPos = i;
+                }
+                depth++;
+              } else if (char === '}') {
+                depth--;
+                // When we find a complete object, try to parse it
+                if (depth === 0) {
+                  try {
+                    const objStr = arrayContent.substring(startPos, i + 1);
+                    const cleanedStr = objStr
+                      .replace(/\\"/g, '"')
+                      .replace(/\\n/g, '\\n')
+                      .replace(/\\t/g, '\\t');
+                    
+                    const item = JSON.parse(cleanedStr);
+                    if (item.question && item.answer) {
+                      items.push(item);
+                    }
+                  } catch (err) {
+                    // Silently continue if this object can't be parsed
+                  }
+                }
+              }
+            }
+            
+            escapeNext = false;
+          }
+          
+          if (items.length > 0) {
+            console.log(`Successfully parsed ${items.length} individual JSON objects`);
+            return items.slice(0, numberQuestions);
+          }
+        }
+      } catch (itemParseError) {
+        console.log("Individual object parsing failed", itemParseError);
+      }
+      
+      // Ultimate fallback - manually extract question and answer content using regex pattern matching
+      try {
+        const extractedItems = [];
+        const pattern = /"question"\s*:\s*"([^"]+)"[^}]*"answer"\s*:\s*"([^"]*)"/g;
+        let match;
+        
+        // This regex approach might catch partial items, but it's better than nothing
+        while ((match = pattern.exec(cleanedJson)) !== null) {
+          if (match[1] && match[2]) {
+            extractedItems.push({
+              question: match[1].replace(/\\"/g, '"'),
+              answer: match[2].replace(/\\"/g, '"')
+            });
+          }
+        }
+        
+        if (extractedItems.length > 0) {
+          console.log(`Extracted ${extractedItems.length} partial FAQ items using regex fallback`);
+          return extractedItems.slice(0, numberQuestions);
+        }
+      } catch (regexError) {
+        console.log("Regex fallback failed", regexError);
+      }
+      
+      // If all parsing attempts fail, provide a fallback response
+      console.log("All JSON parsing attempts failed. Using fallback response.");
+      return [
+        { 
+          question: `🤔 What is ${skillTopic}?`, 
+          answer: "<p style='color: white;'>Sorry, we couldn't parse the detailed information for this topic. Please try again later.</p>"
+        }
+      ];
+    } catch (error) {
+      console.error('Error in JSON parsing attempts:', error);
+      return [
+        { 
+          question: `🤔 What is ${skillTopic}?`, 
+          answer: "<p style='color: white;'>Sorry, we couldn't parse the detailed information for this topic. Please try again later.</p>"
+        }
+      ];
     }
-    
-    // If all parsing attempts fail, provide detailed error
-    throw new Error('Failed to parse FAQ questions from API response. Check console for details.');
   } catch (error) {
     console.error('Error fetching FAQ questions:', error);
     return [
       { 
         question: `🤔 What is ${skillTopic}?`, 
         answer: "<p style='color: white;'>Sorry, we couldn't load the detailed information for this topic. Please try again later.</p>"
-      },
-      { 
-        question: `💡 How do I get started with ${skillTopic}?`, 
-        answer: "<p style='color: white;'>Basic concepts and fundamentals are the best place to begin learning any new technology or subject. <span style='color: #4dabf7;'>Practice</span> is essential.</p>"
-      },
-      { 
-        question: `⚠️ What are common challenges when working with ${skillTopic}?`, 
-        answer: "<p style='color: white;'>Every technology has its learning curve. <span style='color: #4dabf7;'>Persistence</span> and consistent practice are key to mastering any skill.</p>"
       }
     ]; // Fallback FAQs
   }

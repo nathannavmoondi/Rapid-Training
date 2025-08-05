@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import ReactDOM from 'react-dom/client';
 import {
   Container,
   Typography,
@@ -48,15 +49,15 @@ const Faq: React.FC = () => {
     fetchFaqData();
   }, [skillTopic]);
   
-  // Process answer content to apply syntax highlighting
+  // Process answer content to prepare code blocks for highlighting
   const processAnswerContent = useCallback((htmlContent: string): string => {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = htmlContent;
     
-    // Find all pre > code blocks and replace them with properly formatted code
+    // Find all pre > code blocks and mark them for later processing
     const codeBlocks = tempDiv.querySelectorAll('pre code');
     
-    codeBlocks.forEach((codeBlock) => {
+    codeBlocks.forEach((codeBlock, index) => {
       // Try to determine the language from the class (if any)
       const classNames = codeBlock.className.split(' ');
       let language = 'javascript'; // Default
@@ -68,9 +69,19 @@ const Faq: React.FC = () => {
         }
       }
       
-      // Mark this block to be replaced with SyntaxHighlighter later
-      codeBlock.setAttribute('data-language', language);
-      codeBlock.setAttribute('data-highlighted', 'false');
+      // Create a unique ID for this code block
+      const codeId = `code-block-${index}`;
+      
+      // Replace the pre element with a placeholder div that we can target later
+      const pre = codeBlock.parentElement;
+      if (pre && pre.parentElement) {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'syntax-highlighter-placeholder';
+        placeholder.setAttribute('data-code-id', codeId);
+        placeholder.setAttribute('data-language', language);
+        placeholder.setAttribute('data-content', encodeURIComponent(codeBlock.textContent || ''));
+        pre.parentElement.replaceChild(placeholder, pre);
+      }
     });
     
     return tempDiv.innerHTML;
@@ -97,29 +108,49 @@ const Faq: React.FC = () => {
 
   const decodedSkillTopic = skillTopic ? decodeURIComponent(skillTopic) : '';
   
-  // Add effect to apply syntax highlighting after render
+  // Add effect to apply syntax highlighting after render using proper React components
   useEffect(() => {
     if (!loading && faqItems.length > 0) {
-      // Find all code blocks that need highlighting
-      const codeBlocks = document.querySelectorAll('.faq-answer pre code');
+      // Find all placeholder divs that need to be replaced with SyntaxHighlighter
+      const placeholders = document.querySelectorAll('.faq-answer .syntax-highlighter-placeholder');
       
-      codeBlocks.forEach((block) => {
-        const preElement = block.parentElement;
-        if (!preElement) return;
+      placeholders.forEach((placeholder) => {
+        const language = placeholder.getAttribute('data-language') || 'javascript';
+        const encodedContent = placeholder.getAttribute('data-content') || '';
+        const code = decodeURIComponent(encodedContent);
         
-        const language = block.getAttribute('data-language') || 'javascript';
-        const code = block.textContent || '';
+        // Create the syntax highlighter component using React
+        const syntaxHighlighterRoot = document.createElement('div');
+        syntaxHighlighterRoot.className = 'syntax-highlighter-wrapper';
         
-        // Create a React element with SyntaxHighlighter
-        const highlightedElement = document.createElement('div');
-        highlightedElement.className = 'syntax-highlighter-wrapper';
-        
-        // Replace the pre element with our highlighted version
-        if (preElement.parentElement) {
-          preElement.parentElement.replaceChild(highlightedElement, preElement);
+        // Replace the placeholder with our container
+        if (placeholder.parentElement) {
+          placeholder.parentElement.replaceChild(syntaxHighlighterRoot, placeholder);
           
-          // Using React.render would be better here, but for this quick fix we'll use a styled element
-          highlightedElement.innerHTML = `<pre class="syntax-highlighted ${language}" style="background: #1d1f21; border-radius: 4px; padding: 1rem; color: #e0e0e0; overflow-x: auto;">${code}</pre>`;
+          // Render the actual SyntaxHighlighter component into the DOM
+          ReactDOM.createRoot(syntaxHighlighterRoot).render(
+            <SyntaxHighlighter 
+              language={language} 
+              style={atomDark}
+              customStyle={{
+                borderRadius: '4px',
+                fontSize: '14px',
+                margin: '1rem 0',
+                padding: '1rem',
+                backgroundColor: '#1a1a1a',
+                border: '1px solid #333',
+                boxShadow: '0 3px 5px rgba(0,0,0,0.3)'
+              }}
+              codeTagProps={{
+                style: {
+                  fontFamily: 'Consolas, Monaco, "Andale Mono", monospace',
+                  color: '#e0e0e0'
+                }
+              }}
+            >
+              {code}
+            </SyntaxHighlighter>
+          );
         }
       });
     }
