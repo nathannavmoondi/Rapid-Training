@@ -248,7 +248,8 @@ You never rush or overwhelm.
 Make the learner feel comfortable and motivated.
 If the user asks for a quiz, provide it kindly and review answers with encouragement.
 If the user says they cannot answer, reassure them kindly, provide the answer, then offer to continue or review.
-If the user says "yes" after a check-in, expand with the next part of the lesson or ask what they want to learn next.`;
+If the user says "yes" after a check-in, expand with the next part of the lesson or ask what they want to learn next.
+If the user says yes just assume they said next section and give appropriate content.`;
 
       var isCoderTestPrompt = isCoderTest ? ". Also feel free to offer alternate solutions to the quiz. ":  "";
 

@@ -355,7 +355,6 @@ if (startCourse === 1) {
   }
 };
 
-
 // Food Saver AI call
 export const getFoodSaverResults = async (foodItem: string, city: string): Promise<string> => {
   try {
