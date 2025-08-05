@@ -252,6 +252,7 @@ If the user says "yes" after a check-in, expand with the next part of the lesson
 If the user says yes just assume they said next section and give appropriate content.`;
 
       var isCoderTestPrompt = isCoderTest ? ". Also feel free to offer alternate solutions to the quiz. ":  "";
+      // If isCoderTest is true, the assistant may offer alternate solutions to the quiz.
 
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
