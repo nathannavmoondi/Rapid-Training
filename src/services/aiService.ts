@@ -743,11 +743,8 @@ Make sure the answers are comprehensive, educational, visually attractive, and p
       throw new Error('Invalid API response structure');
     }
     
-    const content = data.choices[0].message.content || '';
-    
-    // Log first 200 chars of response for debugging
-    console.log('FAQ API response preview:', content.substring(0, 200) + '...');
-    
+    const content = data.choices[0].message.content || '';    
+   
     try {
       // First, simply remove the markdown code block formatting if present
       let cleanedJson = content
@@ -757,8 +754,7 @@ Make sure the answers are comprehensive, educational, visually attractive, and p
       // Try direct parse first (sometimes the response is already valid JSON)
       try {
         const parsedJson = JSON.parse(cleanedJson);
-        if (Array.isArray(parsedJson) && parsedJson.length > 0) {
-          console.log("Successfully parsed JSON directly");
+        if (Array.isArray(parsedJson) && parsedJson.length > 0) {          
           return parsedJson.slice(0, numberQuestions);
         }
       } catch (directError) {
@@ -766,8 +762,7 @@ Make sure the answers are comprehensive, educational, visually attractive, and p
       }
       
       // If direct parsing failed, we'll use a completely different approach
-      // that doesn't rely on parsing the entire JSON at once
-      console.log("Attempting to extract individual FAQ items directly from the response");
+      // that doesn't rely on parsing the entire JSON at once      
       
       // This approach skips JSON parsing entirely and just processes the response as text
       try {
@@ -833,8 +828,7 @@ Make sure the answers are comprehensive, educational, visually attractive, and p
           }
         }
         
-        if (faqItems.length > 0) {
-          console.log(`Successfully extracted ${faqItems.length} FAQ items using direct text processing`);
+        if (faqItems.length > 0) {          
           return faqItems.slice(0, numberQuestions);
         }
       } catch (textProcessingError) {
@@ -843,7 +837,6 @@ Make sure the answers are comprehensive, educational, visually attractive, and p
       
       // Try a more targeted approach for problematic JSON - focus on one item at a time
       try {
-        console.log("Attempting to extract individual JSON objects from array");
         
         // Find the array section
         const startBracket = cleanedJson.indexOf('[');
@@ -902,8 +895,7 @@ Make sure the answers are comprehensive, educational, visually attractive, and p
             escapeNext = false;
           }
           
-          if (items.length > 0) {
-            console.log(`Successfully parsed ${items.length} individual JSON objects`);
+          if (items.length > 0) {            
             return items.slice(0, numberQuestions);
           }
         }
@@ -927,8 +919,7 @@ Make sure the answers are comprehensive, educational, visually attractive, and p
           }
         }
         
-        if (extractedItems.length > 0) {
-          console.log(`Extracted ${extractedItems.length} partial FAQ items using regex fallback`);
+        if (extractedItems.length > 0) {          
           return extractedItems.slice(0, numberQuestions);
         }
       } catch (regexError) {
