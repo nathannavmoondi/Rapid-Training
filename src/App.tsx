@@ -28,8 +28,10 @@ import Explore from './pages/Explore';
 import FailedQuizzes from './pages/FailedQuizzes';
 import CoderTest from './pages/CoderTest';
 import InterviewCandidates from './pages/InterviewCandidates';
+import Faq from './pages/Faq';
 import { Sidebar } from './components/Sidebar';
 import './styles/mobile.css';
+import './styles/faq.css';
 import './App.css';
 import FailedQuestionsPrimer from './pages/FailedQuestionsPrimer';
 import { IWantToLearn } from './pages/IWantToLearn';
@@ -132,7 +134,8 @@ function AppContent() {
               <Route path="/promptdb" element={<PromptDB />} />
               <Route path="/marketing-ai" element={<MarketingAI />} />
               <Route path="/yt-generator" element={<YouTubeQuizGenerator />} />
-              <Route path="/learn" element={<IWantToLearn />} />                      
+              <Route path="/learn" element={<IWantToLearn />} />
+              <Route path="/faq/:skillTopic" element={<Faq />} />                      
             </Routes>
           </Container>
         </Box>

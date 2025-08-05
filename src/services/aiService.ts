@@ -653,6 +653,151 @@ export const getSubTopics = async (skillTitle: string): Promise<string[]> => {
   }
 };
 
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+export const getFaqQuestions = async (skillTopic: string): Promise<FaqItem[]> => {
+  try {
+    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+
+    const numberQuestions = 3;
+    
+    if (!apiKey) {
+      throw new Error('API key not found in environment variables!');
+    }
+
+    const prompt = `Generate the top ${numberQuestions} frequently asked questions about "${skillTopic}" with detailed answers.
+
+IMPORTANT: Your ENTIRE response must be a valid JSON array with no additional text or explanations outside the JSON.
+The response must be valid JSON that can be directly parsed with JSON.parse().
+
+Format the response as a JSON array with objects that have "question" and "answer" keys. 
+Each answer should be detailed, visually attractive, and formatted with HTML paragraphs, lists, and code examples where appropriate.
+
+Style the content with these requirements:
+1. Add an appropriate emoji at the beginning of each question (🤔, 💡, ⚡, 📊, etc.)
+2. Format the text with proper HTML styling - all text should be white or light colors for dark background
+3. Use <span style="color: #4dabf7;"> for highlighting important concepts (bright blue)
+4. Use icons like ✅, ⚠️, 📌, 🔥, 💻, etc. to emphasize key points
+5. Make code examples visually distinct and properly formatted
+6. All text must be light-colored (white, light blue, etc.) to display well on dark backgrounds
+7. Use <strong> tags with bright colors for emphasis
+
+For code examples in answers, use <pre><code class="language-xxx"> tags with the appropriate language class 
+from this list: language-typescript, language-javascript, language-jsx, language-tsx, language-markup, 
+language-css, language-graphql, language-cpp, language-python, language-rust, language-go, language-ruby, 
+language-sql, language-java, language-csharp.
+
+The response format must be exactly like this example but with 20 complete FAQ items:
+[
+  {
+    "question": "🤔 What is ${skillTopic}?",
+    "answer": "<p style='color: white;'>Detailed answer with <span style='color: #4dabf7;'>important concepts</span> highlighted...</p><p style='color: white;'>More explanation...</p>"
+  },
+  {
+    "question": "💡 How do I get started with ${skillTopic}?",
+    "answer": "<p style='color: white;'>✅ First, you need to...</p><ol style='color: white;'><li>Step one</li><li>Step two with <span style='color: #4dabf7;'>key concept</span></li></ol>"
+  }
+]
+
+AGAIN: Return ONLY the JSON array with ${numberQuestions} questions and answers. No other text, explanations, or formatting.
+Make sure the answers are comprehensive, educational, visually attractive, and properly formatted with HTML tags for clarity and readability.`;
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://rapidskilltrain.com',
+        'X-Title': 'RapidSkillTrain'
+      },
+      body: JSON.stringify({
+         model: 'google/gemini-2.0-flash-001:floor',
+            //model: 'gpt-3.5-turbo',
+          temperature: 0.7, // Reduced randomness for more consistent formatting
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an assistant that generates visually attractive, well-styled FAQ content in valid JSON format. Your entire response must be a valid JSON array that can be parsed directly with JSON.parse(). Do not include any text outside of the JSON array. Do not format your response as a code block with ``` markers. Just return the raw JSON array. Ensure all text has appropriate styling for dark backgrounds (light colors like white or light blue). Add relevant emojis to questions. Use bright blue (#4dabf7) for highlighting important concepts.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 4000
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Unexpected API response structure:', data);
+      throw new Error('Invalid API response structure');
+    }
+    
+    const content = data.choices[0].message.content || '';
+    
+    // Log first 200 chars of response for debugging
+    console.log('FAQ API response preview:', content.substring(0, 200) + '...');
+    
+    // Remove any markdown code block formatting first
+    const cleanContent = content
+      .replace(/^```json\s*/i, '') // Remove opening ```json
+      .replace(/```\s*$/i, '');    // Remove closing ```
+    
+    // Try to parse the entire content as JSON first
+    try {
+      const faqItems = JSON.parse(cleanContent);
+      if (Array.isArray(faqItems) && faqItems.length > 0) {
+        console.log(`Successfully parsed ${faqItems.length} FAQ items`);
+        return faqItems.slice(0, 20); // Ensure max 20 questions
+      }
+    } catch (e) {
+      console.error('Error parsing cleaned JSON response:', e);
+      
+      // If that fails, try to find the JSON array in the response and parse it
+      const jsonMatch = cleanContent.match(/\[\s*\{[\s\S]*\}\s*\]/);
+      if (jsonMatch) {
+        try {
+          const faqItems = JSON.parse(jsonMatch[0]);
+          console.log(`Successfully parsed ${faqItems.length} FAQ items from extracted JSON`);
+          return faqItems.slice(0, 20); // Ensure max 20 questions
+        } catch (e) {
+          console.error('Error parsing extracted JSON:', e);
+        }
+      }
+      
+      // If we still couldn't parse it, log the response for debugging
+      console.log('Raw API response content:', cleanContent);
+    }
+    
+    // If all parsing attempts fail, provide detailed error
+    throw new Error('Failed to parse FAQ questions from API response. Check console for details.');
+  } catch (error) {
+    console.error('Error fetching FAQ questions:', error);
+    return [
+      { 
+        question: `🤔 What is ${skillTopic}?`, 
+        answer: "<p style='color: white;'>Sorry, we couldn't load the detailed information for this topic. Please try again later.</p>"
+      },
+      { 
+        question: `💡 How do I get started with ${skillTopic}?`, 
+        answer: "<p style='color: white;'>Basic concepts and fundamentals are the best place to begin learning any new technology or subject. <span style='color: #4dabf7;'>Practice</span> is essential.</p>"
+      },
+      { 
+        question: `⚠️ What are common challenges when working with ${skillTopic}?`, 
+        answer: "<p style='color: white;'>Every technology has its learning curve. <span style='color: #4dabf7;'>Persistence</span> and consistent practice are key to mastering any skill.</p>"
+      }
+    ]; // Fallback FAQs
+  }
+};
+
 // Coder Test AI call
 export const getCoderTestQuestion = async (language: string, level: string, previousQuestions: string[] = []): Promise<string> => {
   try {

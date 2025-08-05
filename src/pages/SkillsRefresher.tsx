@@ -122,6 +122,10 @@ export const SkillsRefresher = () => {
         // Navigate to topics detail page with youtube mode
         navigate(`/topics/detail?skill=${encodeURIComponent(skillTitle)}&category=${skillCategory}&mode=youtube`);
         break;
+      case 'faq':
+        // Navigate to FAQ page for this skill
+        navigate(`/faq/${encodeURIComponent(skillTitle)}`);
+        break;
       default:
         break;
     }
@@ -320,6 +324,7 @@ export const SkillsRefresher = () => {
                     <MenuItem value="course" sx={{ color: 'white' }}>Course</MenuItem>
                     <MenuItem value="slide-deck" sx={{ color: 'white' }}>Slide Deck</MenuItem>
                     <MenuItem value="youtube" sx={{ color: 'white' }}>Youtube</MenuItem>
+                    <MenuItem value="faq" sx={{ color: 'white' }}>FAQ</MenuItem>
                   </Select>
                 </FormControl>
               </Stack>

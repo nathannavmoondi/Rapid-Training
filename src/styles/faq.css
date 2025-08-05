@@ -1,0 +1,186 @@
+/* FAQ Page Styles */
+.faq-answer {
+  line-height: 1.6;
+  color: #e0e0e0 !important;
+}
+
+.faq-answer p {
+  margin-bottom: 1rem;
+  color: #e0e0e0 !important;
+}
+
+.faq-answer span[style*="color: #4dabf7"] {
+  font-weight: 500;
+}
+
+.faq-answer h1, .faq-answer h2, .faq-answer h3, .faq-answer h4, .faq-answer h5, .faq-answer h6 {
+  color: #90caf9 !important;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.faq-answer h3 {
+  font-size: 1.2rem;
+}
+
+/* Question styling */
+.MuiAccordionSummary-content .MuiTypography-root {
+  color: #4dabf7 !important;
+  font-weight: 600 !important;
+}
+
+.faq-answer ul, .faq-answer ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+  color: #e0e0e0 !important;
+}
+
+.faq-answer li {
+  margin-bottom: 0.5rem;
+  color: #e0e0e0 !important;
+}
+
+.faq-answer code {
+  font-family: 'Consolas', 'Monaco', 'Andale Mono', monospace;
+  background-color: #2d2d2d;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em;
+  color: #e0e0e0;
+}
+
+.faq-answer pre {
+  background-color: #1a1a1a !important;
+  border-radius: 4px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+  border: 1px solid #333;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.3);
+}
+
+.faq-answer pre code {
+  background-color: transparent !important;
+  padding: 0;
+  font-size: 0.9rem;
+  display: block;
+  color: #e0e0e0 !important;
+  font-family: 'Consolas', 'Monaco', 'Andale Mono', monospace !important;
+}
+
+/* Syntax highlighting wrapper */
+.syntax-highlighter-wrapper {
+  margin-bottom: 1rem;
+}
+
+/* Syntax highlighting - Color schemes based on code types */
+.syntax-highlighted .keyword,
+.syntax-highlighted .operator,
+.syntax-highlighted .entity {
+  color: #c678dd !important; /* purple for keywords */
+}
+
+.syntax-highlighted .string,
+.syntax-highlighted .attr-value {
+  color: #98c379 !important; /* green for strings */
+}
+
+.syntax-highlighted .function,
+.syntax-highlighted .function-name {
+  color: #61afef !important; /* blue for functions */
+}
+
+.syntax-highlighted .number,
+.syntax-highlighted .boolean {
+  color: #d19a66 !important; /* orange for numbers/booleans */
+}
+
+.syntax-highlighted .comment {
+  color: #5c6370 !important; /* gray for comments */
+  font-style: italic;
+}
+
+.faq-answer a {
+  color: #90caf9;
+  text-decoration: none;
+}
+
+.faq-answer a:hover {
+  text-decoration: underline;
+}
+
+.faq-answer table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1rem;
+  color: #e0e0e0 !important;
+}
+
+.faq-answer table th,
+.faq-answer table td {
+  border: 1px solid #444;
+  padding: 0.5rem;
+  text-align: left;
+  color: #e0e0e0 !important;
+}
+
+.faq-answer table th {
+  background-color: #2a2a2a;
+}
+
+.faq-answer blockquote {
+  border-left: 4px solid #444;
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-right: 0;
+  color: #bbb !important;
+}
+
+/* Enhanced code styling */
+.faq-answer code.language-javascript,
+.faq-answer code.language-typescript,
+.faq-answer code.language-jsx,
+.faq-answer code.language-tsx {
+  color: #f8f8f2;
+}
+
+.faq-answer pre {
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+}
+
+/* Style for emojis and icons */
+.MuiAccordionSummary-content .MuiTypography-root span[role="img"],
+.MuiAccordionSummary-content .MuiTypography-root:first-child {
+  margin-right: 8px;
+}
+
+/* Style for important text */
+.faq-answer strong {
+  color: #ffab00;
+  font-weight: 600;
+}
+
+/* Additional styles for better visual appeal */
+.faq-answer ul li::marker {
+  color: #4dabf7;
+}
+
+.faq-answer ol li::marker {
+  color: #4dabf7;
+}
+
+/* Style for keyboard shortcuts */
+.faq-answer kbd {
+  background-color: #333;
+  border-radius: 3px;
+  border: 1px solid #666;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .2);
+  color: #f8f8f2;
+  display: inline-block;
+  font-size: 0.85em;
+  font-weight: 700;
+  line-height: 1;
+  padding: 2px 5px;
+  margin: 0 2px;
+}
