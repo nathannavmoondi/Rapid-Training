@@ -167,23 +167,26 @@ processedHtml = processedHtml.replace(
         )}
       </Box>
 
-      {userFailedQuizzes.length === 0 ? (
-        <Typography sx={{ color: 'text.secondary' }}>No failed quizzes found.</Typography>
-      ) : (
-        <Box>
-          <TableContainer component={Paper} sx={{ backgroundColor: '#121212' }}>
-            <Table aria-label="failed quizzes table">
-              <TableHead>
+      <Box>
+        <TableContainer component={Paper} sx={{ backgroundColor: '#121212' }}>
+          <Table aria-label="failed quizzes table">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ color: 'white' }}>Topic</TableCell>
+                <TableCell sx={{ color: 'white' }}>Skill Level</TableCell>
+                <TableCell sx={{ color: 'white' }}>Preview</TableCell>
+                <TableCell sx={{ color: 'white', textAlign: 'center' }}>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {userFailedQuizzes.length === 0 ? (
                 <TableRow>
-                  <TableCell sx={{ color: 'white' }}>Topic</TableCell>
-                  <TableCell sx={{ color: 'white' }}>Skill Level</TableCell>
-                  <TableCell sx={{ color: 'white' }}>Preview</TableCell>
-                  <TableCell sx={{ color: 'white', textAlign: 'center' }}>Actions</TableCell>
+                  <TableCell colSpan={4} sx={{ textAlign: 'center', color: 'gray' }}>
+                    {/* Empty row for no data */}
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-
-              <TableBody>
-                {userFailedQuizzes.map((quiz, index) => {
+              ) : (
+                userFailedQuizzes.map((quiz, index) => {
                   const plainText = quiz.html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
                   const preview = plainText.slice(0, 30) + (plainText.length > 30 ? '...' : '');
                   const tooltip = `Click to view quiz: ${plainText.slice(0, 100)}${plainText.length > 100 ? '...' : ''}`;
@@ -272,18 +275,19 @@ processedHtml = processedHtml.replace(
                       </TableCell>
                     </TableRow>
                   );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          <Box sx={{ mt: 3, textAlign: 'center' }}>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Total Failed Quizzes: {userFailedQuizzes.length}
-            </Typography>
-          </Box>
+                })
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <Box sx={{ mt: 3, textAlign: 'center' }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {userFailedQuizzes.length === 0
+              ? '0 failed quizzes found.'
+              : `Total Failed Quizzes: ${userFailedQuizzes.length}`}
+          </Typography>
         </Box>
-      )}
+      </Box>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={handleCancelDelete}>
