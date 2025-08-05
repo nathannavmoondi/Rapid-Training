@@ -106,7 +106,8 @@ Supported language classes for <code class="language-xxx"> are: language-typescr
 10. Put each explanation point in the answer section on a new line using <p> tags.
 11. Make code examples practical and focused.
 12. Start off content with the question, don't return a summary of what you will do or a list of instructions. Just return the question and options, then the answer and explanation.;     
-13. Do not put any part of the answer outside the answer-box div.`
+13. Do not put any part of the answer outside the answer-box div.
+14. Try not to have lines longer than 80 characters for better readability.`
 
 prompt += `  Also!, quiz can't be similar to these previous ${previousQuizzes?.length} quizzes: ${previousQuizzes ? previousQuizzes.join(', Next Quiz:  ') : 'none'}.`;
 
