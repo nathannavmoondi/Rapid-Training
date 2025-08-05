@@ -401,7 +401,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
       style.id = styleId;
       style.innerHTML = `
         [class*="option"], [class*="answer"] {
-          color: white !important;
+          color: black !important;
           font-weight: 500 !important;
           border-radius: 6px !important;
           padding: 8px 12px !important;
@@ -415,8 +415,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
         .option-prefix {
           color: #00FFFF !important;
           font-weight: bold !important;
-          font-size: 22px !important;
-          text-shadow: 0 0 8px rgba(0,255,255,0.9) !important;
+          font-size: 22px !important;          
         }
       `;
       document.head.appendChild(style);

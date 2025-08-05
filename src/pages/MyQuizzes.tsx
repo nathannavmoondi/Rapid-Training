@@ -189,16 +189,16 @@ const MyQuizzes: React.FC = () => {
         '<p$1 style="color: white !important;">'
       );
 
-      // Handle any explanation content that might not have proper styling
-      processedHtml = processedHtml.replace(
-        /(<div[^>]*class="[^\"]*explanation[^\"]*"[^>]*>)([\s\S]*?)(<\/div>)/gi,
-        (match: string, openingTag: string, content: string, closingTag: string) => {
-          // Add white color to the explanation div itself and all elements within it
-          const whiteOpeningTag = openingTag.replace('>', ' style="color: white !important;">');
-          const whiteContent = content.replace(/<(p|div|span|h[1-6])([^>]*)>/gi, '<$1$2 style="color: white !important;">');
-          return whiteOpeningTag + whiteContent + closingTag;
-        }
-      );
+      // // Handle any explanation content that might not have proper styling
+      // processedHtml = processedHtml.replace(
+      //   /(<div[^>]*class="[^\"]*explanation[^\"]*"[^>]*>)([\s\S]*?)(<\/div>)/gi,
+      //   (match: string, openingTag: string, content: string, closingTag: string) => {
+      //     // Add white color to the explanation div itself and all elements within it
+      //     const whiteOpeningTag = openingTag.replace('>', ' style="color: white;">');
+      //     const whiteContent = content.replace(/<(p|div|span|h[1-6])([^>]*)>/gi, '<$1$2 style="color: white">');
+      //     return whiteOpeningTag + whiteContent + closingTag;
+      //   }
+      // );
 
       const quizMessage = {
         id: Math.random().toString(36).substring(7),
