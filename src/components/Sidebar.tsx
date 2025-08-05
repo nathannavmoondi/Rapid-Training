@@ -14,6 +14,7 @@ import YouTubeIcon from '@mui/icons-material/YouTube';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import CodeIcon from '@mui/icons-material/Code';
 import PeopleIcon from '@mui/icons-material/People';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import { useNavigate } from 'react-router-dom';
 import { CoderTestDialog } from './CoderTestDialog';
 import { useChat } from '../contexts/chatContext';
@@ -23,7 +24,7 @@ const menuItems = [
   { label: 'Coder Test', path: '/coder-test', icon: <CodeIcon />, external: false },
   { label: 'Algorithms', path: '/algorithms', icon: <FunctionsIcon />, external: false },
   { label: 'Saved Quizzes', path: '/my-quizzes', icon: <QuizIcon />, external: false },
-  { label: 'Failed Quizzes', path: '/failed-quizzes', icon: <AssessmentIcon />, external: false },
+  { label: 'Failed Quizzes', path: '/failed-quizzes', icon: <RemoveCircleIcon  />, external: false },
   { label: 'Custom Quizzes', path: '/custom-quizzes', icon: <StarIcon />, external: false },  
   { label: 'My Training', path: '/my-training', icon: <WorkspacesIcon />, external: false },
   { label: 'YT Generator', path: '/yt-generator', icon: <YouTubeIcon />, external: false },
