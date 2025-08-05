@@ -400,7 +400,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
       const style = document.createElement('style');
       style.id = styleId;
       style.innerHTML = `
-        [class*="option"], [class*="answer"] {
+        .chat-container [class*="option"], .chat-container [class*="answer"] {
           color: black !important;
           font-weight: 500 !important;
           border-radius: 6px !important;
@@ -408,7 +408,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
           margin: 4px 0 !important;
           font-size: 18px !important;
         }
-        [class*="option"] code, [class*="answer"] code {
+        .chat-container [class*="option"] code, .chat-container [class*="answer"] code {
           color: white !important;
           background: transparent !important;
         }
@@ -869,6 +869,7 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
 
   return (
     <Box
+      className="chat-container"
       sx={{
         position: 'fixed',
         ...(isFullscreen ? {

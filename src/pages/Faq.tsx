@@ -367,6 +367,7 @@ const Faq: React.FC<FaqProps> = ({ onChatToggle, isChatOpen = false }) => {
                         startIcon={<TipsAndUpdatesIcon />}
                         sx={{
                           backgroundColor: '#2e7d32', // Dark green
+                          color: 'white',
                           '&:hover': {
                             backgroundColor: '#1b5e20', // Darker green on hover
                           }
