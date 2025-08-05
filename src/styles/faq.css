@@ -1,6 +1,6 @@
 /* FAQ Page Styles */
 .faq-answer {
-  line-height: 1.6;
+  line-height: 1.3;
   color: #e0e0e0 !important;
 }
 
@@ -15,7 +15,7 @@
 
 .faq-answer h1, .faq-answer h2, .faq-answer h3, .faq-answer h4, .faq-answer h5, .faq-answer h6 {
   color: #90caf9 !important;
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   margin-bottom: 0.75rem;
 }
 
@@ -214,4 +214,14 @@
   line-height: 1;
   padding: 2px 5px;
   margin: 0 2px;
+}
+
+/* Chat button styles */
+.MuiButton-root.MuiButton-containedPrimary {
+  transition: all 0.3s ease;
+}
+
+.MuiButton-root.MuiButton-containedPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }

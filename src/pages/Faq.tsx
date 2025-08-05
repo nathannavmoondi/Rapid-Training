@@ -14,7 +14,9 @@ import {
   Breadcrumbs,
   Link
 } from '@mui/material';
+import { useChat } from '../contexts/chatContext';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import { getFaqQuestions, FaqItem } from '../services/aiService';
@@ -22,14 +24,22 @@ import '../styles/faq.css';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
-const Faq: React.FC = () => {
+interface FaqProps {
+  onChatToggle?: () => void;
+  isChatOpen?: boolean;
+}
+
+const Faq: React.FC<FaqProps> = ({ onChatToggle, isChatOpen = false }) => {
   const { skillTopic } = useParams<{ skillTopic: string }>();
   const navigate = useNavigate();
+  const { setChatboxSkill } = useChat();
 
   const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [expandedAccordions, setExpandedAccordions] = useState<{ [key: number]: boolean }>({});
   const [allExpanded, setAllExpanded] = useState<boolean>(false);
+
+  const numberOfQuestions = 50;
 
   useEffect(() => {
     const fetchFaqData = async () => {
@@ -37,7 +47,7 @@ const Faq: React.FC = () => {
       
       setLoading(true);
       try {
-        const questions = await getFaqQuestions(skillTopic);
+        const questions = await getFaqQuestions(skillTopic, numberOfQuestions);
         setFaqItems(questions);
       } catch (error) {
         console.error('Error fetching FAQ questions:', error);
@@ -177,13 +187,35 @@ const Faq: React.FC = () => {
               <Typography color="text.primary">{decodedSkillTopic} FAQ</Typography>
             </Breadcrumbs>
           </Box>
+          
+          {onChatToggle && (
+            <Button
+              startIcon={<QuestionAnswerIcon />}
+              onClick={() => {
+                if (onChatToggle) {
+                  // Set the chatbox skill in the chat context
+                  setChatboxSkill(decodedSkillTopic);
+                  
+                  // Then toggle the chat
+                  onChatToggle();
+                }
+              }}
+              variant="contained"
+              color="primary"
+              sx={{
+                ml: 2
+              }}
+            >
+              Chat with AI
+            </Button>
+          )}
         </Box>
 
         <Paper elevation={3} sx={{ p: 3, backgroundColor: '#121212' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h4" component="h1" sx={{ color: 'white', display: 'flex', alignItems: 'center' }}>
               <QuestionAnswerIcon sx={{ mr: 1, color: '#4dabf7' }} />
-              Top 20 Questions about {decodedSkillTopic}
+              Top {numberOfQuestions} Questions about {decodedSkillTopic} (FAQ)
               {loading && (
                 <CircularProgress size={24} sx={{ ml: 2, color: '#1976d2' }} />
               )}
@@ -255,6 +287,17 @@ const Faq: React.FC = () => {
               ))}
             </Box>
           )}
+          
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              startIcon={<KeyboardArrowUpIcon />}
+            >
+              Back to Top
+            </Button>
+          </Box>
         </Paper>
       </Box>
     </Container>

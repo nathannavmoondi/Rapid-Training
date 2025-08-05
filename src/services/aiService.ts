@@ -658,10 +658,10 @@ export interface FaqItem {
   answer: string;
 }
 
-export const getFaqQuestions = async (skillTopic: string): Promise<FaqItem[]> => {
+export const getFaqQuestions = async (skillTopic: string, numberOfQuestions: number): Promise<FaqItem[]> => {
   try {
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
-    const numberQuestions = 20;
+    const numberQuestions = numberOfQuestions;
     
     if (!apiKey) {
       throw new Error('API key not found in environment variables!');

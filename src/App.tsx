@@ -135,7 +135,7 @@ function AppContent() {
               <Route path="/marketing-ai" element={<MarketingAI />} />
               <Route path="/yt-generator" element={<YouTubeQuizGenerator />} />
               <Route path="/learn" element={<IWantToLearn />} />
-              <Route path="/faq/:skillTopic" element={<Faq />} />                      
+              <Route path="/faq/:skillTopic" element={<Faq onChatToggle={handleChatToggle} isChatOpen={isChatOpen} />} />                      
             </Routes>
           </Container>
         </Box>
