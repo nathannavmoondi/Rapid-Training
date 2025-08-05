@@ -215,10 +215,7 @@ const Faq: React.FC<FaqProps> = ({ onChatToggle, isChatOpen = false }) => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h4" component="h1" sx={{ color: 'white', display: 'flex', alignItems: 'center' }}>
               <QuestionAnswerIcon sx={{ mr: 1, color: '#4dabf7' }} />
-              Top {numberOfQuestions} Questions about {decodedSkillTopic} (FAQ)
-              {loading && (
-                <CircularProgress size={24} sx={{ ml: 2, color: '#1976d2' }} />
-              )}
+              Top Questions about {decodedSkillTopic} (FAQ)
             </Typography>
             <Button
               variant="contained"

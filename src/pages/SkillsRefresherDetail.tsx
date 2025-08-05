@@ -1316,6 +1316,25 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
             {/* Third row: language dropdown with icons on right */}
             {!isSlideDeck && startCourse !== 1 && !showYoutubeResources && !isLoading && !isLoadingYoutube && (
               <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '7px' }}>
+                {/* FAQ Button */}
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    resetQuiz();
+                    navigate(`/faq/${currentSkill?.title}`);
+                  }}
+                  sx={{
+                    backgroundColor: '#2e7d32', // Dark green
+                    color: 'white',
+                    fontWeight: 700,
+                    fontSize: '1rem',
+                    borderRadius: '6px',
+                    '&:hover': { backgroundColor: '#1b5e20' }
+                  }}
+                >
+                  FAQ
+                </Button>
+                
                 {/* Sub Topics Button */}
                 <Button
                   variant="contained"
