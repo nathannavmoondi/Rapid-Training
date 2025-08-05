@@ -19,7 +19,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
+import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
 import { getFaqQuestions, FaqItem } from '../services/aiService';
+import { chatService } from '../services/chatService';
 import '../styles/faq.css';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -32,12 +34,13 @@ interface FaqProps {
 const Faq: React.FC<FaqProps> = ({ onChatToggle, isChatOpen = false }) => {
   const { skillTopic } = useParams<{ skillTopic: string }>();
   const navigate = useNavigate();
-  const { setChatboxSkill } = useChat();
+  const { setChatboxSkill, addExternalMessage } = useChat();
 
   const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [expandedAccordions, setExpandedAccordions] = useState<{ [key: number]: boolean }>({});
   const [allExpanded, setAllExpanded] = useState<boolean>(false);
+  const [explainingFurtherIds, setExplainingFurtherIds] = useState<{ [key: number]: boolean }>({});
 
   const numberOfQuestions = 50;
 
@@ -114,6 +117,78 @@ const Faq: React.FC<FaqProps> = ({ onChatToggle, isChatOpen = false }) => {
     });
     
     setExpandedAccordions(newExpandedState);
+  };
+
+  const handleExplainFurther = async (index: number) => {
+    if (!skillTopic) return;
+    
+    // Mark this FAQ as being explained
+    setExplainingFurtherIds(prev => ({
+      ...prev,
+      [index]: true
+    }));
+    
+    try {
+      // Create a thinking message first
+      const thinkingMessage = {
+        id: Math.random().toString(36).substring(7),
+        text: "Thinking...",
+        isUser: false,
+        timestamp: new Date()
+      };
+      addExternalMessage(thinkingMessage);
+      
+      // Make sure chat is open
+      if (onChatToggle && !isChatOpen) {
+        // Set topic in chat context
+        setChatboxSkill(decodedSkillTopic);
+        
+        // Open the chat panel
+        onChatToggle();
+        // Wait a bit for the chat to fully open
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // Call AI with the explain further prompt
+      const faq = faqItems[index];
+      const content = `<strong>Question:</strong> ${faq.question} <br/><br/><strong>Answer:</strong> ${faq.answer}`;
+      
+      const aiResponse = await chatService.explainQuizInDepth(
+        decodedSkillTopic,
+        content,
+        'english' // You can add language support later if needed
+      );
+      
+      // Add AI response to chat (replaces the thinking message)
+      addExternalMessage(aiResponse);
+      
+      // Force scroll to top after a small delay to ensure the message is rendered
+      setTimeout(() => {
+        const chatContainer = document.querySelector('.chat-messages');
+        if (chatContainer) {
+          chatContainer.scrollTop = 0;
+        }
+      }, 200);
+      
+    } catch (error) {
+      console.error('Error explaining further:', error);
+      
+      // Add an error message
+      const errorMessage = {
+        id: Math.random().toString(36).substring(7),
+        text: "I apologize, but I encountered an error processing your request. Please try again.",
+        isUser: false,
+        timestamp: new Date()
+      };
+      addExternalMessage(errorMessage);
+      
+    } finally {
+      // Clear the explaining state
+      setExplainingFurtherIds(prev => ({
+        ...prev,
+        [index]: false
+      }));
+    }
   };
 
   const decodedSkillTopic = skillTopic ? decodeURIComponent(skillTopic) : '';
@@ -279,6 +354,27 @@ const Faq: React.FC<FaqProps> = ({ onChatToggle, isChatOpen = false }) => {
                       className="faq-answer"
                       sx={{ color: '#e0e0e0' }}
                     />
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-start', mt: 2 }}>
+                      <Button
+                        variant="contained"
+                        color="success"
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent accordion toggle
+                          handleExplainFurther(index);
+                        }}
+                        disabled={explainingFurtherIds[index] === true}
+                        startIcon={<TipsAndUpdatesIcon />}
+                        sx={{
+                          backgroundColor: '#2e7d32', // Dark green
+                          '&:hover': {
+                            backgroundColor: '#1b5e20', // Darker green on hover
+                          }
+                        }}
+                      >
+                        {explainingFurtherIds[index] ? 'Explaining...' : 'Explain Further'}
+                      </Button>
+                    </Box>
                   </AccordionDetails>
                 </Accordion>
               ))}
