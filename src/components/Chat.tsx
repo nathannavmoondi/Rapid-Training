@@ -19,6 +19,7 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useSpeechToText } from '../hooks/useSpeechToText';
 import { useQuiz } from '../contexts/quizContext'; // Import useQuiz
 import { generateLabelFromHtml } from '../contexts/quizContext';
+import { getRefresherSyntax } from '../services/aiService';
 
 
 
@@ -836,37 +837,22 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
       let response: ChatMessage;
       
       if (isRefresherSession) {
-        // For refresher sessions, use a special prompt to continue sending syntax questions
-        const refresherPrompt = `I'm practicing ${refresherSkill} at ${refresherLevel} level. 
-Here's my answer: ${input}
-
-Please provide feedback on my answer, and then give me another ${refresherSkill} syntax refresher question.
-
-FORMATTING INSTRUCTIONS:
-1. Begin with feedback on my answer - tell me if I was correct or what I should have typed
-2. Then write "Here's your next code snippet:"
-3. Put the language name (e.g., "javascript") before the code snippet
-4. Present a simple 1-3 line code snippet related to ${refresherSkill}
-5. Ask me to type it out in the chat and explain this is an interactive exercise
-6. Include an "Explanation:" section that clearly explains what the code does
-7. The whole response should be structured like this:
-
-[Feedback on my answer]
-
-Here's your next code snippet:
-[language] [code snippet]
-
-Type out the above line of code. After you type it, I'll give you feedback and another refresher question. This is an interactive typing exercise, so don't be afraid to make mistakes!
-
-Explanation:
-[Clear explanation of what the code does]`;
+        // For refresher sessions, use the enhanced getRefresherSyntax function with the user's answer
+        // This reuses the same prompt structure as the initial refresher question
+        const refresherResponse = await getRefresherSyntax(refresherSkill, refresherLevel, input, conversationHistory);
         
-        response = await chatService.respondChat(refresherPrompt, `Refresher: ${refresherSkill}`, conversationHistory);
+        // Copy over the ID from our loading message to ensure proper replacement in the messages array
+        response = {
+          ...refresherResponse,
+          id: loadingMessage.id
+        };
       } else {
         // Regular chat response
         response = await chatService.respondChat(input, chatboxSkill || 'general', conversationHistory);
       }
       
+      // For refresher sessions, we've already set the response with the proper ID
+      // For regular chats, we need to replace the loading message with the response
       setMessages(prev => 
         prev.map(msg => 
           msg.id === loadingMessage.id ? response : msg

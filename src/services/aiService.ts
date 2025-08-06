@@ -593,7 +593,7 @@ export const GetIWantToLearn = async (topic: string): Promise<void> => {
   return;
 };
 
-export const getRefresherSyntax = async (skill: string, skillLevel: string): Promise<ChatMessage> => {
+export const getRefresherSyntax = async (skill: string, skillLevel: string, userAnswer?: string, conversationHistory?: ChatMessage[]): Promise<ChatMessage> => {
   try {
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
     
@@ -601,34 +601,59 @@ export const getRefresherSyntax = async (skill: string, skillLevel: string): Pro
       throw new Error('API key not found in environment variables!');
     }
 
-    const prompt = `I want to refresh my knowledge of ${skill}. 
-    
-Create an interactive code snippet exercise for ${skill} at ${skillLevel} level.
+    // Base formatting instructions used in both initial and continuation prompts
+    const formattingInstructions = `FORMATTING INSTRUCTIONS:
+1. Begin with ${userAnswer ? "feedback on my answer - tell me if I was correct or what I should have typed" : '"Here\'s your code snippet:"'}
+2. ${userAnswer ? "Then write" : "Put"} "Here's your ${userAnswer ? "next " : ""}code snippet:"
+3. Put the language name (e.g., "javascript") before the code
+4. Present a simple 1-3 line code snippet related to ${skill} and use icons/emojis if needed
+5. Ask the user to type it out in the chat and explain this is an interactive exercise
+6. Include an "Explanation:" section that clearly explains what the code does
+7. Do not include the accent character in the response.
+8. The whole response should be structured ${userAnswer ? "like" : "similar to"} this:
 
-FORMATTING INSTRUCTIONS:
-1. Begin with "Here's your code snippet:"
-2. Put the language name (e.g., "javascript") before the code
-3. Present a simple 1-3 line code snippet related to ${skill}
-4. Ask the user to type it out in the chat and explain this is an interactive exercise
-5. Include an "Explanation:" section that clearly explains what the code does
-6. Do not include the accent character in the response. 
-7. The whole response should be structured similar to this:
+${userAnswer ? "[Feedback on my answer]" : ""}
 
-Here's your code snippet:
-  <pre><code class="language-typescript">
-              [code snippet]
-            </code></pre>
-
+Here's your ${userAnswer ? "next " : ""}code snippet:
+<pre><code class="language-typescript">
+[code snippet]
+</code></pre>
 
 Type out the above line of code. After you type it, I'll give you feedback and another refresher question. This is an interactive typing exercise, so don't be afraid to make mistakes!
 
-Explanation:
-[Clear explanation of what the code does]
+<strong>Explanation:</strong> This is where you should provide a clear explanation of what the code does, without making this explanatory text bold.
 
-IMPORTANT: Keep code snippets simple (1-3 lines) and appropriate for ${skillLevel} level. Examples include array creation, function declarations, event handlers, etc. Focus on fundamental syntax that's useful to practice typing.
+IMPORTANT: Keep code snippets simple (1-3 lines) and appropriate for ${skillLevel} level. Examples include array creation, function declarations, event handlers, etc. Focus on fundamental syntax that's useful to practice typing.`;
+
+    // Create the appropriate prompt based on whether this is an initial or continuation request
+    let prompt;
+    if (userAnswer && conversationHistory) {
+      // Continuation prompt including the user's answer and prior conversation
+      prompt = `I'm practicing ${skill} at ${skillLevel} level. 
+Here's my answer: ${userAnswer}
+
+${conversationHistory.length > 0 ? `The conversation so far:
+${conversationHistory.map(msg => msg.isUser ? `User: ${msg.text}` : `AI: ${msg.text}`).join('\n\n')}` : ''}
+
+Please provide feedback on my answer, and then give me another ${skill} syntax refresher question.
+
+${formattingInstructions}`;
+    } else {
+      // Initial prompt
+      prompt = `I want to refresh my knowledge of ${skill}. 
+    
+Create an interactive code snippet exercise for ${skill} at ${skillLevel} level.
+
+${formattingInstructions}`;
+    }
+
+    // Include language class information in the prompt
+    prompt += `
+
+IMPORTANT STYLING NOTE: Make ONLY the "Explanation:" label bold, not the entire explanation text that follows it.
 
 All code snippets MUST be wrapped in <pre><code class="language-xxx">...your code here...</code></pre> tags. This structure is MANDATORY.
-    . The \`language-xxx\` part of the class on the <code> tag is ESSENTIAL for syntax highlighting. You MUST use ONLY ONE of the following specific and supported language classes:
+    The \`language-xxx\` part of the class on the <code> tag is ESSENTIAL for syntax highlighting. You MUST use ONLY ONE of the following specific and supported language classes:
     - \`language-markup\` (for HTML, XML, SVG)
     - \`language-css\`
     - \`language-javascript\`
@@ -644,9 +669,10 @@ All code snippets MUST be wrapped in <pre><code class="language-xxx">...your cod
     - \`language-sql\`
     - \`language-java\`
     - \`language-csharp\`
- The example structure for a code snippet within the question text is: \`<pre><code class="language-javascript">const snippet = "example";</code></pre>\`. 
-`;
+    
+The example structure for a code snippet within the question text is: \`<pre><code class="language-javascript">const snippet = "example";</code></pre>\`.`;
 
+    // The API call remains the same for both initial and continuation prompts
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
