@@ -126,6 +126,10 @@ export const SkillsRefresher = () => {
         // Navigate to FAQ page for this skill
         navigate(`/faq/${encodeURIComponent(skillTitle)}`);
         break;
+      case 'refresher':
+        // Navigate to Refresher page for this skill
+        navigate(`/refresher?skill=${encodeURIComponent(skillTitle)}&category=${skillCategory}`);
+        break;
       default:
         break;
     }
@@ -325,6 +329,9 @@ export const SkillsRefresher = () => {
                     <MenuItem value="slide-deck" sx={{ color: 'white' }}>Slide Deck</MenuItem>
                     <MenuItem value="youtube" sx={{ color: 'white' }}>Youtube</MenuItem>
                     <MenuItem value="faq" sx={{ color: 'white' }}>FAQ</MenuItem>
+                    {(skill.category === 'frontend' || skill.category === 'backend') && (
+                      <MenuItem value="refresher" sx={{ color: 'white' }}>Refresher</MenuItem>
+                    )}
                   </Select>
                 </FormControl>
               </Stack>

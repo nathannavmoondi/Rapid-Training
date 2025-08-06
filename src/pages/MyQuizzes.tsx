@@ -11,7 +11,8 @@ import {
   IconButton,
   Button,
   Tooltip,
-  Chip
+  Chip,
+  Divider
 } from '@mui/material';
 import {
   Quiz as QuizIcon,
@@ -25,6 +26,7 @@ import {
   Slideshow as SlideshowIcon,
   Edit as EditIcon
 } from '@mui/icons-material';
+import CheckCircle from '@mui/icons-material/CheckCircle';
 import { useQuiz, SavedItem, generateLabelFromHtml } from '../contexts/quizContext';
 import { useChat } from '../contexts/chatContext';
 import { useNavigate } from 'react-router-dom';
@@ -301,86 +303,7 @@ const MyQuizzes: React.FC = () => {
     }
   };
 
-  const renderUnderDevelopment = (title: string, description: string) => (
-    <Card
-      sx={{
-        maxWidth: 600,
-        mx: 'auto',
-        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
-        border: '1px solid rgba(102, 126, 234, 0.2)',
-        borderRadius: 3,
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-        backdropFilter: 'blur(10px)'
-      }}
-    >
-      <CardContent sx={{ p: 4, textAlign: 'center' }}>
-        {/* Icons */}
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
-          <ConstructionIcon sx={{ fontSize: 48, color: '#667eea' }} />
-          <QuizIcon sx={{ fontSize: 48, color: '#764ba2' }} />
-          <BookmarkIcon sx={{ fontSize: 48, color: '#667eea' }} />
-        </Box>
-
-        {/* Main Status */}
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 'bold',
-            color: '#667eea',
-            mb: 3,
-            fontSize: { xs: '1.8rem', sm: '2.2rem' }
-          }}
-        >
-          {title}
-        </Typography>
-
-        {/* Divider */}
-        <Box
-          sx={{
-            width: 60,
-            height: 3,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            borderRadius: 2,
-            mx: 'auto',
-            mb: 3
-          }}
-        />
-
-        {/* Description */}
-        <Typography
-          variant="body1"
-          sx={{
-            color: 'text.secondary',
-            lineHeight: 1.6,
-            fontSize: '1.1rem',
-            fontWeight: 'medium'
-          }}
-        >
-          {description}
-        </Typography>
-
-        {/* Coming Soon Badge */}
-        <Paper
-          sx={{
-            display: 'inline-block',
-            mt: 3,
-            px: 3,
-            py: 1,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
-            borderRadius: 20,
-            fontWeight: 'bold',
-            fontSize: '0.9rem',
-            letterSpacing: '0.5px',
-            textTransform: 'uppercase'
-          }}
-        >
-          Coming Soon
-        </Paper>
-      </CardContent>
-    </Card>
-  );
-
+ //todo: put these into their own components
   // Render functions for different content types
   const renderCoderTests = () => {
     if (savedUserCoderTests.length === 0) {
@@ -533,7 +456,7 @@ const MyQuizzes: React.FC = () => {
         ))}
       </Box>
     );
-  };
+  }; //end rendercodertests
 
   const renderQuizzes = () => {
     if (savedUserQuizzes.length === 0) {
@@ -686,7 +609,7 @@ const MyQuizzes: React.FC = () => {
         ))}
       </Box>
     );
-  };
+  }; //end renderquizzes
 
   const renderSlidedecks = () => {
     if (savedUserSlidedecks.length === 0) {
@@ -839,8 +762,8 @@ const MyQuizzes: React.FC = () => {
         ))}
       </Box>
     );
-  };
-
+  }; //end renderslidedecks
+ 
   const renderSnippets = () => {
     if (userSavedSnippets.length === 0) {
       return (
@@ -1031,9 +954,28 @@ const MyQuizzes: React.FC = () => {
         ))}
       </Box>
     );
-  };
+  }; //end rendersnippets
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Cool New Feature Banner - Aligned with main content */}
+      <Box sx={{ 
+        maxWidth: '100%', 
+        margin: '0 auto',
+        mb: 3
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          mb: 1
+        }}>
+          <CheckCircle color="success" sx={{ mr: 2 }} />
+          <Typography variant="h6">
+            Cool New Feature!
+          </Typography>
+        </Box>
+        <Divider sx={{ mb: 3 }} />
+      </Box>
       <Box sx={{ mb: 4 }}>
         <Typography
           variant="h3"

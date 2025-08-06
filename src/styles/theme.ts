@@ -34,11 +34,14 @@ export const theme = createTheme({
           backdropFilter: 'blur(8px)',
           borderRadius: '8px',
           transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+          /* HOVER EFFECT FOR CARDS - COMMENTED OUT
+             Uncomment the code below to add hover effects to all MUI Cards
           '&:hover': {
             transform: 'translateY(-2px)',
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
             backgroundColor: 'rgba(21, 61, 105, 0.98)',
           },
+          */
         },
       },
     },

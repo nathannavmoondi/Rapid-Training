@@ -6,9 +6,10 @@ import {
   TextField,
   CircularProgress,
   Button,
-  Paper
+  Paper,
+  Divider
 } from '@mui/material';
-import { MenuBook as MenuBookIcon, School as SchoolIcon } from '@mui/icons-material';
+import { MenuBook as MenuBookIcon, School as SchoolIcon, CheckCircle } from '@mui/icons-material';
 import { useChat } from '../contexts/chatContext';
 import { chatService } from '../services/chatService';
 import { useNavigate } from 'react-router-dom';
@@ -55,8 +56,27 @@ export const IWantToLearn: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ pt: 4, pb: 8 }}>
-      {/* Page Title */}
-      <Box sx={{ mb: 4, textAlign: 'center' }}>
+      {/* Cool New Feature Banner - Aligned with main card */}
+      <Box sx={{ 
+        maxWidth: '800px', 
+        margin: '0 auto',
+        mb: 2
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          mb: 1
+        }}>
+          <CheckCircle color="success" sx={{ mr: 2 }} />
+          <Typography variant="h6">
+            Cool New Feature!
+          </Typography>
+        </Box>
+        <Divider sx={{ mb: 3 }} />
+      </Box>
+
+      <Box sx={{ mb: 4, textAlign: 'center' }}>                      
+        
         <Typography variant="h3" sx={{ 
           color: 'white',
           fontWeight: 'bold',

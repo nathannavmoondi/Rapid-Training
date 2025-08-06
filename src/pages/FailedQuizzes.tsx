@@ -17,12 +17,14 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button
+  Button,
+  Divider
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
   QuizOutlined as QuizIcon
 } from '@mui/icons-material';
+import CheckCircle from '@mui/icons-material/CheckCircle';
 import { useQuiz } from '../contexts/quizContext';
 import { useChat } from '../contexts/chatContext';
 
@@ -156,6 +158,25 @@ processedHtml = processedHtml.replace(
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      {/* Cool New Feature Banner - Aligned with main content */}
+      <Box sx={{ 
+        maxWidth: '100%', 
+        margin: '0 auto',
+        mb: 3
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          mb: 1
+        }}>
+          <CheckCircle color="success" sx={{ mr: 2 }} />
+          <Typography variant="h6">
+            Cool New Feature!
+          </Typography>
+        </Box>
+        <Divider sx={{ mb: 3 }} />
+      </Box>
+      
       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h5" sx={{ color: 'white' }}>
           Failed Quizzes

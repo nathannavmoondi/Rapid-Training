@@ -1,0 +1,36 @@
+/* App-specific header styles */
+.app-header {
+  background-color: #1e3771; /* Dark blue color as shown in the image */
+  padding: 3rem 1rem;
+  text-align: center;
+  color: white;
+  position: relative;
+}
+
+.app-header-title {
+  color: #a5b3ff;
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin: 1.5rem 0;
+  letter-spacing: 1px;
+}
+
+.app-header-icons {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.app-header-icon {
+  font-size: 3rem !important; /* Larger icons */
+  color: #a5b3ff; /* Light purple/blue color for icons */
+}
+
+.app-header-separator {
+  width: 120px;
+  height: 4px;
+  background-color: #a5b3ff;
+  border: none;
+  margin: 2rem auto;
+}

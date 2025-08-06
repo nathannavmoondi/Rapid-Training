@@ -36,6 +36,8 @@ import './App.css';
 import FailedQuestionsPrimer from './pages/FailedQuestionsPrimer';
 import { IWantToLearn } from './pages/IWantToLearn';
 import SplashPage from './components/SplashPage';
+import Refresher from './pages/Refresher';
+import SpotlightPromo from './components/SpotlightPromo';
 
 
 function App() {
@@ -135,7 +137,9 @@ function AppContent() {
               <Route path="/marketing-ai" element={<MarketingAI />} />
               <Route path="/yt-generator" element={<YouTubeQuizGenerator />} />
               <Route path="/learn" element={<IWantToLearn />} />
-              <Route path="/faq/:skillTopic" element={<Faq onChatToggle={handleChatToggle} isChatOpen={isChatOpen} />} />                      
+              <Route path="/faq/:skillTopic" element={<Faq onChatToggle={handleChatToggle} isChatOpen={isChatOpen} />} />
+              <Route path="/refresher" element={<Refresher />} />
+              <Route path="/spotlight" element={<SpotlightPromo />} />
             </Routes>
           </Container>
         </Box>
