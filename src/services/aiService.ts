@@ -699,7 +699,10 @@ The example structure for a code snippet within the question text is: \`<pre><co
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || 'Failed to generate refresher content.';
+    let content = data.choices?.[0]?.message?.content || 'Failed to generate refresher content.';
+    
+    // Remove all backtick (`) characters from the content
+    content = content.replace(/`/g, '');
     
     // Return a properly formatted ChatMessage object
     return {
