@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -12,17 +12,68 @@ import {
   Select,
   MenuItem,
   SelectChangeEvent,
+  CircularProgress
 } from '@mui/material';
 import CodeIcon from '@mui/icons-material/Code';
 import KeyboardIcon from '@mui/icons-material/Keyboard';
 import MemoryIcon from '@mui/icons-material/Memory';
 import CheckCircle from '@mui/icons-material/CheckCircle';
+import { useChat } from '../contexts/chatContext';
+import { useLocation, useParams } from 'react-router-dom';
+import { getRefresherSyntax } from '../services/aiService';
+import { chatService, ChatMessage } from '../services/chatService';
 
 const Refresher: React.FC = () => {
-  const [skillLevel, setSkillLevel] = React.useState('basic');
+  const [skillLevel, setSkillLevel] = useState('basic');
+  const [loading, setLoading] = useState(false);
+  const { 
+    setChatboxSkill, 
+    addExternalMessage,
+    setIsRefresherSession, 
+    setRefresherSkill, 
+    setRefresherLevel 
+  } = useChat();
+  const location = useLocation();
+  const params = useParams();
+  
+  // Extract skill from URL query parameters
+  const skill = new URLSearchParams(location.search).get('skill') || params.skill || 'React';
 
   const handleSkillLevelChange = (event: SelectChangeEvent) => {
     setSkillLevel(event.target.value);
+  };
+  
+  const handleStartRefresher = async () => {
+    setLoading(true);
+    try {
+      // Set the chatbox title to "Refresher: {skill}"
+      setChatboxSkill(`Refresher: ${skill}`);
+      
+      // Set refresher context flags
+      setIsRefresherSession(true);
+      setRefresherSkill(skill);
+      setRefresherLevel(skillLevel);
+      
+      // Call the AI service to get refresher content
+      const refresherContent = await getRefresherSyntax(skill, skillLevel);
+      
+      // Add the AI response to the chat (refresherContent is already a ChatMessage object)
+      addExternalMessage(refresherContent);
+    } catch (error) {
+      console.error('Failed to start refresher:', error);
+      // Create a ChatMessage object for the error
+      const errorMessage = {
+        id: Date.now().toString(),
+        text: 'Sorry, there was an error generating the refresher content. Please try again.',
+        isUser: false,
+        timestamp: new Date(),
+        isFromLearnDialog: true,
+        originalTopic: `${skill} Refresher (${skillLevel})`
+      };
+      addExternalMessage(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,7 +99,7 @@ const Refresher: React.FC = () => {
                 </Typography>
               </Box>
               <Divider sx={{ mb: 3 }} />
-              
+
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 6, mb: 3 }}>
             <CodeIcon sx={{ fontSize: 60, color: 'primary.main' }} />
             <KeyboardIcon sx={{ fontSize: 60, color: 'primary.main' }} />
@@ -56,7 +107,7 @@ const Refresher: React.FC = () => {
           </Box>
           
           <Typography variant="h4" component="div" align="center" gutterBottom sx={{ fontWeight: 500, mb: 2, color: '#a5b3ff' }}>
-            Refresher
+            {skill} Refresher
           </Typography>
           
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
@@ -65,11 +116,11 @@ const Refresher: React.FC = () => {
           
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3 }}>
             <Typography variant="body1" sx={{ textAlign: 'center', color: '#d1d8ff', marginBottom: '10px' }}>
-              Select your skill level to get tailored syntax examples that you can type out to refresh your knowledge.
+              Select your skill level to get tailored syntax examples for {skill} that you can type out to refresh your knowledge.
               <br />
                  <Divider sx={{ mb: 2, mt: 2 }} />
                 
-     Nothing better than typing out code. Try it out!
+              The AI will provide code snippets for you to retype. Typing out code is one of the best ways to reinforce your memory!
             </Typography>
           </Box>
           
@@ -116,8 +167,9 @@ const Refresher: React.FC = () => {
             <Button 
               variant="contained" 
               size="large"
-              onClick={() => console.log('Button clicked - no action')}
-              startIcon={<CodeIcon />}
+              onClick={handleStartRefresher}
+              disabled={loading}
+              startIcon={loading ? <CircularProgress size={24} color="inherit" /> : <CodeIcon />}
               sx={{
                 py: 1.5,
                 px: 4,
@@ -133,7 +185,7 @@ const Refresher: React.FC = () => {
                 transition: 'all 0.3s ease'
               }}
             >
-              Start {skillLevel.charAt(0).toUpperCase() + skillLevel.slice(1)} Refresher
+              {loading ? 'Loading...' : `Start ${skillLevel.charAt(0).toUpperCase() + skillLevel.slice(1)} Refresher`}
             </Button>
           </Box>
           

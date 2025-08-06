@@ -4,6 +4,12 @@ import { ChatMessage } from '../services/chatService';
 interface ChatContextType {
   chatboxSkill: string;
   setChatboxSkill: (skill: string) => void;
+  isRefresherSession: boolean;
+  setIsRefresherSession: (isRefresher: boolean) => void;
+  refresherSkill: string;
+  setRefresherSkill: (skill: string) => void;
+  refresherLevel: string;
+  setRefresherLevel: (level: string) => void;
   externalMessages: ChatMessage[];
   addExternalMessage: (message: ChatMessage) => void;
   clearExternalMessages: () => void;
@@ -15,6 +21,9 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 // this provider will be used to wrap the app and provide the chat context to all components.
 export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [chatboxSkill, setChatboxSkill] = useState(''); // storage location to save the chatbox skill and default value
+  const [isRefresherSession, setIsRefresherSession] = useState(false);
+  const [refresherSkill, setRefresherSkill] = useState('');
+  const [refresherLevel, setRefresherLevel] = useState('');
   const [externalMessages, setExternalMessages] = useState<ChatMessage[]>([]);
 
   const addExternalMessage = (message: ChatMessage) => {
@@ -28,7 +37,13 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <ChatContext.Provider value={{ 
       chatboxSkill, 
-      setChatboxSkill, 
+      setChatboxSkill,
+      isRefresherSession,
+      setIsRefresherSession,
+      refresherSkill,
+      setRefresherSkill,
+      refresherLevel,
+      setRefresherLevel,
       externalMessages, 
       addExternalMessage, 
       clearExternalMessages 

@@ -392,7 +392,12 @@ const MessageContent: React.FC<{ text: string; isUser: boolean; isViewingQuizCon
   return <Box>{renderContentWithSyntaxHighlighting(text)}</Box>;
 };
 
-export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose: originalOnClose }) => {
+  // Create a wrapped onClose handler that also resets the refresher session
+  const onClose = () => {
+    setIsRefresherSession(false);
+    originalOnClose();
+  };
   // Inject global style for quiz options to guarantee white text and dark background
   useEffect(() => {
     const styleId = 'quiz-option-global-style';
@@ -430,7 +435,15 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
 
   // ...existing code...
   // ...existing code...
-  const { chatboxSkill, externalMessages, clearExternalMessages } = useChat();
+  const { 
+    chatboxSkill, 
+    externalMessages, 
+    clearExternalMessages,
+    isRefresherSession,
+    setIsRefresherSession,
+    refresherSkill,
+    refresherLevel
+  } = useChat();
   const { language, setUserSavedSnippets } = useQuiz();
 
   // Function to get initial message (now after hooks)
@@ -819,7 +832,41 @@ export const Chat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
     try {
       // Get conversation history (excluding the current loading message)
       const conversationHistory = messages.filter(msg => msg.text !== "Thinking...");
-      const response = await chatService.respondChat(input, chatboxSkill || 'general', conversationHistory);
+      
+      let response: ChatMessage;
+      
+      if (isRefresherSession) {
+        // For refresher sessions, use a special prompt to continue sending syntax questions
+        const refresherPrompt = `I'm practicing ${refresherSkill} at ${refresherLevel} level. 
+Here's my answer: ${input}
+
+Please provide feedback on my answer, and then give me another ${refresherSkill} syntax refresher question.
+
+FORMATTING INSTRUCTIONS:
+1. Begin with feedback on my answer - tell me if I was correct or what I should have typed
+2. Then write "Here's your next code snippet:"
+3. Put the language name (e.g., "javascript") before the code snippet
+4. Present a simple 1-3 line code snippet related to ${refresherSkill}
+5. Ask me to type it out in the chat and explain this is an interactive exercise
+6. Include an "Explanation:" section that clearly explains what the code does
+7. The whole response should be structured like this:
+
+[Feedback on my answer]
+
+Here's your next code snippet:
+[language] [code snippet]
+
+Type out the above line of code. After you type it, I'll give you feedback and another refresher question. This is an interactive typing exercise, so don't be afraid to make mistakes!
+
+Explanation:
+[Clear explanation of what the code does]`;
+        
+        response = await chatService.respondChat(refresherPrompt, `Refresher: ${refresherSkill}`, conversationHistory);
+      } else {
+        // Regular chat response
+        response = await chatService.respondChat(input, chatboxSkill || 'general', conversationHistory);
+      }
+      
       setMessages(prev => 
         prev.map(msg => 
           msg.id === loadingMessage.id ? response : msg

@@ -1,5 +1,6 @@
 // import { getSkillTopics } from './skillsService';
 import { getYoutubeSummaryAndTranscript, getYoutubeQuiz } from './youtubeService';
+import { ChatMessage } from './chatService';
 
 export const requestRefresher = async (
   level: string,
@@ -590,6 +591,88 @@ Important formatting rules:
 export const GetIWantToLearn = async (topic: string): Promise<void> => {
   // Placeholder for future AI logic
   return;
+};
+
+export const getRefresherSyntax = async (skill: string, skillLevel: string): Promise<ChatMessage> => {
+  try {
+    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+    
+    if (!apiKey) {
+      throw new Error('API key not found in environment variables!');
+    }
+
+    const prompt = `I want to refresh my knowledge of ${skill}. 
+    
+Create an interactive code snippet exercise for ${skill} at ${skillLevel} level.
+
+FORMATTING INSTRUCTIONS:
+1. Begin with "Here's your code snippet:"
+2. Put the language name (e.g., "javascript") before the code
+3. Present a simple 1-3 line code snippet related to ${skill}
+4. Ask the user to type it out in the chat and explain this is an interactive exercise
+5. Include an "Explanation:" section that clearly explains what the code does
+6. The whole response should be structured like this:
+
+Here's your code snippet:
+[language] [code snippet]
+
+Type out the above line of code. After you type it, I'll give you feedback and another refresher question. This is an interactive typing exercise, so don't be afraid to make mistakes!
+
+Explanation:
+[Clear explanation of what the code does]
+
+IMPORTANT: Keep code snippets simple (1-3 lines) and appropriate for ${skillLevel} level. Examples include array creation, function declarations, event handlers, etc. Focus on fundamental syntax that's useful to practice typing.`;
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': window.location.origin,
+        'X-Title': 'Algo Demo - Refresher'
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.0-flash-001:floor',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 500
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || 'Failed to generate refresher content.';
+    
+    // Return a properly formatted ChatMessage object
+    return {
+      id: Date.now().toString(), // Generate a unique ID based on timestamp
+      text: content,
+      isUser: false,
+      timestamp: new Date(),
+      isFromLearnDialog: true,
+      originalTopic: `${skill} Refresher (${skillLevel})`
+    };
+  } catch (error) {
+    console.error('Error generating refresher syntax:', error);
+    
+    // Return a properly formatted ChatMessage object for the error
+    return {
+      id: Date.now().toString(),
+      text: 'There was an error loading the refresher content. Please try again later.',
+      isUser: false,
+      timestamp: new Date(),
+      isFromLearnDialog: true,
+      originalTopic: `${skill} Refresher (${skillLevel})`
+    };
+  }
 };
 
 export const getSubTopics = async (skillTitle: string): Promise<string[]> => {
