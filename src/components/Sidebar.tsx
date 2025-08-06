@@ -30,8 +30,7 @@ const menuItems = [
   { label: 'YT Generator', path: '/yt-generator', icon: <YouTubeIcon />, external: false },
   { label: 'I want to learn', path: '/learn', icon: <MenuBookIcon />, external: false },
   { label: 'Explore', path: '/explore', icon: <SettingsIcon />, external: false },
-  { label: 'Interview\nCandidates', path: '/interview-candidates', icon: <PeopleIcon />, external: false, fullWidth: true },
-  { label: 'Github', path: 'https://github.com/nathannavmoondi', icon: <GitHubIcon />, external: true }
+  { label: 'Interview\nCandidates', path: '/interview-candidates', icon: <PeopleIcon />, external: false, fullWidth: true }
 ];
 
 const SIDEBAR_MIN_WIDTH = 60;
@@ -214,6 +213,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
             </Box>
           </Tooltip>
         ))}
+
+        {/* Sidebar3 Image */}
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            justifyContent: 'center',
+            alignItems: 'center',
+            mt: 2,
+            mb: 2
+          }}
+        >
+          <img 
+            src="/assets/sidebar3.png" 
+            alt="Sidebar Logo" 
+            style={{ 
+              width: '60%',
+              maxWidth: '150px',
+              filter: 'brightness(0) invert(1)', // This makes the image white
+              opacity: showText ? 1 : 0,
+              transition: 'opacity 0.2s'
+            }} 
+          />
+        </Box>
       </Box>
 
       {/* Settings at bottom */}
