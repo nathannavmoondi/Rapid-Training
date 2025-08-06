@@ -611,17 +611,41 @@ FORMATTING INSTRUCTIONS:
 3. Present a simple 1-3 line code snippet related to ${skill}
 4. Ask the user to type it out in the chat and explain this is an interactive exercise
 5. Include an "Explanation:" section that clearly explains what the code does
-6. The whole response should be structured like this:
+6. Do not include the accent character in the response. 
+7. The whole response should be structured similar to this:
 
 Here's your code snippet:
-[language] [code snippet]
+  <pre><code class="language-typescript">
+              [code snippet]
+            </code></pre>
+
 
 Type out the above line of code. After you type it, I'll give you feedback and another refresher question. This is an interactive typing exercise, so don't be afraid to make mistakes!
 
 Explanation:
 [Clear explanation of what the code does]
 
-IMPORTANT: Keep code snippets simple (1-3 lines) and appropriate for ${skillLevel} level. Examples include array creation, function declarations, event handlers, etc. Focus on fundamental syntax that's useful to practice typing.`;
+IMPORTANT: Keep code snippets simple (1-3 lines) and appropriate for ${skillLevel} level. Examples include array creation, function declarations, event handlers, etc. Focus on fundamental syntax that's useful to practice typing.
+
+All code snippets MUST be wrapped in <pre><code class="language-xxx">...your code here...</code></pre> tags. This structure is MANDATORY.
+    . The \`language-xxx\` part of the class on the <code> tag is ESSENTIAL for syntax highlighting. You MUST use ONLY ONE of the following specific and supported language classes:
+    - \`language-markup\` (for HTML, XML, SVG)
+    - \`language-css\`
+    - \`language-javascript\`
+    - \`language-jsx\`
+    - \`language-typescript\`
+    - \`language-tsx\`
+    - \`language-graphql\`
+    - \`language-cpp\`
+    - \`language-python\`
+    - \`language-rust\`
+    - \`language-go\`
+    - \`language-ruby\`
+    - \`language-sql\`
+    - \`language-java\`
+    - \`language-csharp\`
+ The example structure for a code snippet within the question text is: \`<pre><code class="language-javascript">const snippet = "example";</code></pre>\`. 
+`;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
