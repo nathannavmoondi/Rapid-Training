@@ -160,7 +160,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
         flexDirection: 'column', 
         gap: 0.5, 
         py: shouldShowHamburger ? 1 : 2,
-        mt: shouldShowHamburger ? 0 : 1
+        mt: shouldShowHamburger ? 0 : 1,
+        overflowY: 'auto',
+        '&::-webkit-scrollbar': {
+          width: '6px',
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: 'rgba(255, 255, 255, 0.3)',
+          borderRadius: '3px',
+          '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+          },
+        }
       }}>
         {menuItems.map((item) => (
           <Tooltip title={!showText ? item.label : ''} placement="right" key={item.label}>
