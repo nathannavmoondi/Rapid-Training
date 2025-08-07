@@ -127,7 +127,7 @@ export const PDFToLearning: React.FC = () => {
             textAlign: 'center'
           }}
         >
-          Please upload a PDF containing information you would like your team members to learn from, handle quizzes, summaries and ask questions again.
+          Please upload a PDF containing information you would like your team members to learn from, handle quizzes, summaries and ask questions.
         </Typography>
 
         <Typography
