@@ -202,5 +202,41 @@ export const skills: Skill[] = [
     category: 'non-technology',
     description: "Real estate development principles and practices",
     topics: ['Site Selection', 'Zoning Laws', 'Project Management', 'Financing', 'Market Analysis']
+  },
+  {
+    id: "Ruby on Rails",
+    title: "Ruby on Rails",
+    category: 'backend',
+    description: "Ruby on Rails principles and practices",
+    topics: ['MVC Architecture', 'Routing', 'Active Record', 'Action Cable', 'Asset Pipeline']
+  },
+  {
+    id: "WPF",
+    title: "WPF",
+    category: 'frontend',
+    description: "WPF principles and practices",
+    topics: ['XAML', 'Data Binding', 'MVVM', 'Controls', 'Styles and Templates']
+  },
+  {
+    id: "Django",
+    title: "Django",
+    category: 'backend',
+    description: "Django principles and practices",
+    topics: ['Models', 'Views', 'Templates', 'Forms', 'REST Framework']
+  },
+  {
+    id: "Unix Basics",
+    title: "Unix Basics",
+    category: 'backend',
+    description: "Unix Basics principles and practices",
+    topics: ['File System', 'Shell Commands', 'Permissions', 'Processes', 'Text Processing']
+  },
+  {
+    id: "Artificial Intelligence Fundamentals",
+    title: "Artificial Intelligence Fundamentals",
+    category: 'general',
+    description: "Artificial Intelligence Fundamentals principles and practices",
+    topics: ['Machine Learning', 'Neural Networks', 'Natural Language Processing', 'Computer Vision', 'Robotics']
   }
+  
 ];
