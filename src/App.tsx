@@ -144,6 +144,7 @@ function AppContent() {
               <Route path="/pdf-learning" element={<PDFToLearning />} />
             </Routes>
           </Container>
+          <Footer />
         </Box>
         <Chat isOpen={isChatOpen} onClose={handleChatToggle} />
       </Box>
