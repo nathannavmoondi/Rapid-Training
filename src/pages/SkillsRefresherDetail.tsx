@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'; // Added useLocation
-import { Container, Typography, Paper, Box, Button, Stack, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Select, MenuItem, InputLabel, IconButton, Tooltip } from '@mui/material'; // Added Select, MenuItem, InputLabel
-import { CheckCircleOutline, HighlightOff, Chat as ChatIcon, YouTube, PictureAsPdf as PictureAsPdfIcon, Save as SaveIcon, Lightbulb, Speed } from '@mui/icons-material'; // Added icons for feedback
+import { Container, Typography, Paper, Box, Button, Stack, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Select, MenuItem, InputLabel, IconButton, Tooltip, Checkbox } from '@mui/material'; // Added Select, MenuItem, InputLabel, Checkbox
+import { CheckCircleOutline, HighlightOff, Chat as ChatIcon, YouTube, PictureAsPdf as PictureAsPdfIcon, Save as SaveIcon, Lightbulb, Speed, LegendToggleRounded } from '@mui/icons-material'; // Added icons for feedback
 import { toast } from 'react-toastify';
 import { skills } from '../data/skills';
 import type { Skill } from '../data/skills';
@@ -25,7 +25,7 @@ import { useQuiz, languages, generateLabelFromHtml } from '../contexts/quizConte
 
 // Helper function to process HTML for answer visibility and quiz status.  Add or remove sections.
 const processQuestionHtml = (html: string, answerVisible: boolean, showFeedback: boolean = false, isCorrect: boolean | null = null,
-   maxQuizzes: number, quizzesTaken: number, pdfExport: boolean): string => {    
+   maxQuizzes: number, quizzesTaken: number, pdfExport: boolean, isQuestionQuizFormat: boolean, isQuizActive: boolean): string => {
 
   if (!html) return '';
   
@@ -43,26 +43,52 @@ const processQuestionHtml = (html: string, answerVisible: boolean, showFeedback:
       return match.replace(/<div style="display:none">/g, '<div>');
     });
   }
-  if (showFeedback && isCorrect !== null && !pdfExport) { //later part says pdf export cheap fix
-    console.log('in answer part', isCorrect);
-      
-    const feedbackContent = `      <div style="margin: 16px 0; padding: 16px; border: 2px solid ${isCorrect ? '#00FF00' : '#FF0000'}; border-radius: 4px; background-color: transparent; display: flex; align-items: center; justify-content: center">
+
+  if (showFeedback && isCorrect !== null && !pdfExport ) { //later part says pdf export cheap fix      
+    console.log('is question format', isQuestionQuizFormat);
+    let feedbackContent = `      <div style="margin: 16px 0; padding: 16px; border: 2px solid ${isCorrect ? '#00FF00' : '#FF0000'}; border-radius: 4px; background-color: transparent; display: flex; align-items: center; justify-content: center">
         <span style="margin-right: 8px; color: ${isCorrect ? '#00FF00' : '#FF0000 !important'}; font-size: 24px;">
           ${isCorrect ? '✓' : '✕'}
         </span>
         <span style="font-size: 20px; color: ${isCorrect ? '#00FF00' : '#FF0000 !important'}">
-          ${isCorrect ? 'Correct!' : 'Incorrect!!!'}
+          ${isCorrect ? 'Correct!' : 'Incorrect'}
         </span>
-      </div>
+      </div>      
     `;
-    html = html.replace(/<div class="quiz-status"><\/div>/, `<div class="quiz-status">${feedbackContent}</div>`);
+    if (isQuestionQuizFormat) //just show answer
+    {
+    feedbackContent =`      <div style="margin: 16px 0; padding: 16px; border: 2px solid ${isCorrect ? '#00FF00' : '#FF0000'}; border-radius: 4px; background-color: transparent; display: flex; align-items: center; justify-content: center">
+        <span style="margin-right: 8px; color: ${'#00FF00'}; font-size: 24px;">
+          ${'✓'}
+        </span>
+        <span style="font-size: 20px; color: ${'#00FF00'}">
+          ${'Answer'}
+        </span>
+      </div>      
+    `;
+
+    feedbackContent = `      <div style="margin: 16px 0; padding: 16px; border: 2px solid ${isCorrect ? '#00FF00' : '#00FF00'}; border-radius: 4px; background-color: transparent; display: flex; align-items: center; justify-content: center">
+        <span style="margin-right: 8px; color: ${isCorrect ? '#00FF00' : '#00FF00 !important'}; font-size: 24px;">
+          
+        </span>
+        <span style="font-size: 20px; color: ${isCorrect ? '#00FF00' : '#00FF00 !important'}">
+          ${isCorrect ? 'Correct!!!' : 'Answer'}
+        </span>
+      </div>      
+    `;
+    }
+
+    html = html.replace(/<div class="quiz-status"><\/div>/, `<div class="quiz-status">${feedbackContent}</div>`);    
   } else if (!showFeedback && !answerVisible) {
     // Show remaining questions when not showing feedback
+    
     const remainingContent = `
       <div style="margin: 16px 0; padding: 8px; border: 1px solid grey; border-radius: 4px; text-align: center">
         <span style="color: white; font-size: 14px;">Questions remaining in this quiz: #NUM#</span>
       </div>
     `.replace('#NUM#', String((maxQuizzes ?? 5) - (quizzesTaken ?? 0)));
+
+    
     // (not used in rendering)
   }
   return html;
@@ -105,7 +131,9 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
     savedUserSlidedecks,
     setSavedUserSlidedecks,
     language,
-    setLanguage
+    setLanguage,
+    isQuestionQuizFormat,
+    setIsQuestionQuizFormat
   } = useQuiz(); //from quizcontext
 
   const {setChatboxSkill, addExternalMessage } = useChat();
@@ -137,6 +165,8 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
   const difficultyLevels = ['basic', 'intermediate', 'advanced'];
   let  questionRawHtml = "";
   let userLanguage = language;
+  let userQuestionQuizFormat = isQuestionQuizFormat; //cuz of batched state updates.  the handlenewquestion callback is not recreated. so set this instead.
+  
 
   //run upon startup
   useEffect(() => {    
@@ -329,7 +359,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
 
     //load new question
     try {                  
-      const response = await requestRefresher(level, currentSkill.title, currentSkill.category, userLanguage, startCourse, previousQuizzes); // Use level from context
+      const response = await requestRefresher(level, currentSkill.title, currentSkill.category, userLanguage, startCourse, previousQuizzes, isQuestionQuizFormat); // Use level from context
       
       //save to previous quizzes
       if (!isSlideDeck && !showYoutubeResources && startCourse !== 1) {
@@ -368,9 +398,11 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
     </div>
 </div>`;
       setQuestion(sampleQuestion);
-    }
+    } 
     setIsLoading(false);
-  },[currentSkill, startQuiz, setPreviousPath, location.pathname, location.search, quizzesTaken, resetQuiz, isQuizActive, previousPath, level, previousQuizzes, userLanguage]);
+  },[currentSkill, startQuiz, setPreviousPath, location.pathname, location.search, quizzesTaken, resetQuiz, isQuizActive, previousPath, level, previousQuizzes, userLanguage,
+    userQuestionQuizFormat
+  ]);
   
   // So when some button is clicked, it triggers a new question request 
   useEffect(() => {
@@ -413,7 +445,9 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
     lastAnswerCorrect,   // Pass the correct/incorrect state
     maxQuizzes,
     quizzesTaken,
-    false
+    false,
+    userQuestionQuizFormat,
+    isQuizActive
   );
 
   questionRawHtml = processQuestionHtml(
@@ -423,7 +457,9 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
     null,  // Pass the correct/incorrect state
     maxQuizzes, // cheap shortcut to tell function this is a pdf export so don't show answer given
     quizzesTaken,
-    true
+    true,
+    userQuestionQuizFormat, 
+    isQuizActive
   ); // Store processed HTML for PDF export
 
   // Simple function to render content with syntax highlighting
@@ -553,6 +589,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
 
   const handleStartThisQuestionAsQuiz = () => {
     if (quizzesTaken < maxQuizzes && currentSkill) {
+      setIsQuestionQuizFormat(false); // Ensure quiz format is set to question format
       setPreviousPath(location.pathname + location.search);
       setSkillDescription(currentSkill.title); // Set the skill description
       startQuiz(); // Makes the current question a quiz question
@@ -1076,7 +1113,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
                       <Button
                         variant="contained"
                         onClick={handleStartThisQuestionAsQuiz}
-                        disabled={isLoading || !question}
+                        disabled={isLoading || !question || userQuestionQuizFormat}
                         sx={{ backgroundColor: '#FFC107', color: 'black', '&:hover': { backgroundColor: '#FFA000'}, height: 48, fontWeight: 700, fontSize: '1rem', boxShadow: 'none', borderRadius: '6px' }}
                       >
                         Start Quiz (This Q)
@@ -1085,9 +1122,10 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
                       <FormControl size="small" sx={{ minWidth: 160, ml: 0, height: 48 }}>
                         <Select
                           value={maxQuizzes}
+                          disabled={isLoading || !question || userQuestionQuizFormat}
                           onChange={e => setMaxQuizzes(Number(e.target.value))}
                           sx={{
-                            backgroundColor: '#FFC107',
+                            backgroundColor: !isQuestionQuizFormat ?  '#FFC107': '#434035ff',
                             color: 'black',
                             height: 48,
                             fontWeight: 700,
@@ -1316,6 +1354,31 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
             {/* Third row: language dropdown with icons on right */}
             {!isSlideDeck && startCourse !== 1 && !showYoutubeResources && !isLoading && !isLoadingYoutube && (
               <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '7px' }}>
+
+            {/* Question Format Checkbox */}
+                <FormControlLabel
+                  control={
+                    <Checkbox 
+                      checked={isQuestionQuizFormat}
+                      onChange={(e) => { userQuestionQuizFormat = !userQuestionQuizFormat; setIsQuestionQuizFormat(e.target.checked)} }
+                      sx={{
+                        color: 'white',
+                        '&.Mui-checked': { color: '#4CAF50' }
+                      }}
+                    />
+                  }
+                  label="Question Format"
+                  sx={{ 
+                    marginLeft: 0,
+                    marginRight: 2,
+                    '& .MuiFormControlLabel-label': {
+                      color: 'white',
+                      fontWeight: 700,
+                      fontSize: '1rem'
+                    }
+                  }}
+                />
+
                 {/* Refresher Button */}
                 <Button
                   variant="contained"
@@ -1370,6 +1433,8 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
                 >
                   Sub Topics
                 </Button>
+                
+             
                 
                 {/* Language dropdown */}
                 <FormControl size="small" sx={{ minWidth: 160 }}>

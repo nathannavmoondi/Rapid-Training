@@ -178,6 +178,7 @@ interface QuizContextType {
   previousQuizzes: string[];
   failedQuizzes: FailedQuiz[];
   userFailedQuizzes: FailedQuiz[];
+  isQuestionQuizFormat: boolean;
   coderTestQuestions: string[];
   currentCoderTestIndex: number;
   inCoderTest: boolean;
@@ -198,6 +199,7 @@ interface QuizContextType {
   setPreviousQuizzes: React.Dispatch<React.SetStateAction<string[]>>;
   setFailedQuizzes: React.Dispatch<React.SetStateAction<FailedQuiz[]>>;
   setUserFailedQuizzes: React.Dispatch<React.SetStateAction<FailedQuiz[]>>;
+  setIsQuestionQuizFormat: (isQuizFormat: boolean) => void;
   addFailedQuiz: (topic: string, skillLevel: string, html: string) => void;
   setCoderTestQuestions: React.Dispatch<React.SetStateAction<string[]>>;
   setCurrentCoderTestIndex: (index: number) => void;
@@ -232,6 +234,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [showYoutubeResources, setShowYoutubeResources] = useState<boolean>(false);
   const [previousQuizzes, setPreviousQuizzes] = useState<string[]>([]);
   const [failedQuizzes, setFailedQuizzes] = useState<FailedQuiz[]>([]);
+  const [isQuestionQuizFormat, setIsQuestionQuizFormat] = useState<boolean>(false);
   
   // Initialize userFailedQuizzes from localStorage
   const [userFailedQuizzes, setUserFailedQuizzes] = useState<FailedQuiz[]>(() => {
@@ -559,6 +562,8 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     clearFailedQuizzes,
     language,
     setLanguage,
+    isQuestionQuizFormat,
+    setIsQuestionQuizFormat,
   };
 
   return <QuizContext.Provider value={contextValue}>{children}</QuizContext.Provider>;

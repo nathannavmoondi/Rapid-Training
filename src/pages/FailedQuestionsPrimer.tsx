@@ -15,7 +15,7 @@ const processHtmlWithSyntaxHighlighting = (html: string) => {
 
   console.log('Processing HTML for syntax highlighting:', html);
   while ((match = codeBlockRegex.exec(html)) !== null) {
-    console.log('Found code block:', match[0]);
+    
     if (match.index > lastIndex) {
       const textPart = html.slice(lastIndex, match.index);
       parts.push(
