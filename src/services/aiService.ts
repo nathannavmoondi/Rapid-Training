@@ -357,7 +357,7 @@ if (startCourse === 1) {
       
       // Apply the function to remove standalone <code> tags
       // Remove annoying <code>word</code> tags that AI tends to generate
-      content = removeStandaloneCodeTags(content);
+      //content = removeStandaloneCodeTags(content);
     }
       return content;
     };
