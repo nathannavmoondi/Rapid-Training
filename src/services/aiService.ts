@@ -1,6 +1,7 @@
 // import { getSkillTopics } from './skillsService';
 import { getYoutubeSummaryAndTranscript, getYoutubeQuiz } from './youtubeService';
 import { ChatMessage } from './chatService';
+import { getQuestionFormatPrompt } from './promptService';
 
 export const requestRefresher = async (
   level: string,
@@ -8,8 +9,11 @@ export const requestRefresher = async (
   skillCategory: string,
   language: string,
   startCourse?: number,
-  previousQuizzes?: string[]
+  previousQuizzes?: string[],
+  isQuestionQuizFormat?: boolean
 ): Promise<string> => {
+
+  console.log('isquestionquiz', isQuestionQuizFormat);
   try {
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;            
 
@@ -31,10 +35,16 @@ export const requestRefresher = async (
       // Include a practical code example with syntax highlighting in the answer section.
 
       var languageprompt = `Return all text in this  language: ${language}.  `;
-      var prompt = languageprompt;
+      var prompt = '';
+      
+      // Use question format prompt if isQuestionQuizFormat is true
+      if (isQuestionQuizFormat) {
+        prompt = languageprompt +getQuestionFormatPrompt(language, skillDescription, level, previousQuizzes);
+      } else {
+        prompt = languageprompt;
         
-      prompt += `I'm creating a ${skillDescription} quiz for a job applicant.  
-      Give me a completely new random ${level} difficulty ${skillDescription} question on a random topic.
+        prompt += `I'm creating a ${skillDescription} quiz for a job applicant.  
+        Give me a completely new random ${level} difficulty ${skillDescription} question on a random topic.
 
       Make sure to format the question with good spacing and readability:
 - Use paragraphs with blank lines between them
@@ -111,7 +121,8 @@ Supported language classes for <code class="language-xxx"> are: language-typescr
 14. Try not to have lines longer than 80 characters for better readability.`
 
 prompt += `  Also!, quiz can't be similar to these previous ${previousQuizzes?.length} quizzes: ${previousQuizzes ? previousQuizzes.join(', Next Quiz:  ') : 'none'}.`;
-
+      }
+      
 //todo: just add to prompt to NOT use code elements
 if (skillCategory === 'non-technology'){
   prompt = languageprompt + `I'm creating a ${skillDescription} quiz for a job applicant.  
@@ -246,9 +257,7 @@ if (startCourse === 1) {
             <p>[Rest of the explanation with each point on a new line]</p>
         </div>
     </div>
-</div>`
-        
-      
+</div>`              
 
         // Store content for next section
         localStorage.setItem('currentSection', currentSection.toString());

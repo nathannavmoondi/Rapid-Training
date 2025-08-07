@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'; // Added useLocation
 import { Container, Typography, Paper, Box, Button, Stack, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Select, MenuItem, InputLabel, IconButton, Tooltip, Checkbox } from '@mui/material'; // Added Select, MenuItem, InputLabel, Checkbox
-import { CheckCircleOutline, HighlightOff, Chat as ChatIcon, YouTube, PictureAsPdf as PictureAsPdfIcon, Save as SaveIcon, Lightbulb, Speed } from '@mui/icons-material'; // Added icons for feedback
+import { CheckCircleOutline, HighlightOff, Chat as ChatIcon, YouTube, PictureAsPdf as PictureAsPdfIcon, Save as SaveIcon, Lightbulb, Speed, LegendToggleRounded } from '@mui/icons-material'; // Added icons for feedback
 import { toast } from 'react-toastify';
 import { skills } from '../data/skills';
 import type { Skill } from '../data/skills';
-import { requestRefresher } from '../services/aiService';
+import * as aiService from '../services/aiService';
 import { getYoutubeResources } from '../services/resourceService';
 import { Chat } from '../components/Chat';
 import { SubTopicsDialog } from '../components/SubTopicsDialog';
@@ -25,7 +25,7 @@ import { useQuiz, languages, generateLabelFromHtml } from '../contexts/quizConte
 
 // Helper function to process HTML for answer visibility and quiz status.  Add or remove sections.
 const processQuestionHtml = (html: string, answerVisible: boolean, showFeedback: boolean = false, isCorrect: boolean | null = null,
-   maxQuizzes: number, quizzesTaken: number, pdfExport: boolean): string => {    
+   maxQuizzes: number, quizzesTaken: number, pdfExport: boolean, isQuestionQuizFormat: boolean, isQuizActive: boolean): string => {
 
   if (!html) return '';
   
@@ -43,26 +43,32 @@ const processQuestionHtml = (html: string, answerVisible: boolean, showFeedback:
       return match.replace(/<div style="display:none">/g, '<div>');
     });
   }
-  if (showFeedback && isCorrect !== null && !pdfExport) { //later part says pdf export cheap fix
-    console.log('in answer part', isCorrect);
-      
-    const feedbackContent = `      <div style="margin: 16px 0; padding: 16px; border: 2px solid ${isCorrect ? '#00FF00' : '#FF0000'}; border-radius: 4px; background-color: transparent; display: flex; align-items: center; justify-content: center">
+
+  if (showFeedback && isCorrect !== null && !pdfExport ) { //later part says pdf export cheap fix      
+    
+    let feedbackContent = `      <div style="margin: 16px 0; padding: 16px; border: 2px solid ${isCorrect ? '#00FF00' : '#FF0000'}; border-radius: 4px; background-color: transparent; display: flex; align-items: center; justify-content: center">
         <span style="margin-right: 8px; color: ${isCorrect ? '#00FF00' : '#FF0000 !important'}; font-size: 24px;">
           ${isCorrect ? '✓' : '✕'}
         </span>
         <span style="font-size: 20px; color: ${isCorrect ? '#00FF00' : '#FF0000 !important'}">
-          ${isCorrect ? 'Correct!' : 'Incorrect!!!'}
+          ${isCorrect ? 'Correct!' : 'Incorrect'}
         </span>
-      </div>
+      </div>      
     `;
+    if (isQuestionQuizFormat && showFeedback) //just show answer
+    feedbackContent = "<h3>Answer<h3>";
+
     html = html.replace(/<div class="quiz-status"><\/div>/, `<div class="quiz-status">${feedbackContent}</div>`);
   } else if (!showFeedback && !answerVisible) {
     // Show remaining questions when not showing feedback
+    
     const remainingContent = `
       <div style="margin: 16px 0; padding: 8px; border: 1px solid grey; border-radius: 4px; text-align: center">
         <span style="color: white; font-size: 14px;">Questions remaining in this quiz: #NUM#</span>
       </div>
     `.replace('#NUM#', String((maxQuizzes ?? 5) - (quizzesTaken ?? 0)));
+
+    
     // (not used in rendering)
   }
   return html;
@@ -139,6 +145,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
   const difficultyLevels = ['basic', 'intermediate', 'advanced'];
   let  questionRawHtml = "";
   let userLanguage = language;
+  
 
   //run upon startup
   useEffect(() => {    
@@ -194,7 +201,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
         setShowYoutubeResources(false);
         setQuestion(''); // Clear any existing question
         
-        requestRefresher('slidedeck', currentSkill.title, currentSkill.category, userLanguage, startCourse)
+        aiService.requestRefresher('slidedeck', currentSkill.title, currentSkill.category, userLanguage, startCourse, undefined, isQuestionQuizFormat)
           .then(response => {
             setQuestion(response || 'Failed to load slidedeck. Please try again.');
             setIsLoading(false);
@@ -246,7 +253,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
         
         // Set course mode and fetch course content
         setStartCourse(1);
-        requestRefresher('', currentSkill.title, currentSkill.category, userLanguage, 1)
+        aiService.requestRefresher('', currentSkill.title, currentSkill.category, userLanguage, 1, undefined, isQuestionQuizFormat)
           .then(response => {
             setQuestion(response || 'Failed to load course content. Please try again.');
             setIsLoading(false);
@@ -275,7 +282,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
     setShowYoutubeResources(false);
     setQuestion(''); // Clear previous question while loading new one
     try {
-      const response = await requestRefresher('slidedeck', currentSkill.title, currentSkill.category, userLanguage, startCourse);
+      const response = await aiService.requestRefresher('slidedeck', currentSkill.title, currentSkill.category, userLanguage, startCourse, undefined, isQuestionQuizFormat);
       setQuestion(response || 'Failed to load slidedeck. Please try again.');
     } catch (error) {
       console.error('Error fetching slidedeck:', error);
@@ -331,7 +338,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
 
     //load new question
     try {                  
-      const response = await requestRefresher(level, currentSkill.title, currentSkill.category, userLanguage, startCourse, previousQuizzes); // Use level from context
+      const response = await aiService.requestRefresher(level, currentSkill.title, currentSkill.category, userLanguage, startCourse, previousQuizzes, isQuestionQuizFormat); // Use level from context with question format flag
       
       //save to previous quizzes
       if (!isSlideDeck && !showYoutubeResources && startCourse !== 1) {
@@ -415,7 +422,9 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
     lastAnswerCorrect,   // Pass the correct/incorrect state
     maxQuizzes,
     quizzesTaken,
-    false
+    false,
+    isQuestionQuizFormat,
+    isQuizActive
   );
 
   questionRawHtml = processQuestionHtml(
@@ -425,7 +434,9 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
     null,  // Pass the correct/incorrect state
     maxQuizzes, // cheap shortcut to tell function this is a pdf export so don't show answer given
     quizzesTaken,
-    true
+    true,
+    isQuestionQuizFormat, 
+    isQuizActive
   ); // Store processed HTML for PDF export
 
   // Simple function to render content with syntax highlighting
@@ -554,6 +565,11 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
   };
 
   const handleStartThisQuestionAsQuiz = () => {
+    if (isQuestionQuizFormat) {
+      toast.info("Please disable Question Format to start a quiz");
+      return;
+    }
+    
     if (quizzesTaken < maxQuizzes && currentSkill) {
       setPreviousPath(location.pathname + location.search);
       setSkillDescription(currentSkill.title); // Set the skill description
@@ -704,7 +720,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
       
       // Set startCourse to 1 and use the new value directly in requestRefresher
       setStartCourse(1);
-      const response = await requestRefresher('', currentSkill.title, currentSkill.category, userLanguage, 1);
+      const response = await aiService.requestRefresher('', currentSkill.title, currentSkill.category, userLanguage, 1, undefined, isQuestionQuizFormat);
       setQuestion(response || 'Failed to load course content. Please try again.');
     } catch (error) {
       console.error('Error fetching course content:', error);
@@ -1075,21 +1091,26 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   {!isSlideDeck && !isQuizActive && !showAnswer && startCourse !== 1 && (
                     <>
-                      <Button
-                        variant="contained"
-                        onClick={handleStartThisQuestionAsQuiz}
-                        disabled={isLoading || !question}
-                        sx={{ backgroundColor: '#FFC107', color: 'black', '&:hover': { backgroundColor: '#FFA000'}, height: 48, fontWeight: 700, fontSize: '1rem', boxShadow: 'none', borderRadius: '6px' }}
-                      >
-                        Start Quiz (This Q)
-                      </Button>
+                      <Tooltip title={isQuestionQuizFormat ? "Question format is enabled. Disable it to use quiz mode." : ""}>
+                        <span>
+                          <Button
+                            variant="contained"
+                            onClick={handleStartThisQuestionAsQuiz}
+                            disabled={isLoading || !question || isQuestionQuizFormat}
+                            sx={{ backgroundColor: '#FFC107', color: 'black', '&:hover': { backgroundColor: '#FFA000'}, height: 48, fontWeight: 700, fontSize: '1rem', boxShadow: 'none', borderRadius: '6px' }}
+                          >
+                            Start Quiz (This Q)
+                          </Button>
+                        </span>
+                      </Tooltip>
 
                       <FormControl size="small" sx={{ minWidth: 160, ml: 0, height: 48 }}>
                         <Select
                           value={maxQuizzes}
+                          disabled={isLoading || !question || isQuestionQuizFormat}
                           onChange={e => setMaxQuizzes(Number(e.target.value))}
                           sx={{
-                            backgroundColor: '#FFC107',
+                            backgroundColor: !isQuestionQuizFormat ?  '#FFC107': '#434035ff',
                             color: 'black',
                             height: 48,
                             fontWeight: 700,
