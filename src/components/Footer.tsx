@@ -26,7 +26,7 @@ export const Footer = () => {
           opacity: 0.9
         }}
       >
-        © {new Date().getFullYear()} Rapid Skill AI - Nathan Nav Moondi and Happy Dappy Technologies. All rights reserved.
+        © {new Date().getFullYear()} Rapid Skill AI - Nathan Nav Moondi and Happy Dappy Technologies. Patents Pending.
       </Typography>
     </Box>
   );
