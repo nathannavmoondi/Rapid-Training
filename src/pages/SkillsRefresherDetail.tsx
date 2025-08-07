@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'; // Added useLocation
-import { Container, Typography, Paper, Box, Button, Stack, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Select, MenuItem, InputLabel, IconButton, Tooltip } from '@mui/material'; // Added Select, MenuItem, InputLabel
+import { Container, Typography, Paper, Box, Button, Stack, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Select, MenuItem, InputLabel, IconButton, Tooltip, Checkbox } from '@mui/material'; // Added Select, MenuItem, InputLabel, Checkbox
 import { CheckCircleOutline, HighlightOff, Chat as ChatIcon, YouTube, PictureAsPdf as PictureAsPdfIcon, Save as SaveIcon, Lightbulb, Speed } from '@mui/icons-material'; // Added icons for feedback
 import { toast } from 'react-toastify';
 import { skills } from '../data/skills';
@@ -105,7 +105,9 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
     savedUserSlidedecks,
     setSavedUserSlidedecks,
     language,
-    setLanguage
+    setLanguage,
+    isQuestionQuizFormat,
+    setIsQuestionQuizFormat
   } = useQuiz(); //from quizcontext
 
   const {setChatboxSkill, addExternalMessage } = useChat();
@@ -1316,6 +1318,31 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
             {/* Third row: language dropdown with icons on right */}
             {!isSlideDeck && startCourse !== 1 && !showYoutubeResources && !isLoading && !isLoadingYoutube && (
               <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '7px' }}>
+
+            {/* Question Format Checkbox */}
+                <FormControlLabel
+                  control={
+                    <Checkbox 
+                      checked={isQuestionQuizFormat}
+                      onChange={(e) => setIsQuestionQuizFormat(e.target.checked)}
+                      sx={{
+                        color: 'white',
+                        '&.Mui-checked': { color: '#4CAF50' }
+                      }}
+                    />
+                  }
+                  label="Question Format"
+                  sx={{ 
+                    marginLeft: 0,
+                    marginRight: 2,
+                    '& .MuiFormControlLabel-label': {
+                      color: 'white',
+                      fontWeight: 700,
+                      fontSize: '1rem'
+                    }
+                  }}
+                />
+
                 {/* Refresher Button */}
                 <Button
                   variant="contained"
@@ -1370,6 +1397,8 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
                 >
                   Sub Topics
                 </Button>
+                
+             
                 
                 {/* Language dropdown */}
                 <FormControl size="small" sx={{ minWidth: 160 }}>

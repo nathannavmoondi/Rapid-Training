@@ -228,7 +228,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
           </Tooltip>
         ))}
 
-        {/* Sidebar3 Image */}
+        {/* Sidebar Logo */}
         <Box 
           sx={{ 
             display: 'flex', 
@@ -239,8 +239,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
           }}
         >
           <img 
-            src="/assets/sidebar3.png" 
-            alt="Sidebar Logo" 
+            src="/assets/rapidskill-happylogo.png" 
+            alt="Rapid Skill Logo" 
             style={{ 
               width: '60%',
               maxWidth: '150px',
