@@ -15,6 +15,7 @@ import AssessmentIcon from '@mui/icons-material/Assessment';
 import CodeIcon from '@mui/icons-material/Code';
 import PeopleIcon from '@mui/icons-material/People';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import PdfIcon from '@mui/icons-material/PictureAsPdf';
 import { useNavigate } from 'react-router-dom';
 import { CoderTestDialog } from './CoderTestDialog';
 import { useChat } from '../contexts/chatContext';
@@ -29,6 +30,7 @@ const menuItems = [
   { label: 'My Training', path: '/my-training', icon: <WorkspacesIcon />, external: false },
   { label: 'YT Generator', path: '/yt-generator', icon: <YouTubeIcon />, external: false },
   { label: 'I want to learn', path: '/learn', icon: <MenuBookIcon />, external: false },
+  { label: 'PDF to Learning', path: '/pdf-learning', icon: <PdfIcon />, external: false },
   { label: 'Explore', path: '/explore', icon: <SettingsIcon />, external: false },
   { label: 'Interview\nCandidates', path: '/interview-candidates', icon: <PeopleIcon />, external: false, fullWidth: true }
 ];
