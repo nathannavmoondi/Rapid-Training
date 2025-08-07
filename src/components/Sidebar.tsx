@@ -25,14 +25,16 @@ const menuItems = [
   { label: 'Coder Test', path: '/coder-test', icon: <CodeIcon />, external: false },
   { label: 'Algorithms', path: '/algorithms', icon: <FunctionsIcon />, external: false },
   { label: 'Saved Quizzes', path: '/my-quizzes', icon: <QuizIcon />, external: false },
-  { label: 'Failed Quizzes', path: '/failed-quizzes', icon: <RemoveCircleIcon  />, external: false },
-  { label: 'Custom Quizzes', path: '/custom-quizzes', icon: <StarIcon />, external: false },  
+  { label: 'Failed Quizzes', path: '/failed-quizzes', icon: <RemoveCircleIcon  />, external: false }, 
   { label: 'My Training', path: '/my-training', icon: <WorkspacesIcon />, external: false },
-  { label: 'YT Generator', path: '/yt-generator', icon: <YouTubeIcon />, external: false },
+
   { label: 'I want to learn', path: '/learn', icon: <MenuBookIcon />, external: false },
-  { label: 'PDF to Learning', path: '/pdf-learning', icon: <PdfIcon />, external: false },
+  { label: 'PDF Learning', path: '/pdf-learning', icon: <PdfIcon />, external: false },
+  { label: 'Repo Learning', path: '/repo-learning', icon: <GitHubIcon />, external: false },
   { label: 'Explore', path: '/explore', icon: <SettingsIcon />, external: false },
-  { label: 'Interview\nCandidates', path: '/interview-candidates', icon: <PeopleIcon />, external: false, fullWidth: true }
+  { label: 'YT Generator', path: '/yt-generator', icon: <YouTubeIcon />, external: false },
+  { label: 'Interview\nCandidates', path: '/interview-candidates', icon: <PeopleIcon />, external: false, fullWidth: true },
+  { label: 'Custom Quizzes', path: '/custom-quizzes', icon: <StarIcon />, external: false }  
 ];
 
 const SIDEBAR_MIN_WIDTH = 60;

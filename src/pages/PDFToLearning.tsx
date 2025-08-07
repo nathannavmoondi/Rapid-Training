@@ -99,7 +99,7 @@ export const PDFToLearning: React.FC = () => {
           mb: 2
         }}>
           <PdfIcon sx={{ fontSize: 45, color: '#1976d2' }} />
-          PDF to Learning
+          PDF Learning
         </Typography>
         <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
           Transform your PDFs into interactive learning materials<br/>
