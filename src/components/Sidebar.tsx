@@ -242,8 +242,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onChatToggle, isChatOpen = fal
             src="/assets/rapidskill-happylogo.png" 
             alt="Sidebar Logo" 
             style={{ 
-              width: '60%',
-              maxWidth: '150px',
+              width: '80%',
+              maxWidth: '180px',
               filter: 'brightness(0) invert(1)', // This makes the image white
               opacity: showText ? 1 : 0,
               transition: 'opacity 0.2s'
