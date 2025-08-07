@@ -39,6 +39,7 @@ import SplashPage from './components/SplashPage';
 import Refresher from './pages/Refresher';
 import SpotlightPromo from './components/SpotlightPromo';
 import { PDFToLearning } from './pages/PDFToLearning';
+import { RepoToLearning } from './pages/RepoToLearning';
 
 
 function App() {
@@ -142,6 +143,7 @@ function AppContent() {
               <Route path="/refresher" element={<Refresher />} />
               <Route path="/spotlight" element={<SpotlightPromo />} />
               <Route path="/pdf-learning" element={<PDFToLearning />} />
+              <Route path="/repo-learning" element={<RepoToLearning />} />
             </Routes>
           </Container>
           <Footer />
