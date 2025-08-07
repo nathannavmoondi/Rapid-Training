@@ -31,7 +31,7 @@ Format the response in this exact HTML structure:
         [Your question text here. If the question includes a code snippet, format it like this: <pre><code class="language-javascript">const snippet = "example";</code></pre> within the question text. Ensure the class attribute is one of the supported languages listed below.]
     </div>
     <div class="answer-box">
-     <div class="quiz-status"/>
+     <div class="quiz-status"></div>
         <div class="explanation">
             <p>[First line of explanation]</p>
             <pre><code class="language-typescript">
@@ -73,9 +73,16 @@ Supported language classes for <code class="language-xxx"> are: language-typescr
 11. Make code examples practical and focused.
 12. Start off content with the question, don't return a summary of what you will do or a list of instructions. Just return the question and options, then the answer and explanation.;     
 13. Do not put any part of the answer outside the answer-box div.
-14. Try not to have lines longer than 80 characters for better readability.`;
+14. Try not to have lines longer than 80 characters for better readability.
+15. CRITICAL: NEVER use ANY <code> tags around single words, terms, variable names, class names, function names, or method names in the explanations. This is a strict requirement - DO NOT wrap "FileReader", "useState", or any other technical terms in code tags.
+16. ONLY use <pre><code> tags for complete, multi-line code blocks/snippets that demonstrate actual code execution - never for terminology, references, or single words.
+17. The explanation should be in plain text without any <code> tags around individual words. If you need to mention code elements like functions or classes in explanatory text, simply write them as normal text.
+18. WRONG: "Create a new <code>FileReader</code> instance." 
+    CORRECT: "Create a new FileReader instance."
+19. In-line technical terms should never have <code> tags - keep all code highlighting exclusively for code blocks inside <pre><code> tags.`;
 
   prompt += `  Also!, quiz can't be similar to these previous ${previousQuizzes?.length} quizzes: ${previousQuizzes ? previousQuizzes.join(', Next Quiz:  ') : 'none'}.`;
   
+  console.log('question prompt', prompt);
   return prompt;
 };
