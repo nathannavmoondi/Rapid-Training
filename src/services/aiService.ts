@@ -1,7 +1,7 @@
 // import { getSkillTopics } from './skillsService';
 import { getYoutubeSummaryAndTranscript, getYoutubeQuiz } from './youtubeService';
 import { ChatMessage } from './chatService';
-import { getQuestionFormatPrompt } from './promptService';
+import { getQuestionFormatPrompt, removeStandaloneCodeTags } from './promptService';
 
 export const requestRefresher = async (
   level: string,
@@ -354,6 +354,11 @@ if (startCourse === 1) {
       content = content.replace(/xml/g, '');
 
       content = content.trim();
+      
+      // Apply the function to remove standalone <code> tags
+      //TODO: to remove annouying <code>word</code> tags that ai refuses to get rid of.
+      //test it out and see if it's better removed or kept in.
+      //content = removeStandaloneCodeTags(content);
     }
       return content;
     };

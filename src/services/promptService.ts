@@ -1,5 +1,35 @@
 // promptService.ts - Handles generation of prompts for AI service calls
 
+/**
+ * Removes standalone <code> tags that aren't inside <pre> tags.
+ * This helps with improving the display of AI responses that incorrectly format single words.
+ * @param html - The HTML string to process
+ * @returns The processed HTML with standalone code tags removed
+ */
+export const removeStandaloneCodeTags = (html: string): string => {
+  if (!html) return html;
+  
+  // Create a temporary DOM element to parse the HTML
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+  
+  // Find all code elements
+  const codeElements = tempDiv.querySelectorAll('code');
+  
+  // Process each code element
+  codeElements.forEach(codeEl => {
+    // Check if this code tag is NOT inside a pre tag
+    if (codeEl.parentElement && codeEl.parentElement.tagName !== 'PRE') {
+      // Replace the code element with its text content
+      const textNode = document.createTextNode(codeEl.textContent || '');
+      codeEl.parentElement.replaceChild(textNode, codeEl);
+    }
+  });
+  
+  // Return the processed HTML
+  return tempDiv.innerHTML;
+};
+
 export const getQuestionFormatPrompt = (
   language: string,
   skillDescription: string,
