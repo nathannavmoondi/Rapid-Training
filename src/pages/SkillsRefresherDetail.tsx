@@ -1586,7 +1586,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
                 mb: 2
               }}
             >
-              Rapid Skill Training
+              Rapid Skill Learning
             </Typography>
             <Typography 
               sx={{ 
@@ -1596,9 +1596,13 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
                 textAlign: 'center'
               }}
             >
-              A new concept designed by Nathan Moondi to reinvent how we learn.  This approach aims to give the student
-              little snippets of information, quiz them, then go to next part. They can do this repeatedly until they master it.
-              Learn by snippet rather than by entire chapter or course. Easier on the brain and quick dopamine hits.
+              A new concept designed by Nathan Moondi to reinvent how we learn.  Think of it as your AI companion to help you
+              learn or refresh your knowledge.  This "simple" and "rapid" approach aims to give you
+              little snippets of information, quiz you, then go to next part. You can do this repeatedly until you master it.
+              <br/>
+              Learn by snippets rather than by entire chapter or course. Easier on the brain and provides quick dopamine hits.
+              <br/>
+              AI Based Learning - Learn Faster, Smarter, Beter.
             </Typography>          </Box>
         </>
       )}

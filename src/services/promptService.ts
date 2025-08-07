@@ -49,6 +49,8 @@ export const getQuestionFormatPrompt = (
 - Break down long scenarios into smaller parts
 - For bullet points or lists of requirements, use HTML <ul> and <li> tags.
 - Keep the main question clear and separate
+- Feel free to use emojis and icons
+- Feel free to use text diagrams
 
 Do not include the word html and GRAVE ACCENT in the answer.
 Each question should be different topic from previous question.  Ask a random topic each time. 

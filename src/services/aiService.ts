@@ -182,6 +182,8 @@ if (startCourse === 1) {
         - Keep text white for readability on dark background
         - Structure content with clear visual hierarchy
         - For h4 color them lightcyan
+        - Feel free to use emojis and icons
+        - Feel free to use text diagrams
 
 
         Format each content section like:
@@ -427,7 +429,7 @@ export const getFailedQuestionsPrimer = async (skillDescription :string, failedQ
 
     1. For code examples in the answer section, use <pre><code class="language-xxx"> tags. For "language-xxx", use one of the following based on the snippet's language: "language-typescript", "language-javascript", "language-jsx", "language-tsx", "language-markup", "language-css", "language-graphql", "language-cpp", "language-python", "language-rust", "language-go", "language-ruby", "language-sql", "language-java", "language-csharp".
 2. Indent code properly inside the code block.
-3. Put each explanation point on a new line using <p> tags.
+3. Put each explanation point on a new line using <p> tags. Also feel free to use emojis and icons.
 4. If the question itself contains a code snippet (e.g., asking "What does this code do?"), that snippet must also be wrapped in <pre><code class="language-xxx"> tags directly within the <div class="question">. For "language-xxx", use one of the following based on the snippet's language: "language-typescript", "language-javascript", "language-jsx", "language-tsx", "language-markup", "language-css", "language-graphql", "language-cpp", "language-python", "language-rust", "language-go", "language-ruby", "language-sql", "language-java", "language-csharp".
 5. Make code examples practical and focused. Ensure all code, whether in question or answer, is correctly embedded within the specified <pre><code> structure with a supported language class.
 Supported language classes for <code class="language-xxx"> are: language-typescript, language-javascript, language-jsx, language-tsx, language-markup, language-css, language-graphql, language-cpp, language-python, language-rust, language-go, language-ruby, language-sql, language-java, language-csharp.
@@ -1134,6 +1136,8 @@ export const getCoderTestQuestion = async (language: string, level: string, prev
 Create an appropriate title for this coding test problem.  A coding test that you would
 give to an interview candidate.  Example: fizz buzz, binary graph, fibonacci, anagrams,  palindrome,
 chunks, permutation, trees, currency. The usual.
+
+- Feel free to use text diagram as well as icons or emojis.
 
 Then underneath provide a detailed answer with code blocks. Code must have comments.`;
 
