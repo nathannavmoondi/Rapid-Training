@@ -38,6 +38,7 @@ import { IWantToLearn } from './pages/IWantToLearn';
 import SplashPage from './components/SplashPage';
 import Refresher from './pages/Refresher';
 import SpotlightPromo from './components/SpotlightPromo';
+import { PDFToLearning } from './pages/PDFToLearning';
 
 
 function App() {
@@ -140,6 +141,7 @@ function AppContent() {
               <Route path="/faq/:skillTopic" element={<Faq onChatToggle={handleChatToggle} isChatOpen={isChatOpen} />} />
               <Route path="/refresher" element={<Refresher />} />
               <Route path="/spotlight" element={<SpotlightPromo />} />
+              <Route path="/pdf-learning" element={<PDFToLearning />} />
             </Routes>
           </Container>
         </Box>
