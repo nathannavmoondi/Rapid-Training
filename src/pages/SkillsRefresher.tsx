@@ -25,7 +25,7 @@ interface CustomSkill {
 
 export const SkillsRefresher = () => {
   const navigate = useNavigate();  
-  const { setStartCourse, resetQuiz } = useQuiz();
+  const { setStartCourse, resetQuiz, setIsQuestionQuizFormat } = useQuiz();
   const [currentTab, setCurrentTab] = useState<SkillCategory>('all');
   const [newSkillCategory, setNewSkillCategory] = useState<SkillCategory>('general');
   const [newSkillTitle, setNewSkillTitle] = useState('');
@@ -104,11 +104,13 @@ export const SkillsRefresher = () => {
     switch (value) {
       case 'quiz':
         // Navigate to topics detail page - same as clicking the card
+        setIsQuestionQuizFormat(false); // Make sure quiz format is off for regular quizzes
         navigate(`/topics/detail?skill=${encodeURIComponent(skillTitle)}&category=${skillCategory}`);
         break;
       case 'questions':
-        // Navigate to topics detail page - same as clicking the card (same as quiz for now)
-        navigate(`/topics/detail?skill=${encodeURIComponent(skillTitle)}&category=${skillCategory}`);
+        // Set question format to true and navigate
+        setIsQuestionQuizFormat(true); // Set question format to true when "questions" is selected
+        navigate(`/topics/detail?skill=${encodeURIComponent(skillTitle)}&category=${skillCategory}&mode=questions`);
         break;
       case 'course':
         // Navigate to topics detail page with course mode

@@ -256,6 +256,29 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
               setIsLoadingYoutube(false);
             });
         }
+      } else if (pendingMode === 'questions') {
+        // Set question format to true and fetch a new question
+        if (isQuizActive) {
+          resetQuiz();
+        }
+        setIsQuestionQuizFormat(true); // Set question format to true
+        setIsLoading(true);
+        setShowAnswer(false);
+        setIsSlideDeck(false);
+        setShowYoutubeResources(false);
+        setQuestion(''); // Clear any existing question
+        
+        // Fetch new question in question format
+        requestRefresher(level, currentSkill.title, currentSkill.category, userLanguage, startCourse, previousQuizzes, true)
+          .then(response => {
+            setQuestion(response || 'Failed to load question. Please try again.');
+            setIsLoading(false);
+          })
+          .catch(error => {
+            console.error('Error fetching question:', error);
+            setQuestion('Failed to load question. Please try again.');
+            setIsLoading(false);
+          });
       } else if (pendingMode === 'course') {
         // Reset any active quiz first
         if (isQuizActive) {
@@ -289,7 +312,7 @@ export default function SkillsRefresherDetail({ onChatToggle, isChatOpen = false
     }, 200); // Increased delay to ensure other effects have run
 
     return () => clearTimeout(timer);
-  }, [currentSkill, pendingMode, userLanguage, startCourse, setShowYoutubeResources, isQuizActive, resetQuiz, setStartCourse]);
+  }, [currentSkill, pendingMode, userLanguage, startCourse, level, setShowYoutubeResources, isQuizActive, resetQuiz, setStartCourse, setIsQuestionQuizFormat, previousQuizzes]);
 
   const handleSlideDeck = async () => {
     if (isQuizActive) {

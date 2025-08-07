@@ -356,9 +356,8 @@ if (startCourse === 1) {
       content = content.trim();
       
       // Apply the function to remove standalone <code> tags
-      //TODO: to remove annouying <code>word</code> tags that ai refuses to get rid of.
-      //test it out and see if it's better removed or kept in.
-      //content = removeStandaloneCodeTags(content);
+      // Remove annoying <code>word</code> tags that AI tends to generate
+      content = removeStandaloneCodeTags(content);
     }
       return content;
     };
