@@ -237,6 +237,12 @@ export const skills: Skill[] = [
     category: 'general',
     description: "Artificial Intelligence Fundamentals principles and practices",
     topics: ['Machine Learning', 'Neural Networks', 'Natural Language Processing', 'Computer Vision', 'Robotics']
+  },
+  {
+    id: "System Design",
+    title: "System Design",
+    category: 'general',
+    description: "System Design principles and practices",
+    topics: ['Scalability', 'Load Balancing', 'Caching', 'Database Design', 'Microservices']
   }
-  
 ];
